@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { supabase } from "@/lib/supabase/client";
+import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { z } from "zod";
 
@@ -50,7 +50,7 @@ export function LoginForm() {
       setLoading(false);
     }
   };
-
+  const supabase = createClient();
   return (
     <form onSubmit={handleLogin} className="w-full space-y-4">
       {/* Campo Email */}

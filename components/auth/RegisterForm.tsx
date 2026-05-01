@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { supabase } from "@/lib/supabase/client";
+import { createClient } from "@/lib/supabase/client";
 
 export function RegisterForm() {
   const [email, setEmail] = useState("");
@@ -9,7 +9,7 @@ export function RegisterForm() {
   const [loading, setLoading] = useState(false);
   const [isSent, setIsSent] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
-
+  const supabase = createClient();
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { supabase } from "@/lib/supabase/client";
+import { createClient } from "@/lib/supabase/client";
 
 interface Product {
   id: string;
@@ -15,6 +15,7 @@ export function ProductsTable({
 }: {
   initialProducts: Product[];
 }) {
+  const supabase = createClient();
   const [products, setProducts] = useState<Product[]>(initialProducts);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
 

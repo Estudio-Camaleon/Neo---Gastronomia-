@@ -4,6 +4,7 @@ import { PublicNavbar } from "@/components/menu/PublicNavbar";
 import { MenuCard } from "@/components/menu/MenuCard";
 import { PublicCart } from "@/components/menu/PublicCart";
 import { CartFloatingButton } from "@/components/menu/CartFloatingButton";
+import { estaAbierto } from "@/lib/utils/horarios"; // Importamos nuestra lógica
 
 export default async function PublicMenuPage({
   params,
@@ -13,18 +14,31 @@ export default async function PublicMenuPage({
   const supabase = await createClient();
   const { slug } = await params;
 
+  // 1. Consulta optimizada con JOIN a categorías
   const { data: negocio } = await supabase
     .from("negocios")
-    .select("*, productos(*)")
+    .select(
+      `
+      *,
+      productos (
+        *,
+        categorias (nombre)
+      )
+    `,
+    )
     .eq("slug", slug)
     .single();
 
   if (!negocio) notFound();
 
-  // Agrupar productos por categoría
+  // 2. Lógica de Horarios en tiempo real
+  const localAbierto = estaAbierto(negocio.horarios);
+
+  // 3. Agrupar productos por el nombre real de la categoría (Normalizada)
   const productosPorCategoria = negocio.productos?.reduce(
     (acc: any, prod: any) => {
-      const cat = prod.categoria || "Menú Principal";
+      // Usamos el nombre de la tabla relacionada 'categorias'
+      const cat = prod.categorias?.nombre || "Menú Principal";
       if (!acc[cat]) acc[cat] = [];
       acc[cat].push(prod);
       return acc;
@@ -45,22 +59,38 @@ export default async function PublicMenuPage({
       style={brandStyles}
       className="min-h-screen bg-[var(--bg-public)] font-montserrat pb-32"
     >
-      <PublicNavbar logo={negocio.logo_url} nombre={negocio.nombre} />
+      <PublicNavbar
+        logo={negocio.logo_url}
+        nombre={negocio.nombre}
+        horarios={negocio.horarios}
+      />
 
       <div className="max-w-6xl mx-auto px-4 py-8">
         <div className="flex flex-col lg:flex-row gap-12 items-start">
           <div className="flex-1 w-full">
             <header className="mb-12 text-center lg:text-left">
-              <h1 className="text-4xl font-black text-[var(--text-public)] tracking-tighter italic uppercase">
+              <h1 className="text-5xl font-black text-[var(--text-public)] tracking-tighter italic uppercase">
                 {negocio.nombre}
               </h1>
-              <div className="mt-4 inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[var(--brand-color)]/10 text-[var(--brand-color)] text-[10px] font-black uppercase tracking-[0.15em]">
-                <span className="w-2 h-2 rounded-full bg-[var(--brand-color)] animate-pulse" />
-                Abierto ahora · Pedí por WhatsApp
+
+              {/* Status de Horario Dinámico */}
+              <div
+                className={`mt-4 inline-flex items-center gap-2 px-4 py-1.5 rounded-full font-black uppercase tracking-[0.15em] text-[10px] ${
+                  localAbierto
+                    ? "bg-emerald-500/10 text-emerald-600"
+                    : "bg-red-500/10 text-red-600"
+                }`}
+              >
+                <span
+                  className={`w-2 h-2 rounded-full ${localAbierto ? "bg-emerald-500 animate-pulse" : "bg-red-500"}`}
+                />
+                {localAbierto
+                  ? "Abierto ahora · Pedí por WhatsApp"
+                  : "Local cerrado · Consultá horarios"}
               </div>
             </header>
 
-            {/* Renderizado de Categorías */}
+            {/* Renderizado de Categorías Normalizadas */}
             <div className="space-y-16">
               {categorias.map((cat) => (
                 <section key={cat}>
@@ -70,7 +100,13 @@ export default async function PublicMenuPage({
                   </h2>
                   <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-1">
                     {productosPorCategoria[cat].map((prod: any) => (
-                      <MenuCard key={prod.id} {...prod} id={prod.id} />
+                      <MenuCard
+                        key={prod.id}
+                        {...prod}
+                        id={prod.id}
+                        // Deshabilitamos si el local está cerrado (Opcional según UX)
+                        isClosed={!localAbierto}
+                      />
                     ))}
                   </div>
                 </section>
@@ -80,12 +116,16 @@ export default async function PublicMenuPage({
 
           {/* Carrito Lateral (Desktop) */}
           <div className="hidden lg:block sticky top-28">
-            <PublicCart />
+            <PublicCart isClosed={!localAbierto} />
           </div>
         </div>
       </div>
 
-      <CartFloatingButton whatsapp={negocio.whatsapp} />
+      {/* El botón flotante también recibe el estado de apertura */}
+      <CartFloatingButton
+        whatsapp={negocio.whatsapp}
+        disabled={!localAbierto}
+      />
     </main>
   );
 }

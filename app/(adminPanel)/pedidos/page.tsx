@@ -1,141 +1,190 @@
 import { createClient } from "@/lib/supabase/server";
-import { redirect } from "next/navigation";
+import { format } from "date-fns";
+import { es } from "date-fns/locale";
+import { Package, ExternalLink, MoreVertical } from "lucide-react";
 
-// Tipado estricto para evitar errores de compilación
-interface Pedido {
-  id: string;
-  total: number;
-  estado: string;
-  created_at: string;
-  cliente: {
-    nombre: string;
-  } | null;
-}
+// Componentes de Cliente para interactividad
+import { TestOrderButton } from "@/components/adminPanel/TestOrderButton";
+import { RealtimeOrders } from "@/components/adminPanel/RealtimeOrders";
 
 export default async function PedidosPage() {
   const supabase = await createClient();
 
+  // 1. Obtenemos el usuario actual
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user) redirect("/login");
+  // 2. Traemos los datos del negocio y sus pedidos
+  // Usamos inner join para asegurar que el negocio pertenece al usuario
+  const { data: pedidos, error } = await supabase
+    .from("pedidos")
+    .select(
+      `
+      *,
+      negocios!inner(id, user_id, nombre),
+      pedido_items(*)
+    `,
+    )
+    .eq("negocios.user_id", user?.id)
+    .order("created_at", { ascending: false });
 
-  // 1. Obtener negocio vinculado al usuario logueado
-  const { data: negocio, error: negocioError } = await supabase
-    .from("negocios")
-    .select("id")
-    .eq("user_id", user.id)
-    .single();
-
-  if (negocioError || !negocio) {
+  if (error) {
     return (
-      <div className="p-8 text-red-500 font-medium">
-        No se encontró un negocio vinculado a esta cuenta.
+      <div className="p-8 text-red-500 font-bold bg-red-500/10 rounded-2xl border border-red-500/20">
+        Error al cargar los pedidos. Por favor, intenta de nuevo.
       </div>
     );
   }
 
-  /**
-   * 2. Obtener pedidos.
-   * Corregimos la consulta: En lugar de cliente_nombre (que no existe),
-   * traemos el nombre desde la tabla relacionada 'clientes'.
-   */
-  const { data: pedidos, error: pedidosError } = await supabase
-    .from("pedidos")
-    .select(
-      `
-      id, 
-      total, 
-      estado, 
-      created_at,
-      cliente:clientes (nombre)
-    `,
-    )
-    .eq("negocio_id", negocio.id)
-    .order("created_at", { ascending: false });
+  // Obtenemos el ID del negocio (necesario para el oyente Realtime)
+  const negocioId = pedidos?.[0]?.negocios?.id || "";
+  const nombreNegocio = pedidos?.[0]?.negocios?.nombre || "tu negocio";
 
-  // Manejo de errores silencioso y limpio para producción
-  if (pedidosError) {
-    // Solo logueamos en desarrollo para no ensuciar la consola del cliente
-    if (process.env.NODE_ENV === "development") {
-      console.error("Debug Pedidos:", pedidosError.message);
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "pendiente":
+        return "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400";
+      case "en_preparacion":
+        return "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400";
+      case "enviado":
+        return "bg-primary/10 text-primary dark:bg-primary/20";
+      case "entregado":
+        return "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400";
+      default:
+        return "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400";
     }
-  }
-
-  const pedidosList = (pedidos as unknown as Pedido[]) || [];
+  };
 
   return (
-    <div className="p-8 max-w-7xl mx-auto animate-in fade-in duration-500">
-      <div className="mb-8">
-        <h1 className="text-2xl font-black text-text-primary dark:text-text-inverse tracking-tighter uppercase italic">
-          Pedidos Recibidos
-        </h1>
-        <p className="text-text-secondary text-sm">
-          Panel de control de ventas de Estudio Camaleón.
-        </p>
+    <div className="p-8 space-y-8 min-h-screen pb-32">
+      {/* OYENTE EN TIEMPO REAL: Dispara sonido y notificaciones visuales */}
+      {negocioId && <RealtimeOrders negocioId={negocioId} />}
+
+      {/* BOTÓN DE PRUEBA: Para simular pedidos */}
+      <TestOrderButton />
+
+      {/* Header del Dashboard */}
+      <div className="flex justify-between items-end">
+        <div>
+          <h1 className="text-3xl font-black text-text-primary dark:text-text-inverse tracking-tighter uppercase">
+            Pedidos{" "}
+            <span className="text-primary text-sm ml-2 font-black tracking-widest">
+              LIVE
+            </span>
+          </h1>
+          <p className="text-text-muted text-sm font-medium">
+            Gestionando las órdenes de{" "}
+            <span className="text-primary font-bold">{nombreNegocio}</span> en
+            tiempo real.
+          </p>
+        </div>
+
+        <div className="text-right">
+          <p className="text-[10px] uppercase font-black text-text-muted tracking-widest">
+            Total Facturado Hoy
+          </p>
+          <p className="text-2xl font-black text-text-primary dark:text-text-inverse">
+            $
+            {pedidos
+              ?.reduce((acc, p) => acc + (Number(p.total) || 0), 0)
+              .toLocaleString("es-AR")}
+          </p>
+        </div>
       </div>
 
-      <div className="bg-white dark:bg-surface-dark rounded-[2rem] border border-border dark:border-border-dark overflow-hidden shadow-xl shadow-black/5">
-        <table className="w-full text-left border-collapse">
-          <thead className="bg-gray-50 dark:bg-bg-darker text-text-secondary text-[10px] font-black uppercase tracking-widest border-b border-border dark:border-border-dark">
-            <tr>
-              <th className="p-6">Cliente</th>
-              <th className="p-6">Total</th>
-              <th className="p-6">Estado</th>
-              <th className="p-6 text-right">Fecha</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-100 dark:divide-border-dark">
-            {pedidosList.length === 0 ? (
-              <tr>
-                <td
-                  colSpan={4}
-                  className="p-20 text-center text-text-muted text-sm italic"
-                >
-                  No hay pedidos registrados en el sistema.
-                </td>
-              </tr>
-            ) : (
-              pedidosList.map((pedido) => (
-                <tr
-                  key={pedido.id}
-                  className="hover:bg-gray-50/50 dark:hover:bg-white/5 transition-colors group"
-                >
-                  <td className="p-6">
-                    <p className="text-text-primary dark:text-text-inverse font-bold text-sm uppercase">
-                      {pedido.cliente?.nombre || "Cliente Final"}
-                    </p>
-                    <p className="text-[10px] text-gray-400 font-mono">
-                      ID: {pedido.id.split("-")[0]}
-                    </p>
-                  </td>
-                  <td className="p-6">
-                    <span className="font-black text-text-primary dark:text-text-inverse">
-                      ${Number(pedido.total).toLocaleString("es-AR")}
+      {/* Grid de Pedidos */}
+      <div className="grid gap-4">
+        {pedidos?.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-32 border-2 border-dashed border-border dark:border-border-dark rounded-[32px] bg-surface/50 dark:bg-surface-dark/30">
+            <div className="bg-bg-main dark:bg-bg-dark p-6 rounded-full mb-4 shadow-xl">
+              <Package className="w-12 h-12 text-primary opacity-40" />
+            </div>
+            <p className="text-text-muted font-black text-xl uppercase tracking-tighter">
+              Sin pedidos entrantes
+            </p>
+            <p className="text-text-muted text-sm mt-1">
+              Cuando un cliente realice una compra, aparecerá aquí con un aviso
+              sonoro.
+            </p>
+          </div>
+        ) : (
+          pedidos?.map((pedido) => (
+            <div
+              key={pedido.id}
+              className="bg-surface dark:bg-surface-dark border border-border dark:border-border-dark rounded-2xl p-5 hover:shadow-2xl hover:shadow-primary/10 transition-all duration-300 group"
+            >
+              <div className="flex flex-wrap md:flex-nowrap justify-between gap-6">
+                {/* Columna 1: Estado y Cliente */}
+                <div className="flex-1 min-w-[200px]">
+                  <div className="flex items-center gap-3 mb-2">
+                    <span
+                      className={`text-[10px] uppercase font-black px-3 py-1 rounded-full ${getStatusColor(pedido.estado)}`}
+                    >
+                      {pedido.estado.replace("_", " ")}
                     </span>
-                  </td>
-                  <td className="p-6">
-                    <span className="px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-gray-100 dark:bg-surface-muted text-text-secondary border border-black/5">
-                      {pedido.estado || "Pendiente"}
-                    </span>
-                  </td>
-                  <td className="p-6 text-right">
-                    <p className="text-text-muted text-xs font-medium">
-                      {new Date(pedido.created_at).toLocaleDateString("es-AR")}
-                    </p>
-                    <p className="text-[10px] text-gray-400">
-                      {new Date(pedido.created_at).toLocaleTimeString("es-AR", {
-                        hour: "2-digit",
-                        minute: "2-digit",
+                    <span className="text-text-muted text-xs font-bold">
+                      {format(new Date(pedido.created_at), "HH:mm 'hs'", {
+                        locale: es,
                       })}
+                    </span>
+                  </div>
+                  <h3 className="text-xl font-black text-text-primary dark:text-text-inverse tracking-tight">
+                    {pedido.cliente_nombre}
+                  </h3>
+                  <p className="text-sm text-text-muted font-medium truncate max-w-xs">
+                    📍 {pedido.direccion_entrega || "Retiro en local"}
+                  </p>
+                  {pedido.notas && (
+                    <p className="text-[11px] text-amber-600 dark:text-amber-400 font-bold mt-1 italic">
+                      " {pedido.notas} "
                     </p>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+                  )}
+                </div>
+
+                {/* Columna 2: Detalle de Productos (Comanda) */}
+                <div className="flex-[2] border-x border-border dark:border-border-dark px-6 hidden lg:block">
+                  <p className="text-[10px] uppercase font-black text-text-muted mb-3 tracking-widest opacity-60">
+                    Comanda / Items
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {pedido.pedido_items?.map((item: any) => (
+                      <span
+                        key={item.id}
+                        className="text-[11px] font-bold bg-bg-main dark:bg-bg-darker px-3 py-1.5 rounded-lg border border-border dark:border-border-dark text-text-primary dark:text-text-inverse shadow-sm"
+                      >
+                        <span className="text-primary mr-1">
+                          {item.cantidad}x
+                        </span>{" "}
+                        {item.nombre_producto}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Columna 3: Total y Acciones */}
+                <div className="flex flex-col items-end justify-between min-w-[140px]">
+                  <p className="text-2xl font-black text-primary tracking-tighter">
+                    ${Number(pedido.total).toLocaleString("es-AR")}
+                  </p>
+                  <div className="flex gap-2">
+                    <a
+                      href={`https://wa.me/${pedido.cliente_whatsapp}`}
+                      target="_blank"
+                      className="p-3 bg-emerald-500/10 hover:bg-emerald-500 text-emerald-500 hover:text-white rounded-xl transition-all duration-300"
+                      title="Contactar al cliente"
+                    >
+                      <ExternalLink size={20} />
+                    </a>
+                    <button className="p-3 bg-bg-main dark:bg-bg-darker hover:bg-border text-text-muted rounded-xl transition-all">
+                      <MoreVertical size={20} />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))
+        )}
       </div>
     </div>
   );

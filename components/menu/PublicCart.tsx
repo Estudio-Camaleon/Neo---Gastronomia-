@@ -1,14 +1,20 @@
 "use client";
 
 import { useCartStore } from "./store/useCartStore";
-import { Trash2, ShoppingBag } from "lucide-react";
+import { Trash2, ShoppingBag, Clock } from "lucide-react";
 
-export function PublicCart() {
+interface PublicCartProps {
+  isClosed?: boolean; // Recibimos el estado del local
+}
+
+export function PublicCart({ isClosed }: PublicCartProps) {
   const { items, total, updateQuantity, removeItem } = useCartStore();
 
   return (
-    <aside className="w-[380px] relative group">
-      {/* Efecto de borde dentado superior (opcional) */}
+    <aside
+      className={`w-[380px] relative group transition-all ${isClosed ? "saturate-50" : ""}`}
+    >
+      {/* Efecto de borde dentado superior */}
       <div
         className="absolute top-0 left-0 w-full h-2 bg-[var(--bg-public)] z-10"
         style={{
@@ -59,34 +65,35 @@ export function PublicCart() {
                 className="text-md animate-in fade-in duration-300"
               >
                 <div className="flex justify-between items-start gap-2">
-                  <span className="uppercase flex-1 leading-tight">
+                  <span className="uppercase flex-1 leading-tight text-xs">
                     {item.cantidad} {item.nombre}
                   </span>
-                  <span className="font-bold whitespace-nowrap">
-                    ${(item.precio * item.cantidad).toFixed(2)}
+                  <span className="font-bold whitespace-nowrap text-xs">
+                    ${(item.precio * item.cantidad).toLocaleString("es-AR")}
                   </span>
                 </div>
 
-                {/* Controles de edición estilo Ticket */}
                 <div className="flex items-center gap-4 mt-2 opacity-60 hover:opacity-100 transition-opacity">
                   <div className="flex items-center gap-2 border border-black/20 px-2 py-0.5 rounded">
                     <button
                       onClick={() => updateQuantity(item.id, -1)}
-                      className="hover:font-black"
+                      className="hover:font-black text-xs"
+                      disabled={isClosed}
                     >
                       -
                     </button>
                     <span className="text-[9px]">{item.cantidad}</span>
                     <button
                       onClick={() => updateQuantity(item.id, 1)}
-                      className="hover:font-black"
+                      className="hover:font-black text-xs"
+                      disabled={isClosed}
                     >
                       +
                     </button>
                   </div>
                   <button
                     onClick={() => removeItem(item.id)}
-                    className="text-[9px] flex items-center gap-1 hover:text-red-600"
+                    className="text-[9px] flex items-center gap-1 hover:text-red-600 font-bold"
                   >
                     <Trash2 size={10} /> ELIMINAR
                   </button>
@@ -105,16 +112,34 @@ export function PublicCart() {
             <div className="flex justify-between items-end my-4">
               <span className="text-sm font-bold uppercase">Total a pagar</span>
               <span className="text-3xl font-bold tracking-tighter">
-                ${total.toFixed(2)}
+                ${total.toLocaleString("es-AR")}
               </span>
             </div>
             <p className="text-[10px] text-center opacity-70 mb-6">
               ------------------------------------------
             </p>
 
-            <button className="w-full bg-black text-white py-4 rounded-none font-bold text-xs uppercase tracking-[0.2em] hover:bg-gray-800 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
-              CONFIRMAR PEDIDO [ENTER]
-            </button>
+            {isClosed ? (
+              <div className="space-y-4">
+                <div className="bg-red-50 p-4 border border-red-200 flex items-center gap-3">
+                  <Clock className="text-red-600 shrink-0" size={18} />
+                  <p className="text-[10px] leading-tight text-red-700 font-bold uppercase">
+                    Lo sentimos, el local no acepta pedidos en este momento.
+                  </p>
+                </div>
+                <button
+                  disabled
+                  className="w-full bg-gray-200 text-gray-400 py-4 rounded-none font-bold text-xs uppercase tracking-[0.2em] cursor-not-allowed"
+                >
+                  LOCAL CERRADO
+                </button>
+              </div>
+            ) : (
+              <button className="w-full bg-black text-white py-4 rounded-none font-bold text-xs uppercase tracking-[0.2em] hover:bg-gray-800 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+                CONFIRMAR PEDIDO [ENTER]
+              </button>
+            )}
+
             <p className="text-[8px] text-center mt-4 opacity-50 uppercase tracking-widest">
               Gracias por elegirnos
             </p>

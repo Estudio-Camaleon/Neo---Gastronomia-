@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabase/client";
+import { createClient } from "@/lib/supabase/client";
 import { useEffect, useState } from "react";
 import { Moon, Sun, Monitor } from "lucide-react"; // Importamos íconos para el switch
 import { useTheme } from "@/components/providers/ThemeProvider";
@@ -13,6 +13,7 @@ interface SidebarProps {
 }
 
 export function Sidebar({ slug, negocioNombre, stats }: SidebarProps) {
+  const supabase = createClient();
   const pathname = usePathname();
   const router = useRouter();
   const { theme, setTheme } = useTheme(); // Extraemos setTheme
