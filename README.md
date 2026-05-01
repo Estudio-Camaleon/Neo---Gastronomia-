@@ -16,7 +16,7 @@ git clone <tu-url-del-repositorio>
 
 # Entrar a la carpeta
 
-cd neo-landing
+cd neo-app
 
 # Instalar dependencias
 
@@ -48,7 +48,7 @@ CSS: Estamos utilizando Tailwind CSS. Si agregas componentes nuevos, mantén la 
 
 ## Estructura Actual de Carpetas
 
-neo-landing/
+neo-app/
 ├── app/
 │ ├── (auth)/ # Rutas de autenticación (Login/Registro)
 │ │ ├── login/page.tsx
