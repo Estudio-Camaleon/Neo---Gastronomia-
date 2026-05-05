@@ -16,7 +16,7 @@ import {
   Upload,
   CheckCircle2,
 } from "lucide-react";
-import { ScheduleEditor } from "./ScheduleEditor";
+import { ScheduleEditor } from "@/components/adminPanel/configuracion/ScheduleEditor";
 
 interface ConfigFormProps {
   initialData: any;

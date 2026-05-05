@@ -13,7 +13,7 @@ import {
   Save,
   FileText,
 } from "lucide-react";
-import { ImageUpload } from "./ImageUpload";
+import { ImageUpload } from "../configuracion/ImageUpload";
 
 interface ProductoFormProps {
   negocioId: string;

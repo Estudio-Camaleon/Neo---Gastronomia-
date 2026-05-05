@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { CategorySelect } from "./CategorySelect";
-import { crearProducto } from "@/app/actions/productos";
+import { guardarProducto } from "@/app/actions/productos";
 import { toast } from "sonner";
 import { X, Loader2 } from "lucide-react";
 
@@ -37,7 +37,7 @@ export function ProductModal({
       };
 
       // Invocamos la Server Action (que corre en el servidor y usa el pooler)
-      const res = await crearProducto(data, negocioId);
+      const res = await guardarProducto(negocioId, data);
 
       if (res.success) {
         toast.success("¡Producto creado con éxito! 🍔");
