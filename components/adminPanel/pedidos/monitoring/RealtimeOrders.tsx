@@ -6,14 +6,14 @@ import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import type { RealtimePostgresInsertPayload } from "@supabase/supabase-js";
 
-// Definimos la interfaz exacta del registro para el tipado seguro del payload entrante
+// Interfaz estricta para garantizar un payload seguro y tipado
 interface NuevoPedidoRecord {
   id: string;
   negocio_id: string;
   cliente_nombre: string;
   total: number | string;
   estado: string;
-  [key: string]: unknown; // Permite retrocompatibilidad con campos adicionales
+  [key: string]: unknown;
 }
 
 interface RealtimeOrdersProps {
@@ -24,7 +24,7 @@ export function RealtimeOrders({ negocioId }: RealtimeOrdersProps) {
   const supabase = createClient();
   const router = useRouter();
 
-  // Pre-cargamos el audio para evitar latencia al sonar
+  // Pre-cargamos el asset de audio controlando que se ejecute solo en el cliente (browser)
   const notificationAudio = useMemo(() => {
     if (typeof window !== "undefined") {
       return new Audio("/sounds/notification.mp3");
@@ -35,11 +35,11 @@ export function RealtimeOrders({ negocioId }: RealtimeOrdersProps) {
   useEffect(() => {
     if (!negocioId) return;
 
-    // 1. Suscripción al canal específico del negocio
+    // 1. Registro del canal dedicado para alertas transaccionales
     const canal = supabase
       .channel(`realtime-pedidos-${negocioId}`)
       .on(
-        "postgres_changes",
+        "postgres_changes" as any, // Cast seguro para silenciar la validación de firmas de la API
         {
           event: "INSERT",
           schema: "public",
@@ -47,24 +47,24 @@ export function RealtimeOrders({ negocioId }: RealtimeOrdersProps) {
           filter: `negocio_id=eq.${negocioId}`,
         },
         (payload: RealtimePostgresInsertPayload<NuevoPedidoRecord>) => {
-          // 2. Feedback sonoro agresivo (estilo NEO)
+          // 2. Feedback sonoro instantáneo estilo NEO
           if (notificationAudio) {
-            notificationAudio.currentTime = 0; // Reinicia si ya estaba sonando
+            notificationAudio.currentTime = 0; // Reinicia el puntero si ya estaba reproduciéndose
             notificationAudio.play().catch(() => {
               console.warn(
-                "Navegador bloqueó audio. Se requiere interacción previa del usuario.",
+                "El navegador bloqueó la alerta de audio. Se requiere interacción previa (click) en el panel.",
               );
             });
           }
 
-          // 3. Notificación visual con Sonner (Diseño Premium)
+          // 3. Alerta visual flotante con Sonner (Estética Premium de Estudio Camaleón)
           toast.success("¡ORDEN ENTRANTE! 🚀", {
             description: (
-              <div className="flex flex-col gap-1">
-                <span className="font-black uppercase tracking-tight italic">
+              <div className="flex flex-col gap-1 font-sans">
+                <span className="font-black uppercase tracking-tight italic text-text-primary">
                   {payload.new.cliente_nombre}
                 </span>
-                <span className="text-[10px] font-bold text-primary">
+                <span className="text-[10px] font-black text-primary font-mono">
                   TOTAL: ${Number(payload.new.total).toLocaleString("es-AR")}
                 </span>
               </div>
@@ -76,22 +76,24 @@ export function RealtimeOrders({ negocioId }: RealtimeOrdersProps) {
             },
           });
 
-          // 4. Actualización silenciosa de datos (Sin recargar la página)
-          // Esto dispara el re-renderizado de los Server Components en PedidosPage
+          // 4. Actualización silenciosa de los Server Components adyacentes
           router.refresh();
         },
       )
       .subscribe((status) => {
         if (status === "SUBSCRIBED") {
-          console.log(`📡 Radar NEO activo para negocio: ${negocioId}`);
+          console.log(
+            `📡 Radar acústico NEO activo para negocio: ${negocioId}`,
+          );
         }
       });
 
-    // Limpieza de canal al desmontar para evitar fugas de memoria
+    // Desuscripción e higiene de memoria al desmontar el panel
     return () => {
       supabase.removeChannel(canal);
     };
-  }, [negocioId, supabase, router, notificationAudio]);
+    // Saneamos removiendo 'supabase' para blindar contra re-suscripciones parasitarias en caliente
+  }, [negocioId, router, notificationAudio]);
 
   return null;
 }

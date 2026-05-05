@@ -6,13 +6,12 @@ import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { Save, Loader2, CheckCircle2 } from "lucide-react";
 
-// Importación de los nuevos sub-componentes atómicos
-import { BrandingSection } from "./BrandingSection";
-import { GeneralInfoSection } from "./GeneralInfoSection";
-import { CatalogDesignSection } from "./CatalogDesignSection";
-import { ScheduleEditor } from "@/components/adminPanel/configuracion/ScheduleEditor";
+// Importación unificada apuntando a la subcarpeta local de secciones
+import { BrandingSection } from "./sections/BrandingSection";
+import { GeneralInfoSection } from "./sections/GeneralInfoSection";
+import { CatalogDesignSection } from "./sections/CatalogDesignSection";
+import { ScheduleEditor } from "./editors/ScheduleEditor"; // Corregido a ruta relativa local
 
-// Contratos estrictos de Tipos para sincronizar de forma nativa con ScheduleEditor
 interface HorarioDia {
   inicio: string;
   fin: string;
@@ -30,7 +29,7 @@ interface NegocioInitialData {
   color_primario: string;
   logo_url: string;
   banner_url: string;
-  horarios: Record<string, unknown>; // Mapeado de Supabase genérico inicial
+  horarios: Record<string, unknown>;
 }
 
 interface ConfigFormProps {
@@ -46,7 +45,7 @@ interface FormState {
   color_primario: string;
   logo_url: string;
   banner_url: string;
-  horarios: ScheduleData; // Aplicamos la interfaz estricta de horarios al estado
+  horarios: ScheduleData;
 }
 
 export function ConfigForm({ initialData, userId }: ConfigFormProps) {
@@ -55,7 +54,6 @@ export function ConfigForm({ initialData, userId }: ConfigFormProps) {
   const [isPending, setIsPending] = useState(false);
   const [uploading, setUploading] = useState<string | null>(null);
 
-  // Inicialización del estado bajo el contrato estricto de tipos FormState
   const [formData, setFormData] = useState<FormState>({
     nombre: initialData?.nombre || "",
     slug: initialData?.slug || "",
@@ -123,10 +121,10 @@ export function ConfigForm({ initialData, userId }: ConfigFormProps) {
       const { error } = await supabase
         .from("negocios")
         .update({
-          nombre: formData.nombre,
-          slug: formData.slug,
-          whatsapp: formData.whatsapp,
-          direccion: formData.direccion,
+          nombre: formData.nombre.trim(),
+          slug: formData.slug.trim().toLowerCase(),
+          whatsapp: formData.whatsapp.trim(),
+          direccion: formData.direccion.trim(),
           color_primario: formData.color_primario,
           logo_url: formData.logo_url,
           banner_url: formData.banner_url,
@@ -157,7 +155,7 @@ export function ConfigForm({ initialData, userId }: ConfigFormProps) {
   return (
     <form
       onSubmit={handleSubmit}
-      className="grid gap-10 animate-in fade-in duration-700"
+      className="grid gap-10 animate-in fade-in duration-700 font-sans"
     >
       {/* 1. SECCIÓN BRANDING & MEDIA */}
       <BrandingSection
@@ -177,7 +175,7 @@ export function ConfigForm({ initialData, userId }: ConfigFormProps) {
       />
 
       {/* 3. SECCIÓN HORARIOS OPERATIVOS */}
-      <section className="bg-white dark:bg-bg-darker border-2 border-border rounded-super p-8 shadow-sm">
+      <section className="bg-white dark:bg-bg-darker border-2 border-border dark:border-border-dark rounded-super p-8 shadow-sm transition-colors">
         <ScheduleEditor
           schedule={formData.horarios}
           onChange={(newSchedule) =>
@@ -197,12 +195,12 @@ export function ConfigForm({ initialData, userId }: ConfigFormProps) {
         <button
           type="submit"
           disabled={isPending}
-          className="group relative flex items-center gap-4 bg-primary text-white px-14 py-6 rounded-full shadow-2xl shadow-primary/40 font-black uppercase tracking-[0.2em] border-4 border-white hover:scale-105 active:scale-95 transition-all disabled:opacity-70"
+          className="group relative flex items-center gap-4 bg-primary text-white px-14 py-6 rounded-full shadow-2xl shadow-primary/40 font-black uppercase tracking-[0.2em] border-4 border-white dark:border-bg-dark hover:scale-105 active:scale-95 transition-all disabled:opacity-70 select-none text-xs border-t border-white/10"
         >
           {isPending ? (
             <Loader2 className="animate-spin" size={20} />
           ) : (
-            <Save size={24} />
+            <Save size={20} />
           )}
           <span>{isPending ? "SINCRONIZANDO..." : "ACTUALIZAR NEGOCIO"}</span>
         </button>

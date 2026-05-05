@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import {
   Edit3,
   Trash2,
@@ -7,13 +8,12 @@ import {
   EyeOff,
   Package,
   ExternalLink,
+  Loader2,
 } from "lucide-react";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
-import { useRouter } from "next/navigation";
-import Image from "next/image"; // Importación requerida para el control del LCP y rendimiento
+import Image from "next/image";
 
-// Interfaces estrictas para el mapeo relacional de la base de datos
 interface CategoriaRelacion {
   nombre: string;
 }
@@ -25,16 +25,71 @@ interface ProductoInventario {
   precio: number | string;
   imagen_url: string | null;
   disponible: boolean;
-  categorias: CategoriaRelacion | null; // Captura el Join relacional de la consulta de Supabase
+  categorias: CategoriaRelacion | null;
 }
 
 interface ProductTableProps {
-  productos: ProductoInventario[];
+  negocioId: string;
 }
 
-export function ProductTable({ productos }: ProductTableProps) {
+export function ProductTable({ negocioId }: ProductTableProps) {
+  const [productos, setProductos] = useState<ProductoInventario[]>([]);
+  const [loading, setLoading] = useState(true);
   const supabase = createClient();
-  const router = useRouter();
+
+  // Función modular para traer los productos con su JOIN relacional
+  const cargarProductos = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("productos")
+        .select(
+          `
+          id,
+          nombre,
+          descripcion,
+          precio,
+          imagen_url,
+          disponible,
+          categorias ( nombre )
+        `,
+        )
+        .eq("negocio_id", negocioId)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      setProductos((data as any) || []);
+    } catch (error) {
+      console.error("Error al sincronizar inventario:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Escucha activa en tiempo real para mantener la tabla actualizada sin refrescar la página entera
+  // Escucha activa en tiempo real para mantener la tabla actualizada sin refrescar la página entera
+  useEffect(() => {
+    cargarProductos();
+
+    const canal = supabase
+      .channel(`cambios-inventario-${negocioId}`)
+      .on(
+        "postgres_changes" as any, // Forzamos el cast en el evento para compatibilidad con filtros dinámicos de Supabase
+        {
+          event: "*",
+          schema: "public",
+          table: "productos",
+          filter: `negocio_id=eq.${negocioId}`,
+        },
+        () => {
+          cargarProductos();
+        },
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(canal);
+    };
+  }, [negocioId]);
 
   const handleEliminar = async (id: string, nombre: string) => {
     const confirmar = confirm(`¿Estás seguro de eliminar "${nombre}"?`);
@@ -42,26 +97,31 @@ export function ProductTable({ productos }: ProductTableProps) {
 
     try {
       const { error } = await supabase.from("productos").delete().eq("id", id);
-
       if (error) throw error;
-
-      toast.success("PRODUCTO ELIMINADO");
-      router.refresh();
+      toast.success("PRODUCTO ELIMINADO CON ÉXITO");
+      // Nota: Ya no hace falta router.refresh() porque el canal Realtime actualiza el estado local al toque
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : "Error desconocido";
-      toast.error("ERROR AL ELIMINAR", {
-        description: errorMessage,
-      });
+      toast.error("ERROR AL ELIMINAR", { description: errorMessage });
     }
   };
 
+  if (loading) {
+    return (
+      <div className="py-32 flex flex-col items-center justify-center space-y-3 font-mono text-xs text-text-muted">
+        <Loader2 className="animate-spin text-primary" size={24} />
+        <span>Sincronizando almacén de datos...</span>
+      </div>
+    );
+  }
+
   return (
-    <div className="bg-white dark:bg-bg-darker border-2 border-border dark:border-border-dark rounded-super overflow-hidden shadow-sm animate-in fade-in duration-500">
+    <div className="animate-in fade-in duration-500">
       <div className="overflow-x-auto">
         <table className="w-full text-left border-collapse">
           <thead>
-            <tr className="border-b-2 border-border/50 bg-gray-50/50 dark:bg-white/5">
+            <tr className="border-b-2 border-border/50 dark:border-border-dark/50 bg-gray-50/50 dark:bg-white/5">
               <th className="p-6 text-[10px] font-black uppercase tracking-[0.2em] text-text-muted">
                 Detalle del Producto
               </th>
@@ -79,16 +139,16 @@ export function ProductTable({ productos }: ProductTableProps) {
               </th>
             </tr>
           </thead>
-          <tbody className="divide-y-2 divide-border/30">
-            {productos.map((prod: ProductoInventario) => (
+          <tbody className="divide-y-2 divide-border/30 dark:divide-border-dark/30">
+            {productos.map((prod) => (
               <tr
                 key={prod.id}
-                className="group hover:bg-primary/5 transition-colors"
+                className="group hover:bg-primary/5 dark:hover:bg-primary/5 transition-colors"
               >
                 {/* INFO PRINCIPAL */}
                 <td className="p-6">
                   <div className="flex items-center gap-4">
-                    <div className="relative w-14 h-14 shrink-0 rounded-xl overflow-hidden border-2 border-border group-hover:border-primary transition-colors bg-bg-main flex items-center justify-center">
+                    <div className="relative w-14 h-14 shrink-0 rounded-xl overflow-hidden border-2 border-border dark:border-border-dark group-hover:border-primary transition-colors bg-bg-main dark:bg-bg-dark flex items-center justify-center">
                       {prod.imagen_url ? (
                         <Image
                           src={prod.imagen_url}
@@ -99,13 +159,13 @@ export function ProductTable({ productos }: ProductTableProps) {
                         />
                       ) : (
                         <Package
-                          className="text-border group-hover:text-primary transition-colors"
+                          className="text-border dark:text-border-dark group-hover:text-primary transition-colors"
                           size={20}
                         />
                       )}
                     </div>
                     <div className="space-y-1">
-                      <p className="font-black uppercase italic text-sm leading-tight tracking-tighter">
+                      <p className="font-black uppercase italic text-sm leading-tight tracking-tighter text-text-primary dark:text-text-inverse">
                         {prod.nombre}
                       </p>
                       <p className="text-[10px] font-bold text-text-muted line-clamp-1 max-w-[200px]">
@@ -117,7 +177,7 @@ export function ProductTable({ productos }: ProductTableProps) {
 
                 {/* CATEGORÍA */}
                 <td className="p-6 hidden md:table-cell">
-                  <div className="flex items-center gap-2 text-[9px] font-black uppercase tracking-tighter italic bg-gray-100 dark:bg-white/5 px-3 py-1.5 rounded-full border border-border w-fit">
+                  <div className="flex items-center gap-2 text-[9px] font-black uppercase tracking-tighter italic bg-gray-100 dark:bg-white/5 px-3 py-1.5 rounded-full border border-border dark:border-border-dark w-fit text-text-primary dark:text-text-inverse">
                     <Tag size={10} className="text-primary" />
                     {prod.categorias?.nombre || "General"}
                   </div>
@@ -125,7 +185,7 @@ export function ProductTable({ productos }: ProductTableProps) {
 
                 {/* PRECIO */}
                 <td className="p-6">
-                  <span className="font-black italic text-lg tracking-tighter">
+                  <span className="font-black italic text-lg tracking-tighter text-text-primary dark:text-text-inverse font-mono">
                     $
                     {Number(prod.precio).toLocaleString("es-AR", {
                       minimumFractionDigits: 2,
@@ -136,7 +196,7 @@ export function ProductTable({ productos }: ProductTableProps) {
                 {/* ESTADO DISPONIBLE */}
                 <td className="p-6">
                   {prod.disponible ? (
-                    <div className="flex items-center gap-2 text-emerald-600">
+                    <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400">
                       <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                       <span className="text-[9px] font-black uppercase tracking-widest">
                         Activo
@@ -154,10 +214,10 @@ export function ProductTable({ productos }: ProductTableProps) {
 
                 {/* ACCIONES */}
                 <td className="p-6">
-                  <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-all translate-x-2 group-hover:translate-x-0">
+                  <div className="flex justify-end gap-2 md:opacity-0 group-hover:opacity-100 transition-all translate-x-2 group-hover:translate-x-0">
                     <button
                       type="button"
-                      className="p-2.5 bg-white dark:bg-bg-dark border-2 border-border rounded-neo text-text-muted hover:text-primary hover:border-primary transition-all active:scale-90"
+                      className="p-2.5 bg-white dark:bg-bg-dark border-2 border-border dark:border-border-dark rounded-neo text-text-muted hover:text-primary hover:border-primary transition-all active:scale-90"
                       title="Editar Producto"
                     >
                       <Edit3 size={16} />
@@ -165,7 +225,7 @@ export function ProductTable({ productos }: ProductTableProps) {
                     <button
                       type="button"
                       onClick={() => handleEliminar(prod.id, prod.nombre)}
-                      className="p-2.5 bg-white dark:bg-bg-dark border-2 border-border rounded-neo text-text-muted hover:text-error hover:border-error transition-all active:scale-90"
+                      className="p-2.5 bg-white dark:bg-bg-dark border-2 border-border dark:border-border-dark rounded-neo text-text-muted hover:text-error hover:border-error transition-all active:scale-90"
                       title="Eliminar"
                     >
                       <Trash2 size={16} />
@@ -179,8 +239,11 @@ export function ProductTable({ productos }: ProductTableProps) {
 
         {productos.length === 0 && (
           <div className="py-32 flex flex-col items-center justify-center text-center space-y-4">
-            <div className="p-6 bg-gray-50 dark:bg-white/5 rounded-full border-2 border-dashed border-border">
-              <Package size={40} className="text-border" />
+            <div className="p-6 bg-gray-50 dark:bg-white/5 rounded-full border-2 border-dashed border-border dark:border-border-dark">
+              <Package
+                size={40}
+                className="text-border dark:text-border-dark"
+              />
             </div>
             <div className="space-y-1">
               <p className="font-black uppercase italic tracking-tighter text-text-muted">
@@ -195,7 +258,7 @@ export function ProductTable({ productos }: ProductTableProps) {
       </div>
 
       {/* Footer de la tabla */}
-      <div className="p-4 bg-gray-50/50 dark:bg-white/5 border-t-2 border-border/30 flex justify-between items-center">
+      <div className="p-4 bg-gray-50/50 dark:bg-white/5 border-t-2 border-border/30 dark:border-border-dark/30 flex justify-between items-center font-mono">
         <p className="text-[9px] font-black uppercase tracking-widest text-text-muted">
           Mostrando {productos.length} items registrados
         </p>

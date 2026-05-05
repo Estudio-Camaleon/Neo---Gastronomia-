@@ -1,14 +1,12 @@
 "use client";
 
-import { Clock } from "lucide-react"; // Removemos Plus y Trash2 por no ser usados
+import { Clock } from "lucide-react";
 
-// Estructura de bloque para un día de atención activo
 interface HorarioDia {
   inicio: string;
   fin: string;
 }
 
-// Estructura del JSON completo indexado por el ID de cada día
 interface ScheduleData {
   [dayId: string]: HorarioDia | undefined;
 }
@@ -48,14 +46,16 @@ export function ScheduleEditor({ schedule, onChange }: ScheduleEditorProps) {
   };
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center gap-3 mb-4">
+    <div className="space-y-4 font-sans">
+      {/* Cabecera del Editor Horario */}
+      <div className="flex items-center gap-3 mb-6">
         <Clock className="text-primary w-5 h-5" />
-        <h2 className="font-black uppercase italic tracking-tight text-lg">
+        <h2 className="font-black uppercase italic tracking-tight text-lg text-text-primary dark:text-text-inverse">
           Horarios de Atención
         </h2>
       </div>
 
+      {/* Grilla Semanal */}
       <div className="grid gap-3">
         {DIAS.map((dia) => {
           const dayConfig = schedule[dia.id];
@@ -66,44 +66,51 @@ export function ScheduleEditor({ schedule, onChange }: ScheduleEditorProps) {
               key={dia.id}
               className={`flex items-center justify-between p-4 rounded-neo border-2 transition-all ${
                 isOpen
-                  ? "border-primary/30 bg-primary/5"
-                  : "border-border opacity-50"
+                  ? "border-primary/30 dark:border-primary/40 bg-primary/5 dark:bg-primary/10"
+                  : "border-border dark:border-border-dark opacity-50 bg-bg-main dark:bg-bg-dark/10"
               }`}
             >
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-4 select-none">
                 <input
                   type="checkbox"
+                  id={`check-${dia.id}`}
                   checked={isOpen}
                   onChange={(e) => updateDay(dia.id, e.target.checked)}
-                  className="w-5 h-5 accent-primary cursor-pointer"
+                  className="w-5 h-5 accent-primary cursor-pointer rounded-sm border-2 border-border"
                 />
-                <span className="font-black uppercase italic text-xs w-20">
+                <label
+                  htmlFor={`check-${dia.id}`}
+                  className="font-black uppercase italic text-xs w-20 cursor-pointer text-text-primary dark:text-text-inverse"
+                >
                   {dia.label}
-                </span>
+                </label>
               </div>
 
+              {/* Selectores de Horas Condicionales */}
               {isOpen && dayConfig && (
-                <div className="flex items-center gap-3 animate-in fade-in slide-in-from-left-2">
+                <div className="flex items-center gap-3 animate-in fade-in slide-in-from-left-2 duration-200">
                   <input
                     type="time"
                     value={dayConfig.inicio}
                     onChange={(e) =>
                       updateTime(dia.id, "inicio", e.target.value)
                     }
-                    className="bg-white dark:bg-bg-dark border-2 border-border p-2 rounded-lg text-xs font-bold outline-none focus:border-primary transition-colors"
+                    className="bg-white dark:bg-bg-dark border-2 border-border dark:border-border-dark p-2 rounded-lg text-xs font-bold font-mono outline-none focus:border-primary text-text-primary dark:text-text-inverse transition-colors"
                   />
-                  <span className="text-[10px] font-black opacity-30">A</span>
+                  <span className="text-[10px] font-black opacity-40 text-text-primary dark:text-text-inverse uppercase font-mono">
+                    A
+                  </span>
                   <input
                     type="time"
                     value={dayConfig.fin}
                     onChange={(e) => updateTime(dia.id, "fin", e.target.value)}
-                    className="bg-white dark:bg-bg-dark border-2 border-border p-2 rounded-lg text-xs font-bold outline-none focus:border-primary transition-colors"
+                    className="bg-white dark:bg-bg-dark border-2 border-border dark:border-border-dark p-2 rounded-lg text-xs font-bold font-mono outline-none focus:border-primary text-text-primary dark:text-text-inverse transition-colors"
                   />
                 </div>
               )}
 
               {!isOpen && (
-                <span className="text-[10px] font-black uppercase opacity-40 italic tracking-widest">
+                <span className="text-[10px] font-black uppercase opacity-40 italic tracking-widest text-text-primary dark:text-text-inverse font-mono">
                   Cerrado
                 </span>
               )}

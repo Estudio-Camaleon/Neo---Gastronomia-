@@ -13,9 +13,8 @@ import {
   Save,
   FileText,
 } from "lucide-react";
-import { ImageUpload } from "../configuracion/ImageUpload";
+import { ImageUpload } from "../../configuracion/ui/ImageUpload"; // Ruta relativa corregida subiendo dos niveles
 
-// Interfaces estructuradas para eliminar los tipos 'any'
 interface CategoriaOption {
   id: string;
   nombre: string;
@@ -70,7 +69,7 @@ export function ProductoForm({
       // Ajustamos el payload al formato exacto esperado por la Server Action
       const payload = {
         ...formData,
-        descripcion: formData.descripcion || null,
+        descripcion: formData.descripcion.trim() || null,
         imagen_url: formData.imagen_url || null,
         categoria_id: formData.categoria_id || null,
       };
@@ -116,14 +115,15 @@ export function ProductoForm({
   return (
     <form
       onSubmit={handleSubmit}
-      className="bg-white dark:bg-bg-darker border-2 border-border dark:border-border-dark rounded-super p-8 shadow-sm animate-in fade-in duration-500"
+      className="bg-white dark:bg-bg-darker border-2 border-border dark:border-border-dark rounded-super p-8 shadow-sm animate-in fade-in duration-500 font-sans"
     >
+      {/* Cabecera del Formulario */}
       <div className="flex items-center gap-3 mb-8">
-        <div className="p-2 bg-primary/10 rounded-lg">
-          <Package className="text-primary w-6 h-6" />
+        <div className="p-2 bg-primary/10 rounded-lg text-primary">
+          <Package className="w-6 h-6" />
         </div>
         <div>
-          <h2 className="text-2xl font-black uppercase italic tracking-tighter leading-none">
+          <h2 className="text-2xl font-black uppercase italic tracking-tighter leading-none text-text-primary dark:text-text-inverse">
             {initialData ? "Editar Producto" : "Nuevo Producto"}
           </h2>
           <p className="text-[10px] font-bold text-text-muted uppercase tracking-widest mt-1">
@@ -158,7 +158,7 @@ export function ProductoForm({
                 onChange={(e) =>
                   setFormData((prev) => ({ ...prev, nombre: e.target.value }))
                 }
-                className="w-full bg-bg-main dark:bg-bg-dark p-4 rounded-neo border-2 border-border focus:border-primary outline-none font-bold uppercase italic transition-all"
+                className="w-full bg-bg-main dark:bg-bg-dark p-4 rounded-neo border-2 border-border dark:border-border-dark focus:border-primary text-text-primary dark:text-text-inverse outline-none font-bold uppercase italic transition-all"
                 placeholder="EJ: BURGER TRIPLE CHEESE"
               />
             </div>
@@ -168,7 +168,7 @@ export function ProductoForm({
                 Precio de Venta
               </label>
               <div className="relative">
-                <DollarSign className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-primary" />
+                <DollarSign className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-primary z-10" />
                 <input
                   type="number"
                   step="0.01"
@@ -177,7 +177,7 @@ export function ProductoForm({
                   onChange={(e) =>
                     setFormData((prev) => ({ ...prev, precio: e.target.value }))
                   }
-                  className="w-full bg-bg-main dark:bg-bg-dark p-4 pl-10 rounded-neo border-2 border-border focus:border-primary outline-none font-black italic transition-all"
+                  className="w-full bg-bg-main dark:bg-bg-dark p-4 pl-10 rounded-neo border-2 border-border dark:border-border-dark focus:border-primary text-text-primary dark:text-text-inverse outline-none font-black italic transition-all font-mono"
                   placeholder="0.00"
                 />
               </div>
@@ -191,7 +191,7 @@ export function ProductoForm({
                 Categoría
               </label>
               <div className="relative">
-                <Tag className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-primary" />
+                <Tag className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-primary z-10" />
                 <select
                   value={formData.categoria_id}
                   onChange={(e) =>
@@ -200,9 +200,11 @@ export function ProductoForm({
                       categoria_id: e.target.value,
                     }))
                   }
-                  className="w-full bg-bg-main dark:bg-bg-dark p-4 pl-10 rounded-neo border-2 border-border focus:border-primary outline-none font-bold uppercase italic appearance-none cursor-pointer"
+                  className="w-full bg-bg-main dark:bg-bg-dark p-4 pl-10 rounded-neo border-2 border-border dark:border-border-dark focus:border-primary text-text-primary dark:text-text-inverse outline-none font-bold uppercase italic appearance-none cursor-pointer"
                 >
-                  <option value="">Sin Categoría</option>
+                  <option value="" className="normal-case">
+                    Sin Categoría
+                  </option>
                   {categorias.map((cat) => (
                     <option key={cat.id} value={cat.id}>
                       {cat.nombre}
@@ -226,7 +228,7 @@ export function ProductoForm({
                 }
                 className={`w-full p-3.5 rounded-neo border-2 flex items-center justify-between transition-all active:scale-95 ${
                   formData.disponible
-                    ? "border-emerald-500 bg-emerald-500/5 text-emerald-600"
+                    ? "border-emerald-500 bg-emerald-500/5 text-emerald-600 dark:text-emerald-400"
                     : "border-error bg-error/5 text-error opacity-70"
                 }`}
               >
@@ -255,7 +257,7 @@ export function ProductoForm({
                   descripcion: e.target.value,
                 }))
               }
-              className="w-full bg-bg-main dark:bg-bg-dark p-4 rounded-neo border-2 border-border focus:border-primary outline-none font-medium text-sm min-h-[120px] resize-none transition-all"
+              className="w-full bg-bg-main dark:bg-bg-dark p-4 rounded-neo border-2 border-border dark:border-border-dark focus:border-primary text-text-primary dark:text-text-inverse outline-none font-medium text-sm min-h-[120px] resize-none transition-all"
               placeholder="Ej: Medallón de carne 180g, cheddar, bacon y salsa secreta..."
             />
           </div>
@@ -263,11 +265,11 @@ export function ProductoForm({
       </div>
 
       {/* Acciones Finales */}
-      <div className="mt-10 pt-6 border-t-2 border-dashed border-border flex justify-end">
+      <div className="mt-10 pt-6 border-t-2 border-dashed border-border dark:border-border-dark flex justify-end">
         <button
           type="submit"
           disabled={isPending}
-          className="group relative flex items-center gap-3 bg-black text-white px-10 py-5 rounded-full font-black uppercase tracking-[0.2em] italic hover:invert transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed shadow-2xl"
+          className="group relative flex items-center gap-3 bg-black text-white dark:bg-primary dark:text-white px-10 py-5 rounded-full font-black uppercase tracking-[0.2em] italic hover:opacity-90 transition-opacity active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed shadow-2xl border-t border-white/10"
         >
           {isPending ? (
             <Loader2 className="animate-spin" size={20} />
@@ -281,7 +283,6 @@ export function ProductoForm({
                 ? "Guardar Cambios"
                 : "Publicar en Menú"}
           </span>
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]" />
         </button>
       </div>
     </form>
