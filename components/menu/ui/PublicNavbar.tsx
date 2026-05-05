@@ -2,7 +2,7 @@
 
 import { Search, Clock, ChevronDown } from "lucide-react";
 import { useState } from "react";
-import Image from "next/image"; // Componente nativo para optimizar el rendimiento y blindar el LCP
+import Image from "next/image";
 
 // Sincronizado con las keys del ScheduleEditor
 const DIAS_ORDENADOS = [
@@ -15,7 +15,6 @@ const DIAS_ORDENADOS = [
   { id: "domingo", label: "Domingo" },
 ];
 
-// Interfaces estrictas para erradicar el 'any' por completo
 interface HorarioDia {
   inicio: string;
   fin: string;
@@ -35,7 +34,7 @@ export function PublicNavbar({ logo, nombre, horarios }: PublicNavbarProps) {
   const [showSchedule, setShowSchedule] = useState(false);
 
   return (
-    <nav className="sticky top-0 z-50 bg-white/80 dark:bg-bg-dark/80 backdrop-blur-xl border-b-2 border-border/50 px-6 py-4 flex justify-between items-center transition-all">
+    <nav className="sticky top-0 z-50 bg-white/80 dark:bg-bg-dark/80 backdrop-blur-xl border-b-2 border-border/50 dark:border-border-dark/50 px-6 py-4 flex justify-between items-center transition-all">
       <div className="flex items-center gap-8">
         {/* Logo o Brand Name Estilo NEO */}
         {logo ? (
@@ -44,7 +43,7 @@ export function PublicNavbar({ logo, nombre, horarios }: PublicNavbarProps) {
               src={logo}
               alt={nombre}
               fill
-              priority // Fuerza la prioridad de renderizado al ser un elemento crítico de la cabecera
+              priority // Prioridad alta para evitar penalización de LCP en la cabecera pública
               sizes="128px"
               className="object-contain"
             />
@@ -57,11 +56,11 @@ export function PublicNavbar({ logo, nombre, horarios }: PublicNavbarProps) {
 
         {/* Selector de Horarios (Desktop) */}
         {horarios && (
-          <div className="relative hidden md:block">
+          <div className="relative hidden md:block font-mono">
             <button
               type="button"
               onClick={() => setShowSchedule(!showSchedule)}
-              className="flex items-center gap-3 px-4 py-2 rounded-neo bg-white dark:bg-bg-dark border-2 border-border text-[10px] font-black uppercase tracking-[0.15em] text-text-muted hover:border-primary hover:text-primary transition-all active:scale-95"
+              className="flex items-center gap-3 px-4 py-2 rounded-neo bg-white dark:bg-bg-dark border-2 border-border dark:border-border-dark text-[10px] font-black uppercase tracking-[0.15em] text-text-muted hover:border-primary hover:text-primary dark:hover:text-primary transition-all active:scale-95"
             >
               <Clock size={14} />
               Horarios
@@ -73,12 +72,12 @@ export function PublicNavbar({ logo, nombre, horarios }: PublicNavbarProps) {
 
             {/* Dropdown de Horarios Estilo Ticket */}
             {showSchedule && (
-              <div className="absolute top-full left-0 mt-4 w-72 bg-white dark:bg-bg-darker shadow-2xl rounded-super border-2 border-border p-6 animate-in fade-in zoom-in-95 duration-200 z-[60]">
+              <div className="absolute top-full left-0 mt-4 w-72 bg-white dark:bg-bg-darker shadow-2xl rounded-super border-2 border-border dark:border-border-dark p-6 animate-in fade-in zoom-in-95 duration-200 z-[60]">
                 <div className="text-center mb-4">
                   <p className="text-[10px] font-black uppercase tracking-[0.2em] text-primary italic">
                     Cronograma Semanal
                   </p>
-                  <div className="h-0.5 w-full bg-border/30 mt-2" />
+                  <div className="h-0.5 w-full bg-border/30 dark:bg-border-dark/30 mt-2" />
                 </div>
 
                 <div className="space-y-3">
@@ -92,7 +91,7 @@ export function PublicNavbar({ logo, nombre, horarios }: PublicNavbarProps) {
                         <span className="font-bold uppercase tracking-tight text-text-muted">
                           {dia.label}
                         </span>
-                        <span className="font-black text-text-primary italic">
+                        <span className="font-black text-text-primary dark:text-text-inverse italic">
                           {h ? (
                             `${h.inicio} — ${h.fin}`
                           ) : (
@@ -106,7 +105,7 @@ export function PublicNavbar({ logo, nombre, horarios }: PublicNavbarProps) {
                   })}
                 </div>
 
-                <div className="mt-4 pt-4 border-t-2 border-dashed border-border text-center">
+                <div className="mt-4 pt-4 border-t-2 border-dashed border-border dark:border-border-dark text-center">
                   <p className="text-[8px] font-bold text-text-muted uppercase tracking-widest leading-tight">
                     Los horarios pueden variar <br /> en días feriados.
                   </p>
@@ -121,7 +120,7 @@ export function PublicNavbar({ logo, nombre, horarios }: PublicNavbarProps) {
       <div className="flex items-center gap-4">
         <button
           type="button"
-          className="p-3 bg-white dark:bg-bg-dark rounded-neo border-2 border-border text-text-primary hover:border-primary hover:text-primary active:scale-90 transition-all"
+          className="p-3 bg-white dark:bg-bg-dark rounded-neo border-2 border-border dark:border-border-dark text-text-primary dark:text-text-inverse hover:border-primary hover:text-primary dark:hover:text-primary active:scale-90 transition-all"
         >
           <Search size={20} strokeWidth={2.5} />
         </button>

@@ -1,7 +1,7 @@
 "use client";
 
-import { MenuCard } from "./MenuCard";
-import { PublicCart } from "./PublicCart";
+import { MenuCard } from "./ui/MenuCard";
+import { PublicCart } from "./cart/PublicCart";
 
 // Interfaces estrictas locales para erradicar los 'any' por completo
 interface ProductoMenu {
