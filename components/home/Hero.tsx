@@ -1,4 +1,4 @@
-import Link from "next/link"; // Asegúrate de tener esta importación
+import Link from "next/link";
 
 export function Hero() {
   return (
@@ -39,7 +39,7 @@ export function Hero() {
         </div>
 
         {/* adminPanel Mockup */}
-        <div className="relative group">
+        <div className="relative group block">
           {/* Brillo de fondo (solo en dark mode para efecto premium) */}
           <div className="absolute -inset-1 bg-gradient-to-r from-primary/20 to-secondary/20 rounded-3xl blur opacity-0 group-hover:opacity-100 transition duration-1000 group-hover:duration-200"></div>
 
@@ -55,7 +55,7 @@ export function Hero() {
               <div className="flex flex-col items-center gap-2 opacity-50">
                 <span className="text-4xl">📊</span>
                 <p className="text-sm tracking-widest uppercase">
-                  [ adminPanel Mockup ]
+                  {"[ adminPanel Mockup ]"}
                 </p>
               </div>
             </div>

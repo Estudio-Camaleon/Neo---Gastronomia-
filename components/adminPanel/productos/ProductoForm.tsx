@@ -15,10 +15,26 @@ import {
 } from "lucide-react";
 import { ImageUpload } from "../configuracion/ImageUpload";
 
+// Interfaces estructuradas para eliminar los tipos 'any'
+interface CategoriaOption {
+  id: string;
+  nombre: string;
+}
+
+interface ProductoInitialData {
+  id: string;
+  nombre: string;
+  descripcion: string | null;
+  precio: string | number;
+  imagen_url: string | null;
+  categoria_id: string | null;
+  disponible: boolean;
+}
+
 interface ProductoFormProps {
   negocioId: string;
-  categorias: any[];
-  initialData?: any;
+  categorias: CategoriaOption[];
+  initialData?: ProductoInitialData | null;
   onSuccess?: () => void;
 }
 
@@ -30,7 +46,7 @@ export function ProductoForm({
 }: ProductoFormProps) {
   const [isPending, setIsPending] = useState(false);
 
-  // Estado inicial sincronizado con public.productos
+  // Estado inicial sincronizado con el modelo de datos de Supabase
   const [formData, setFormData] = useState({
     nombre: initialData?.nombre || "",
     descripcion: initialData?.descripcion || "",
@@ -43,7 +59,6 @@ export function ProductoForm({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Validación de negocioId antes de disparar la acción
     if (!negocioId) {
       toast.error("Error de sesión: No se detectó el ID del negocio.");
       return;
@@ -52,7 +67,15 @@ export function ProductoForm({
     setIsPending(true);
 
     try {
-      const res = await guardarProducto(negocioId, formData, initialData?.id);
+      // Ajustamos el payload al formato exacto esperado por la Server Action
+      const payload = {
+        ...formData,
+        descripcion: formData.descripcion || null,
+        imagen_url: formData.imagen_url || null,
+        categoria_id: formData.categoria_id || null,
+      };
+
+      const res = await guardarProducto(negocioId, payload, initialData?.id);
 
       if (res.success) {
         toast.success(
@@ -62,7 +85,6 @@ export function ProductoForm({
           },
         );
 
-        // Si es una creación, reseteamos el formulario
         if (!initialData) {
           setFormData({
             nombre: "",
@@ -78,9 +100,13 @@ export function ProductoForm({
       } else {
         throw new Error(res.error);
       }
-    } catch (error: any) {
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "Ocurrió un problema con Supabase.";
       toast.error("ERROR AL GUARDAR", {
-        description: error.message || "Ocurrió un problema con Supabase.",
+        description: errorMessage,
       });
     } finally {
       setIsPending(false);

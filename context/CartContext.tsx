@@ -22,15 +22,16 @@ interface CartContextType {
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
-  const [cart, setCart] = useState<CartItem[]>([]);
+  // Inicialización perezosa: El estado nace con los datos reales de localStorage
+  const [cart, setCart] = useState<CartItem[]>(() => {
+    if (typeof window !== "undefined") {
+      const savedCart = localStorage.getItem("neo_cart");
+      return savedCart ? JSON.parse(savedCart) : [];
+    }
+    return [];
+  });
 
-  // Cargar carrito al iniciar
-  useEffect(() => {
-    const savedCart = localStorage.getItem("neo_cart");
-    if (savedCart) setCart(JSON.parse(savedCart));
-  }, []);
-
-  // Guardar en cada cambio
+  // Guardar en cada cambio (Mantenemos únicamente este efecto de sincronización externa)
   useEffect(() => {
     localStorage.setItem("neo_cart", JSON.stringify(cart));
   }, [cart]);

@@ -1,4 +1,3 @@
-// lib/supabase/server.ts
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 
@@ -18,7 +17,8 @@ export async function createClient() {
             cookiesToSet.forEach(({ name, value, options }) => {
               cookieStore.set(name, value, options);
             });
-          } catch (error) {
+          } catch {
+            // Saneamos removiendo la variable 'error' que no se utilizaba.
             // Este catch es normal: ocurre cuando llamamos a createClient
             // desde un Server Component que solo es de lectura.
           }

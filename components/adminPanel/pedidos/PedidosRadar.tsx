@@ -5,14 +5,34 @@ import { createClient } from "@/lib/supabase/client";
 import { PedidoCard } from "./PedidoCard";
 import { Radio, Loader2, Inbox } from "lucide-react";
 
-export function PedidosRadar({
-  initialPedidos,
-  negocioId,
-}: {
-  initialPedidos: any[];
+// Tipamos exactamente igual que en PedidoCard para garantizar la consistencia en el mapeo
+interface PedidoItem {
+  id: string;
+  cantidad: number;
+  nombre_producto: string;
+  precio_unitario: number;
+}
+
+interface PedidoData {
+  id: string;
+  estado: "pendiente" | "preparando" | "enviado" | "entregado" | "cancelado";
+  cliente_nombre: string;
+  metodo_pago: string;
+  total: number | string;
+  cliente_whatsapp: string;
+  es_delivery: boolean;
+  direccion_entrega?: string | null;
+  notas?: string | null;
+  pedido_items: PedidoItem[];
+}
+
+interface PedidosRadarProps {
+  initialPedidos: PedidoData[];
   negocioId: string;
-}) {
-  const [pedidos, setPedidos] = useState(initialPedidos);
+}
+
+export function PedidosRadar({ initialPedidos, negocioId }: PedidosRadarProps) {
+  const [pedidos, setPedidos] = useState<PedidoData[]>(initialPedidos);
   const [isSyncing, setIsSyncing] = useState(false);
   const supabase = createClient();
 
@@ -28,18 +48,21 @@ export function PedidosRadar({
           filter: `negocio_id=eq.${negocioId}`,
         },
         async (payload) => {
-          console.log("¡Nuevo pedido detectado!", payload); // Debug en consola
+          console.log("¡Nuevo pedido detectado!", payload);
           setIsSyncing(true);
 
-          // Fetch de los datos frescos incluyendo los items
-          const { data, error } = await supabase
+          // Fetch de los datos frescos incluyendo los items relacionales
+          // Eliminamos la variable 'error' que no se usaba para limpiar el warning del linter
+          const { data } = await supabase
             .from("pedidos")
             .select("*, pedido_items(*)")
             .eq("negocio_id", negocioId)
             .order("created_at", { ascending: false })
             .limit(50);
 
-          if (data) setPedidos(data);
+          if (data) {
+            setPedidos(data as unknown as PedidoData[]);
+          }
           setIsSyncing(false);
         },
       )

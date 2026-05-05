@@ -2,6 +2,7 @@ import { RegisterForm } from "@/components/auth/RegisterForm";
 import { Footer } from "@/components/shared/Footer";
 import { Sparkles, Smartphone, LayoutDashboard } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image"; // Importación del optimizador nativo de Next.js
 
 export default function RegisterPage() {
   return (
@@ -10,18 +11,23 @@ export default function RegisterPage() {
       <div className="flex-1 grid lg:grid-cols-12 overflow-hidden">
         {/* === SECCIÓN IZQUIERDA: HERO DE BENEFICIOS === */}
         <section className="hidden lg:flex lg:col-span-7 bg-bg-alt relative p-16 flex-col justify-between items-center text-center overflow-hidden border-r border-border/50 shadow-[inset_-20px_0_20px_-20px_rgba(0,0,0,0.5)]">
-
           {/* Logo Superior */}
           <div className="w-full text-left z-10">
             <Link
               href="/"
               className="inline-block transition-transform hover:scale-105 active:scale-95"
             >
-              <img
-                src="/icons/neo_logo_negro.svg"
-                alt="NEO Logo"
-                className="h-10 w-auto"
-              />
+              {/* Envoltura relativa con dimensiones controladas para asegurar el LCP */}
+              <div className="relative h-10 w-32">
+                <Image
+                  src="/icons/neo_logo_negro.svg"
+                  alt="NEO Logo"
+                  fill
+                  priority // Carga inmediata prioritaria para el rastreador de Next.js
+                  sizes="128px"
+                  className="object-contain"
+                />
+              </div>
             </Link>
           </div>
 
@@ -68,7 +74,6 @@ export default function RegisterPage() {
               ))}
             </div>
           </div>
-
         </section>
 
         {/* === SECCIÓN DERECHA: FORMULARIO DE REGISTRO === */}

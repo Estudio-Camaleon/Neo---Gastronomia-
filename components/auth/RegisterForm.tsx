@@ -23,12 +23,11 @@ export function RegisterForm() {
 
     try {
       // 1. Registro en Supabase Auth
-      // Usamos metadata para que el Trigger de SQL cree el negocio atómicamente
-      const { data, error } = await supabase.auth.signUp({
+      // Removemos la variable 'data' que arrojaba advertencias de variables ocias
+      const { error } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          // Cambiamos a URL absoluta segura
           emailRedirectTo: `${window.location.origin}/pedidos`,
           data: {
             nombre_negocio: nombreNegocio,
@@ -40,8 +39,12 @@ export function RegisterForm() {
 
       // 2. Éxito: Limpieza de estado
       setIsSent(true);
-    } catch (error: any) {
-      setErrorMsg(error.message || "Error al intentar crear la cuenta.");
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "Error al intentar crear la cuenta.";
+      setErrorMsg(errorMessage);
     } finally {
       setLoading(false);
     }

@@ -5,7 +5,11 @@ import { createClient } from "@/lib/supabase/client";
 import { Beaker, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
-export function TestOrderButton({ negocioId }: { negocioId: string }) {
+interface TestOrderButtonProps {
+  negocioId: string;
+}
+
+export function TestOrderButton({ negocioId }: TestOrderButtonProps) {
   const [isPending, setIsPending] = useState(false);
   const supabase = createClient();
 
@@ -55,9 +59,13 @@ export function TestOrderButton({ negocioId }: { negocioId: string }) {
       toast.success("ORDEN DE PRUEBA GENERADA", {
         description: "Debería aparecer en el Radar ahora mismo.",
       });
-    } catch (error: any) {
+    } catch (error) {
       console.error(error);
-      toast.error("Error al generar test", { description: error.message });
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "Error inesperado de base de datos";
+      toast.error("Error al generar test", { description: errorMessage });
     } finally {
       setIsPending(false);
     }
@@ -65,6 +73,7 @@ export function TestOrderButton({ negocioId }: { negocioId: string }) {
 
   return (
     <button
+      type="button" // Forzamos semántica estricta del botón
       onClick={createTestOrder}
       disabled={isPending}
       className="flex items-center gap-2 bg-purple-600 text-white px-4 py-2 rounded-neo font-black uppercase italic text-[10px] tracking-widest hover:bg-purple-700 transition-all active:scale-95 disabled:opacity-50"

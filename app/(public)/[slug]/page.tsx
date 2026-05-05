@@ -1,28 +1,42 @@
 import { createClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
+import Image from "next/image"; // Importamos el componente de optimización
 import { MenuContent } from "@/components/menu/MenuContent";
 
-/**
- * Página Principal del Menú Público - Versión Estable.
- * Solo solicita columnas confirmadas para evitar errores de base de datos.
- */
-export default async function PublicMenuPage({
-  params,
-}: {
+// Definimos interfaces locales estrictas para liquidar los tipos 'any'
+interface Producto {
+  id: string;
+  nombre: string;
+  descripcion: string | null;
+  precio: number;
+  imagen_url: string | null;
+  disponible: boolean;
+}
+
+interface CategoriaConProductos {
+  id: string;
+  nombre: string;
+  productos: Producto[];
+}
+
+interface PublicMenuPageProps {
   params: Promise<{ slug: string }>;
-}) {
+}
+
+/**
+ * Página Principal del Menú Público - Versión Estable y Saneada.
+ */
+export default async function PublicMenuPage({ params }: PublicMenuPageProps) {
   const { slug } = await params;
   const supabase = await createClient();
 
-  // 1. Obtención de datos del negocio
-  // Hemos omitido 'descripcion' y 'banner_url' para asegurar la compatibilidad con tu esquema actual.
+  // 1. Obtención de datos del negocio (Ahora con las columnas de branding en producción)
   const { data: negocio, error: negocioError } = await supabase
     .from("negocios")
-    .select("id, nombre, logo_url, slug")
+    .select("id, nombre, logo_url, banner_url, descripcion, slug")
     .eq("slug", slug)
     .single();
 
-  // Si hay error en la consulta o el negocio no existe, disparamos el 404 de Next.js
   if (negocioError || !negocio) {
     console.error(
       "DEBUG NEO -> Error al cargar negocio:",
@@ -51,37 +65,57 @@ export default async function PublicMenuPage({
     .eq("negocio_id", negocio.id)
     .order("nombre", { ascending: true });
 
-  // 3. Procesamiento de datos para el Menú
-  // Filtramos productos no disponibles y categorías que queden vacías tras el filtro.
-  const menuData =
-    categorias
+  // 3. Procesamiento de datos con Tipado Estricto
+  // Filtramos productos no disponibles y removemos categorías vacías sin usar 'any'
+  const menuData: CategoriaConProductos[] =
+    (categorias as unknown as CategoriaConProductos[])
       ?.map((cat) => ({
         ...cat,
-        productos: cat.productos.filter((p: any) => p.disponible),
+        productos: cat.productos.filter((p: Producto) => p.disponible),
       }))
       .filter((cat) => cat.productos.length > 0) || [];
 
   return (
     <div className="min-h-screen bg-bg-main dark:bg-bg-dark selection:bg-primary">
-      {/* Header Neo-Brutalista Minimalista */}
+      {/* Header Neo-Brutalista con Banner Dinámico */}
       <header className="relative h-48 md:h-64 bg-black flex flex-col items-center justify-center overflow-hidden border-b-4 border-primary">
-        {/* Fondo con gradiente estético ante la falta de banner_url */}
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-black to-black opacity-60" />
+        {negocio.banner_url ? (
+          <Image
+            src={negocio.banner_url}
+            alt={`Portada de ${negocio.nombre}`}
+            fill
+            priority
+            className="object-cover opacity-50"
+          />
+        ) : (
+          /* Fondo de reserva si el local no cargó una portada aún */
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-black to-black opacity-60" />
+        )}
 
         <div className="relative z-10 text-center px-4 flex flex-col items-center">
           {negocio.logo_url && (
             <div className="mb-4">
-              <img
-                src={negocio.logo_url}
-                alt="Logo Negocio"
-                className="w-20 h-20 md:w-24 md:h-24 rounded-full border-4 border-white bg-white shadow-2xl object-contain animate-in zoom-in duration-500"
-              />
+              <div className="relative w-20 h-20 md:w-24 md:h-24 rounded-full border-4 border-white bg-white shadow-2xl overflow-hidden">
+                <Image
+                  src={negocio.logo_url}
+                  alt={`Logo de ${negocio.nombre}`}
+                  fill
+                  sizes="(max-width: 768px) 80px, 96px"
+                  className="object-contain animate-in zoom-in duration-500"
+                />
+              </div>
             </div>
           )}
 
           <h1 className="text-4xl md:text-5xl font-black text-white uppercase italic tracking-tighter drop-shadow-xl">
             {negocio.nombre}
           </h1>
+
+          {negocio.descripcion && (
+            <p className="text-white/80 text-xs font-bold uppercase tracking-wide mt-1 max-w-md line-clamp-2">
+              {negocio.descripcion}
+            </p>
+          )}
 
           <div className="mt-3 flex items-center gap-2">
             <span className="h-[2px] w-8 bg-primary rounded-full" />

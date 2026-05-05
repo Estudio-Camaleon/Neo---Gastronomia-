@@ -1,11 +1,13 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image"; // Importamos para la optimización de imágenes
 import { usePathname, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useEffect, useState } from "react";
-import { Moon, Sun, Monitor } from "lucide-react"; // Importamos íconos para el switch
+import { Moon, Sun } from "lucide-react"; // Eliminamos 'Monitor' que no se usaba
 import { useTheme } from "@/components/providers/ThemeProvider";
+
 interface SidebarProps {
   slug?: string;
   negocioNombre?: string;
@@ -16,11 +18,13 @@ export function Sidebar({ slug, negocioNombre, stats }: SidebarProps) {
   const supabase = createClient();
   const pathname = usePathname();
   const router = useRouter();
-  const { theme, setTheme } = useTheme(); // Extraemos setTheme
+  const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
+  // Evitamos renders en cascada asincronizando el cambio de hidratación
   useEffect(() => {
-    setMounted(true);
+    const timer = setTimeout(() => setMounted(true), 0);
+    return () => clearTimeout(timer);
   }, []);
 
   const links = [
@@ -44,15 +48,21 @@ export function Sidebar({ slug, negocioNombre, stats }: SidebarProps) {
           href="/pedidos"
           className="inline-block transition-transform active:scale-95"
         >
-          <img
-            src={
-              mounted && theme === "dark"
-                ? "/icons/neo_logo_blanco.svg"
-                : "/icons/neo_logo_negro.svg"
-            }
-            alt="Logo NEO"
-            className="h-8 w-auto transition-opacity duration-300"
-          />
+          <div className="relative h-8 w-28">
+            {" "}
+            {/* Contenedor controlado para <Image /> */}
+            <Image
+              src={
+                mounted && theme === "dark"
+                  ? "/icons/neo_logo_blanco.svg"
+                  : "/icons/neo_logo_negro.svg"
+              }
+              alt="Logo NEO"
+              fill
+              priority
+              className="object-contain transition-opacity duration-300"
+            />
+          </div>
         </Link>
       </div>
 
@@ -135,6 +145,7 @@ export function Sidebar({ slug, negocioNombre, stats }: SidebarProps) {
             <a
               href={`/${slug}`}
               target="_blank"
+              rel="noopener noreferrer"
               className="text-xs font-black text-primary hover:underline truncate block"
             >
               neo.app/{slug}

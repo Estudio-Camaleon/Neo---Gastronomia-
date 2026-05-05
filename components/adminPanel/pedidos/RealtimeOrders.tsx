@@ -4,8 +4,23 @@ import { useEffect, useMemo } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import type { RealtimePostgresInsertPayload } from "@supabase/supabase-js";
 
-export function RealtimeOrders({ negocioId }: { negocioId: string }) {
+// Definimos la interfaz exacta del registro para el tipado seguro del payload entrante
+interface NuevoPedidoRecord {
+  id: string;
+  negocio_id: string;
+  cliente_nombre: string;
+  total: number | string;
+  estado: string;
+  [key: string]: unknown; // Permite retrocompatibilidad con campos adicionales
+}
+
+interface RealtimeOrdersProps {
+  negocioId: string;
+}
+
+export function RealtimeOrders({ negocioId }: RealtimeOrdersProps) {
   const supabase = createClient();
   const router = useRouter();
 
@@ -31,13 +46,13 @@ export function RealtimeOrders({ negocioId }: { negocioId: string }) {
           table: "pedidos",
           filter: `negocio_id=eq.${negocioId}`,
         },
-        (payload: any) => {
+        (payload: RealtimePostgresInsertPayload<NuevoPedidoRecord>) => {
           // 2. Feedback sonoro agresivo (estilo NEO)
           if (notificationAudio) {
             notificationAudio.currentTime = 0; // Reinicia si ya estaba sonando
             notificationAudio.play().catch(() => {
               console.warn(
-                "Navegador bloqueó audio. Se requiere interacción previa.",
+                "Navegador bloqueó audio. Se requiere interacción previa del usuario.",
               );
             });
           }

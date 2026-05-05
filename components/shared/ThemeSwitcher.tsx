@@ -2,13 +2,15 @@
 
 import { useEffect, useState } from "react";
 import { useTheme } from "@/components/providers/ThemeProvider";
+
 export function ThemeSwitcher() {
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
-  // Evita errores de hidratación: el componente solo se renderiza en el cliente
+  // Evita errores de hidratación dividiendo la fase de forma asíncrona
   useEffect(() => {
-    setMounted(true);
+    const timer = setTimeout(() => setMounted(true), 0);
+    return () => clearTimeout(timer);
   }, []);
 
   if (!mounted) {

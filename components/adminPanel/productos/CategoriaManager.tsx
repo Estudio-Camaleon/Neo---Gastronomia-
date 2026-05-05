@@ -5,9 +5,17 @@ import { crearCategoria, eliminarCategoria } from "@/app/actions/categorias";
 import { Tag, Plus, Trash2, Loader2, Hash } from "lucide-react";
 import { toast } from "sonner";
 
+// Interfaz estricta para erradicar el 'any[]'
+interface CategoriaBase {
+  id: string;
+  nombre: string;
+  slug: string;
+  negocio_id: string;
+}
+
 interface CategoriaManagerProps {
   negocioId: string;
-  categorias: any[];
+  categorias: CategoriaBase[];
 }
 
 export function CategoriaManager({
@@ -28,7 +36,6 @@ export function CategoriaManager({
     setIsPending(true);
 
     try {
-      // La Server Action ahora maneja la creación del slug y la vinculación al negocio_id
       const res = await crearCategoria(negocioId, nuevoNombre);
 
       if (res.success) {
@@ -45,6 +52,9 @@ export function CategoriaManager({
         }
       }
     } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : "Error desconocido";
+      console.error("Add Categoria Error:", errorMessage);
       toast.error("Error de conexión con el servidor");
     } finally {
       setIsPending(false);
@@ -67,6 +77,9 @@ export function CategoriaManager({
         toast.error("No se pudo eliminar", { description: res.error });
       }
     } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : "Error desconocido";
+      console.error("Remove Categoria Error:", errorMessage);
       toast.error("Error al procesar la solicitud");
     }
   };
@@ -128,6 +141,7 @@ export function CategoriaManager({
                 {cat.nombre}
               </span>
               <button
+                type="button"
                 onClick={() => handleRemove(cat.id, cat.nombre)}
                 className="opacity-0 group-hover:opacity-100 p-1 hover:text-error transition-all"
                 title="Eliminar categoría"

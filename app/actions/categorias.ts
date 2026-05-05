@@ -7,7 +7,7 @@ import { revalidatePath } from "next/cache";
  * Genera un slug simple para la categoría.
  * Ejemplo: "Pizzas Especiales" -> "pizzas-especiales"
  */
-const generateSlug = (text: string) => {
+const generateSlug = (text: string): string => {
   return text
     .toString()
     .toLowerCase()
@@ -17,7 +17,16 @@ const generateSlug = (text: string) => {
     .replace(/\-\-+/g, "-"); // Elimina guiones dobles
 };
 
-export async function crearCategoria(negocioId: string, nombre: string) {
+// Definimos una interfaz limpia para las respuestas del servidor
+interface ActionResponse {
+  success: boolean;
+  error?: string;
+}
+
+export async function crearCategoria(
+  negocioId: string,
+  nombre: string,
+): Promise<ActionResponse> {
   const supabase = await createClient();
 
   const slug = generateSlug(nombre);
@@ -39,7 +48,7 @@ export async function crearCategoria(negocioId: string, nombre: string) {
   return { success: true };
 }
 
-export async function eliminarCategoria(id: string) {
+export async function eliminarCategoria(id: string): Promise<ActionResponse> {
   const supabase = await createClient();
 
   const { error } = await supabase.from("categorias").delete().eq("id", id);

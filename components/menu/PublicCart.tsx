@@ -6,7 +6,19 @@ import { createClient } from "@/lib/supabase/client";
 import { ShoppingBag, X, Send, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
-export function PublicCart({ negocioId }: { negocioId: string }) {
+// Interfaz estricta para sincronizar los tipos de datos del store de Zustand
+interface CartItemData {
+  id: string;
+  nombre: string;
+  precio: number;
+  cantidad: number;
+}
+
+interface PublicCartProps {
+  negocioId: string;
+}
+
+export function PublicCart({ negocioId }: PublicCartProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const { cart, clearCart } = useCartStore();
@@ -18,7 +30,10 @@ export function PublicCart({ negocioId }: { negocioId: string }) {
   });
 
   const supabase = createClient();
-  const total = cart.reduce((acc, i) => acc + i.precio * i.cantidad, 0);
+  const total = cart.reduce(
+    (acc, i: CartItemData) => acc + i.precio * i.cantidad,
+    0,
+  );
 
   const enviarPedido = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,6 +41,7 @@ export function PublicCart({ negocioId }: { negocioId: string }) {
     setLoading(true);
 
     try {
+      // 1. Crear el Pedido (Padre)
       const { data: pedido, error: pErr } = await supabase
         .from("pedidos")
         .insert([
@@ -46,8 +62,9 @@ export function PublicCart({ negocioId }: { negocioId: string }) {
 
       if (pErr) throw pErr;
 
+      // 2. Crear los Items del Pedido (Hijos) vinculados estrictamente
       const { error: iErr } = await supabase.from("pedido_items").insert(
-        cart.map((i) => ({
+        cart.map((i: CartItemData) => ({
           pedido_id: pedido.id,
           producto_id: i.id,
           nombre_producto: i.nombre,
@@ -61,9 +78,13 @@ export function PublicCart({ negocioId }: { negocioId: string }) {
       toast.success("¡PEDIDO RECIBIDO!");
       clearCart();
       setIsOpen(false);
-    } catch (err) {
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : "Error desconocido";
+      console.error("Error al procesar orden:", errorMessage);
       toast.error("Error al procesar el pedido");
     } finally {
+      setLoading(true); // Se mantiene el estado sincronizado de carga
       setLoading(false);
     }
   };
@@ -73,6 +94,7 @@ export function PublicCart({ negocioId }: { negocioId: string }) {
   return (
     <>
       <button
+        type="button"
         onClick={() => setIsOpen(true)}
         className="fixed bottom-6 right-6 bg-primary text-white p-4 rounded-full shadow-2xl flex gap-3 font-black italic items-center z-50 animate-in fade-in zoom-in"
       >
@@ -87,13 +109,13 @@ export function PublicCart({ negocioId }: { negocioId: string }) {
               <h2 className="text-2xl font-black italic uppercase tracking-tighter">
                 Tu Carrito
               </h2>
-              <button onClick={() => setIsOpen(false)}>
+              <button type="button" onClick={() => setIsOpen(false)}>
                 <X size={28} />
               </button>
             </div>
 
             <div className="flex-1 overflow-y-auto space-y-4">
-              {cart.map((i) => (
+              {cart.map((i: CartItemData) => (
                 <div
                   key={i.id}
                   className="flex justify-between items-center border-b pb-2 border-dashed"
@@ -106,40 +128,42 @@ export function PublicCart({ negocioId }: { negocioId: string }) {
                       ${i.precio} c/u
                     </p>
                   </div>
-                  <span className="font-black">${i.precio * i.cantidad}</span>
+                  <span className="font-black">
+                    ${(i.precio * i.cantidad).toLocaleString("es-AR")}
+                  </span>
                 </div>
               ))}
             </div>
 
             <form
               onSubmit={enviarPedido}
-              className="mt-6 space-y-4 bg-gray-50 p-4 rounded-neo border-2 border-border"
+              className="mt-6 space-y-4 bg-gray-50 dark:bg-white/5 p-4 rounded-neo border-2 border-border"
             >
               <input
                 placeholder="NOMBRE"
                 required
-                className="w-full p-3 border-2 border-border rounded-neo uppercase font-bold text-xs outline-none focus:border-primary"
+                className="w-full p-3 bg-white dark:bg-bg-dark border-2 border-border rounded-neo uppercase font-bold text-xs outline-none focus:border-primary"
                 onChange={(e) => setForm({ ...form, nombre: e.target.value })}
               />
               <input
                 placeholder="WHATSAPP"
                 required
                 type="tel"
-                className="w-full p-3 border-2 border-border rounded-neo uppercase font-bold text-xs outline-none focus:border-primary"
+                className="w-full p-3 bg-white dark:bg-bg-dark border-2 border-border rounded-neo uppercase font-bold text-xs outline-none focus:border-primary"
                 onChange={(e) => setForm({ ...form, whatsapp: e.target.value })}
               />
               <div className="flex items-center gap-2">
                 <input
                   type="checkbox"
                   id="del"
-                  className="accent-primary w-4 h-4"
+                  className="accent-primary w-4 h-4 cursor-pointer"
                   onChange={(e) =>
                     setForm({ ...form, delivery: e.target.checked })
                   }
                 />
                 <label
                   htmlFor="del"
-                  className="text-[10px] font-black uppercase cursor-pointer"
+                  className="text-[10px] font-black uppercase cursor-pointer select-none"
                 >
                   ¿Es para Envío?
                 </label>
@@ -148,7 +172,7 @@ export function PublicCart({ negocioId }: { negocioId: string }) {
                 <input
                   placeholder="DIRECCIÓN DE ENTREGA"
                   required
-                  className="w-full p-3 border-2 border-border rounded-neo uppercase font-bold text-xs outline-none focus:border-primary"
+                  className="w-full p-3 bg-white dark:bg-bg-dark border-2 border-border rounded-neo uppercase font-bold text-xs outline-none focus:border-primary"
                   onChange={(e) =>
                     setForm({ ...form, direccion: e.target.value })
                   }
@@ -156,11 +180,12 @@ export function PublicCart({ negocioId }: { negocioId: string }) {
               )}
 
               <button
+                type="submit"
                 disabled={loading}
-                className="w-full bg-black text-white py-4 rounded-neo font-black italic uppercase tracking-widest flex justify-center items-center gap-2 hover:bg-primary transition-colors"
+                className="w-full bg-black text-white py-4 rounded-neo font-black italic uppercase tracking-widest flex justify-center items-center gap-2 hover:bg-primary transition-colors disabled:opacity-50"
               >
                 {loading ? (
-                  <Loader2 className="animate-spin" />
+                  <Loader2 className="animate-spin" size={18} />
                 ) : (
                   <>
                     <Send size={18} /> ENVIAR AL LOCAL

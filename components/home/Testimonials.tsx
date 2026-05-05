@@ -1,5 +1,13 @@
 export function Testimonials() {
-  const testimonials = [
+  // Interfaz estricta para el tipado seguro de las tarjetas de reseña
+  interface TestimonialItem {
+    name: string;
+    role: string;
+    content: string;
+    initials: string;
+  }
+
+  const testimonials: TestimonialItem[] = [
     {
       name: "Andrés García",
       role: "Dueño de Pizzería",
@@ -40,7 +48,7 @@ export function Testimonials() {
         </div>
 
         <div className="grid md:grid-cols-3 gap-8">
-          {testimonials.map((t, i) => (
+          {testimonials.map((t: TestimonialItem, i: number) => (
             <div
               key={i}
               className="group p-8 bg-surface dark:bg-surface-dark rounded-[2rem] border border-border dark:border-border-dark shadow-sm hover:shadow-xl hover:shadow-primary/5 transition-all duration-300"
@@ -57,7 +65,7 @@ export function Testimonials() {
               </div>
 
               <p className="text-text-secondary text-lg leading-relaxed mb-8 min-h-[100px]">
-                "{t.content}"
+                &quot;{t.content}&quot;
               </p>
 
               <div className="flex items-center gap-4 border-t border-border dark:border-border-dark pt-6">

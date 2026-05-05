@@ -4,20 +4,31 @@ import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
+// Interfaces estrictas para tipar la entrada de los formularios de auth
+interface RegisterInput {
+  email: string;
+  password?: string;
+  nombreNegocio: string;
+}
+
+interface LoginInput {
+  email: string;
+  password?: string;
+}
+
 /**
  * REGISTRO DE NUEVO USUARIO Y NEGOCIO
  */
-export async function registerUserAction(formData: any) {
+export async function registerUserAction(formData: RegisterInput) {
   const supabase = await createClient();
 
   const { email, password, nombreNegocio } = formData;
 
   // 1. Registro en Supabase Auth
-  // Enviamos 'nombre_negocio' en metadata para que el Trigger de SQL
-  // cree la fila en la tabla 'negocios' automáticamente.
-  const { data, error: authError } = await supabase.auth.signUp({
+  // Removemos la variable 'data' que no se usaba para eliminar el warning
+  const { error: authError } = await supabase.auth.signUp({
     email,
-    password,
+    password: password || "",
     options: {
       emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/auth/callback`,
       data: {
@@ -39,14 +50,14 @@ export async function registerUserAction(formData: any) {
 /**
  * INICIO DE SESIÓN
  */
-export async function loginUserAction(formData: any) {
+export async function loginUserAction(formData: LoginInput) {
   const supabase = await createClient();
 
   const { email, password } = formData;
 
   const { error } = await supabase.auth.signInWithPassword({
     email,
-    password,
+    password: password || "",
   });
 
   if (error) {

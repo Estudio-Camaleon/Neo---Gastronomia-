@@ -11,9 +11,25 @@ import {
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
+import Image from "next/image"; // Importación requerida para el control del LCP y rendimiento
+
+// Interfaces estrictas para el mapeo relacional de la base de datos
+interface CategoriaRelacion {
+  nombre: string;
+}
+
+interface ProductoInventario {
+  id: string;
+  nombre: string;
+  descripcion: string | null;
+  precio: number | string;
+  imagen_url: string | null;
+  disponible: boolean;
+  categorias: CategoriaRelacion | null; // Captura el Join relacional de la consulta de Supabase
+}
 
 interface ProductTableProps {
-  productos: any[];
+  productos: ProductoInventario[];
 }
 
 export function ProductTable({ productos }: ProductTableProps) {
@@ -31,9 +47,11 @@ export function ProductTable({ productos }: ProductTableProps) {
 
       toast.success("PRODUCTO ELIMINADO");
       router.refresh();
-    } catch (error: any) {
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : "Error desconocido";
       toast.error("ERROR AL ELIMINAR", {
-        description: error.message,
+        description: errorMessage,
       });
     }
   };
@@ -62,7 +80,7 @@ export function ProductTable({ productos }: ProductTableProps) {
             </tr>
           </thead>
           <tbody className="divide-y-2 divide-border/30">
-            {productos.map((prod) => (
+            {productos.map((prod: ProductoInventario) => (
               <tr
                 key={prod.id}
                 className="group hover:bg-primary/5 transition-colors"
@@ -72,10 +90,12 @@ export function ProductTable({ productos }: ProductTableProps) {
                   <div className="flex items-center gap-4">
                     <div className="relative w-14 h-14 shrink-0 rounded-xl overflow-hidden border-2 border-border group-hover:border-primary transition-colors bg-bg-main flex items-center justify-center">
                       {prod.imagen_url ? (
-                        <img
+                        <Image
                           src={prod.imagen_url}
                           alt={prod.nombre}
-                          className="w-full h-full object-cover"
+                          fill
+                          sizes="56px"
+                          className="object-cover"
                         />
                       ) : (
                         <Package
@@ -136,12 +156,14 @@ export function ProductTable({ productos }: ProductTableProps) {
                 <td className="p-6">
                   <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-all translate-x-2 group-hover:translate-x-0">
                     <button
+                      type="button"
                       className="p-2.5 bg-white dark:bg-bg-dark border-2 border-border rounded-neo text-text-muted hover:text-primary hover:border-primary transition-all active:scale-90"
                       title="Editar Producto"
                     >
                       <Edit3 size={16} />
                     </button>
                     <button
+                      type="button"
                       onClick={() => handleEliminar(prod.id, prod.nombre)}
                       className="p-2.5 bg-white dark:bg-bg-dark border-2 border-border rounded-neo text-text-muted hover:text-error hover:border-error transition-all active:scale-90"
                       title="Eliminar"
@@ -178,7 +200,10 @@ export function ProductTable({ productos }: ProductTableProps) {
           Mostrando {productos.length} items registrados
         </p>
         <div className="flex gap-2">
-          <button className="text-[9px] font-black uppercase tracking-widest text-primary flex items-center gap-1 hover:underline">
+          <button
+            type="button"
+            className="text-[9px] font-black uppercase tracking-widest text-primary flex items-center gap-1 hover:underline"
+          >
             Exportar CSV <ExternalLink size={10} />
           </button>
         </div>

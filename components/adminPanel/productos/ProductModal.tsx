@@ -6,19 +6,18 @@ import { guardarProducto } from "@/app/actions/productos";
 import { toast } from "sonner";
 import { X, Loader2 } from "lucide-react";
 
-export function ProductModal({
-  negocioId,
-  onClose,
-}: {
+interface ProductModalProps {
   negocioId: string;
   onClose: () => void;
-}) {
+}
+
+export function ProductModal({ negocioId, onClose }: ProductModalProps) {
   const [loading, setLoading] = useState(false);
   const [categoriaId, setCategoriaId] = useState("");
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (loading) return; // Bloqueo de seguridad para evitar múltiples peticiones
+    if (loading) return;
 
     if (!categoriaId) {
       toast.error("Por favor, selecciona una categoría.");
@@ -29,14 +28,18 @@ export function ProductModal({
 
     try {
       const formData = new FormData(e.currentTarget);
+
+      // Armamos el objeto con las claves exactas de la base de datos
       const data = {
         nombre: formData.get("nombre") as string,
         precio: formData.get("precio") as string,
-        descripcion: formData.get("descripcion") as string,
-        categoriaId: categoriaId,
+        descripcion: (formData.get("descripcion") as string) || null,
+        imagen_url: null, // El modal básico inicializa sin foto
+        categoria_id: categoriaId, // Corregido: 'categoria_id' con guion bajo
+        disponible: true,
       };
 
-      // Invocamos la Server Action (que corre en el servidor y usa el pooler)
+      // Ahora 'data' es 100% compatible con el tipado estricto del Action
       const res = await guardarProducto(negocioId, data);
 
       if (res.success) {
@@ -45,7 +48,7 @@ export function ProductModal({
       } else {
         toast.error(`Error: ${res.error}`);
       }
-    } catch (error) {
+    } catch {
       toast.error("Ocurrió un error inesperado al conectar con el servidor.");
     } finally {
       setLoading(false);
@@ -54,13 +57,14 @@ export function ProductModal({
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-60 flex items-center justify-center p-4">
-      <div className="bg-white dark:bg-bg-darker w-full max-w-md rounded-super border-2 border-border dark:border-border-dark shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
+      <div className="bg-white dark:bg-bg-darker w-full max-w-md rounded-super border-2 border-border dark:border-border-dark shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
         {/* Header */}
         <div className="p-6 flex justify-between items-center border-b-2 border-border dark:border-border-dark">
           <h2 className="text-xl font-black text-text-primary uppercase tracking-tighter italic">
             Nuevo Producto
           </h2>
           <button
+            type="button" // Forzamos semántica estricta de botón secundario
             onClick={onClose}
             className="p-2 hover:bg-gray-100 dark:hover:bg-white/5 rounded-full transition-colors"
           >

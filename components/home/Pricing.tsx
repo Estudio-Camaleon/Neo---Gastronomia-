@@ -1,5 +1,14 @@
 export function Pricing() {
-  const planes = [
+  // Interfaz estricta local para tipar las tarjetas de precios
+  interface PlanPricing {
+    title: string;
+    price: string;
+    description: string;
+    features: string[];
+    highlight: boolean;
+  }
+
+  const planes: PlanPricing[] = [
     {
       title: "Básico",
       price: "$0",
@@ -36,7 +45,7 @@ export function Pricing() {
       </div>
 
       <div className="max-w-4xl mx-auto grid md:grid-cols-2 gap-8">
-        {planes.map((plan, i) => (
+        {planes.map((plan: PlanPricing, i: number) => (
           <div
             key={i}
             className={`relative p-10 rounded-[2.5rem] border transition-all duration-300 ${
@@ -64,7 +73,7 @@ export function Pricing() {
             </div>
 
             <ul className="space-y-4 mb-10">
-              {plan.features.map((f) => (
+              {plan.features.map((f: string) => (
                 <li
                   key={f}
                   className="flex items-center gap-3 text-text-secondary font-medium"
@@ -78,6 +87,7 @@ export function Pricing() {
             </ul>
 
             <button
+              type="button"
               className={`w-full py-4 rounded-2xl font-black transition-all active:scale-95 shadow-lg ${
                 plan.highlight
                   ? "bg-primary text-white hover:bg-primary-hover shadow-primary/20"

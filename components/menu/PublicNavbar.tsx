@@ -2,6 +2,7 @@
 
 import { Search, Clock, ChevronDown } from "lucide-react";
 import { useState } from "react";
+import Image from "next/image"; // Componente nativo para optimizar el rendimiento y blindar el LCP
 
 // Sincronizado con las keys del ScheduleEditor
 const DIAS_ORDENADOS = [
@@ -14,15 +15,23 @@ const DIAS_ORDENADOS = [
   { id: "domingo", label: "Domingo" },
 ];
 
-export function PublicNavbar({
-  logo,
-  nombre,
-  horarios,
-}: {
-  logo?: string;
+// Interfaces estrictas para erradicar el 'any' por completo
+interface HorarioDia {
+  inicio: string;
+  fin: string;
+}
+
+interface ScheduleData {
+  [dayId: string]: HorarioDia | undefined;
+}
+
+interface PublicNavbarProps {
+  logo?: string | null;
   nombre: string;
-  horarios?: any;
-}) {
+  horarios?: ScheduleData | null;
+}
+
+export function PublicNavbar({ logo, nombre, horarios }: PublicNavbarProps) {
   const [showSchedule, setShowSchedule] = useState(false);
 
   return (
@@ -30,11 +39,16 @@ export function PublicNavbar({
       <div className="flex items-center gap-8">
         {/* Logo o Brand Name Estilo NEO */}
         {logo ? (
-          <img
-            src={logo}
-            alt={nombre}
-            className="h-10 w-auto object-contain hover:scale-105 transition-transform"
-          />
+          <div className="relative h-10 w-32 hover:scale-105 transition-transform duration-300">
+            <Image
+              src={logo}
+              alt={nombre}
+              fill
+              priority // Fuerza la prioridad de renderizado al ser un elemento crítico de la cabecera
+              sizes="128px"
+              className="object-contain"
+            />
+          </div>
         ) : (
           <span className="font-black text-2xl tracking-tighter text-primary uppercase italic">
             {nombre.split(" ")[0]}
@@ -45,6 +59,7 @@ export function PublicNavbar({
         {horarios && (
           <div className="relative hidden md:block">
             <button
+              type="button"
               onClick={() => setShowSchedule(!showSchedule)}
               className="flex items-center gap-3 px-4 py-2 rounded-neo bg-white dark:bg-bg-dark border-2 border-border text-[10px] font-black uppercase tracking-[0.15em] text-text-muted hover:border-primary hover:text-primary transition-all active:scale-95"
             >
@@ -104,7 +119,10 @@ export function PublicNavbar({
 
       {/* Acciones del Navbar */}
       <div className="flex items-center gap-4">
-        <button className="p-3 bg-white dark:bg-bg-dark rounded-neo border-2 border-border text-text-primary hover:border-primary hover:text-primary active:scale-90 transition-all">
+        <button
+          type="button"
+          className="p-3 bg-white dark:bg-bg-dark rounded-neo border-2 border-border text-text-primary hover:border-primary hover:text-primary active:scale-90 transition-all"
+        >
           <Search size={20} strokeWidth={2.5} />
         </button>
       </div>

@@ -13,7 +13,32 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
-export function PedidoCard({ pedido }: { pedido: any }) {
+// Interfaces estrictas para erradicar los tipos 'any' de raíz
+interface PedidoItem {
+  id: string;
+  cantidad: number;
+  nombre_producto: string;
+  precio_unitario: number;
+}
+
+interface PedidoData {
+  id: string;
+  estado: "pendiente" | "preparando" | "enviado" | "entregado" | "cancelado";
+  cliente_nombre: string;
+  metodo_pago: string;
+  total: number | string;
+  cliente_whatsapp: string;
+  es_delivery: boolean;
+  direccion_entrega?: string | null;
+  notas?: string | null;
+  pedido_items: PedidoItem[];
+}
+
+interface PedidoCardProps {
+  pedido: PedidoData;
+}
+
+export function PedidoCard({ pedido }: PedidoCardProps) {
   const [isPending, setIsPending] = useState(false);
 
   const handleEstado = async (nuevoEstado: string) => {
@@ -25,14 +50,15 @@ export function PedidoCard({ pedido }: { pedido: any }) {
       } else {
         toast.error("Error al actualizar estado", { description: res.error });
       }
-    } catch (error) {
+    } catch {
       toast.error("Error de conexión");
     } finally {
       setIsPending(false);
     }
   };
 
-  const statusColors: any = {
+  // Mapeo indexado con tipado explícito restringido a las clases estéticas de NEO OS
+  const statusColors: Record<PedidoData["estado"], string> = {
     pendiente: "border-amber-500 text-amber-600 bg-amber-50/50",
     preparando: "border-blue-500 text-blue-600 bg-blue-50/50",
     enviado: "border-purple-500 text-purple-600 bg-purple-50/50",
@@ -70,7 +96,7 @@ export function PedidoCard({ pedido }: { pedido: any }) {
       {/* Cuerpo del Pedido */}
       <div className="p-5 space-y-4 flex-1 bg-white dark:bg-transparent">
         <div className="space-y-2">
-          {pedido.pedido_items?.map((item: any) => (
+          {pedido.pedido_items?.map((item: PedidoItem) => (
             <div
               key={item.id}
               className="flex justify-between text-xs font-bold uppercase italic tracking-tight"
@@ -112,7 +138,7 @@ export function PedidoCard({ pedido }: { pedido: any }) {
           {pedido.notas && (
             <div className="flex items-start gap-2 p-3 bg-gray-50 dark:bg-white/5 rounded-neo text-[10px] font-bold text-text-muted italic border border-border/50">
               <MessageSquare size={12} className="shrink-0 text-primary" />
-              <span>"{pedido.notas}"</span>
+              <span>&quot;{pedido.notas}&quot;</span>
             </div>
           )}
         </div>

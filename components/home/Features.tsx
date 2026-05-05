@@ -1,5 +1,12 @@
 export function Features() {
-  const items = [
+  // Interfaz estricta local para tipar las tarjetas de la Landing
+  interface FeatureItem {
+    title: string;
+    desc: string;
+    icon: string;
+  }
+
+  const items: FeatureItem[] = [
     {
       title: "Catálogo digital",
       desc: "Crea y organiza tus productos con imágenes, precios y descripciones.",
@@ -35,7 +42,7 @@ export function Features() {
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {items.map((item, i) => (
+          {items.map((item: FeatureItem, i: number) => (
             <div
               key={i}
               className="group p-8 bg-surface dark:bg-surface-dark border border-border dark:border-border-dark rounded-3xl hover:border-primary/50 transition-all duration-300 hover:shadow-xl hover:shadow-primary/5 hover:-translate-y-1"

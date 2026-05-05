@@ -2,8 +2,9 @@
 
 import { useState, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { ImageIcon, Loader2, X, UploadCloud } from "lucide-react";
+import { Loader2, X, UploadCloud } from "lucide-react"; // Removemos ImageIcon por no usarse
 import { toast } from "sonner";
+import Image from "next/image"; // Componente nativo para optimizar el rendimiento y el LCP
 
 interface ImageUploadProps {
   value: string;
@@ -43,7 +44,7 @@ export function ImageUpload({ value, onChange }: ImageUploadProps) {
       const fileName = `${Math.random().toString(36).substring(2)}-${Date.now()}.${fileExt}`;
       const filePath = `products/${fileName}`;
 
-      // Subida al bucket 'media' (debe estar creado en Supabase)
+      // Subida al bucket 'media'
       const { error: uploadError } = await supabase.storage
         .from("media")
         .upload(filePath, file);
@@ -59,10 +60,12 @@ export function ImageUpload({ value, onChange }: ImageUploadProps) {
       toast.success("IMAGEN CARGADA", {
         description: "La foto del producto se sincronizó correctamente.",
       });
-    } catch (error: any) {
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : "Error desconocido";
       console.error("Upload error:", error);
       toast.error("ERROR DE CARGA", {
-        description: error.message || "No se pudo subir la imagen al servidor.",
+        description: errorMessage || "No se pudo subir la imagen al servidor.",
       });
     } finally {
       setIsUploading(false);
@@ -85,10 +88,12 @@ export function ImageUpload({ value, onChange }: ImageUploadProps) {
         {value ? (
           /* VISTA: IMAGEN CARGADA */
           <div className="relative aspect-square w-full rounded-neo overflow-hidden border-2 border-border group-hover:border-primary transition-all shadow-md">
-            <img
+            <Image
               src={value}
               alt="Preview"
-              className="w-full h-full object-cover animate-in fade-in zoom-in-95 duration-500"
+              fill
+              sizes="(max-width: 768px) 100vw, 33vw"
+              className="object-cover animate-in fade-in zoom-in-95 duration-500"
             />
             <button
               type="button"
@@ -100,7 +105,7 @@ export function ImageUpload({ value, onChange }: ImageUploadProps) {
             </button>
             <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
               <p className="text-[10px] font-black text-white uppercase tracking-widest">
-                Cambiar Foto
+                Anular o Cambiar Foto
               </p>
             </div>
           </div>
