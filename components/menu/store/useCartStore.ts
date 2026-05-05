@@ -1,5 +1,3 @@
-"use client";
-
 import { create } from "zustand";
 
 interface CartItem {
@@ -10,72 +8,34 @@ interface CartItem {
 }
 
 interface CartStore {
-  items: CartItem[];
-  total: number;
-  addItem: (item: any) => void;
-  updateQuantity: (id: string, change: number) => void;
-  removeItem: (id: string) => void;
+  cart: CartItem[];
+  addToCart: (item: CartItem) => void;
+  removeFromCart: (id: string) => void;
+  updateCantidad: (id: string, delta: number) => void;
   clearCart: () => void;
 }
 
 export const useCartStore = create<CartStore>((set) => ({
-  items: [],
-  total: 0,
-
-  addItem: (newItem) =>
+  cart: [],
+  addToCart: (item) =>
     set((state) => {
-      const existingItem = state.items.find((i) => i.id === newItem.id);
-      let newItems;
-
-      if (existingItem) {
-        newItems = state.items.map((i) =>
-          i.id === newItem.id ? { ...i, cantidad: i.cantidad + 1 } : i,
-        );
-      } else {
-        newItems = [...state.items, { ...newItem, cantidad: 1 }];
+      const existing = state.cart.find((i) => i.id === item.id);
+      if (existing) {
+        return {
+          cart: state.cart.map((i) =>
+            i.id === item.id ? { ...i, cantidad: i.cantidad + 1 } : i,
+          ),
+        };
       }
-
-      return {
-        items: newItems,
-        total: newItems.reduce(
-          (acc, item) => acc + item.precio * item.cantidad,
-          0,
-        ),
-      };
+      return { cart: [...state.cart, { ...item, cantidad: 1 }] };
     }),
-
-  updateQuantity: (id, change) =>
-    set((state) => {
-      const newItems = state.items
-        .map((i) => {
-          if (i.id === id) {
-            const newQty = Math.max(0, i.cantidad + change);
-            return { ...i, cantidad: newQty };
-          }
-          return i;
-        })
-        .filter((i) => i.cantidad > 0);
-
-      return {
-        items: newItems,
-        total: newItems.reduce(
-          (acc, item) => acc + item.precio * item.cantidad,
-          0,
-        ),
-      };
-    }),
-
-  removeItem: (id) =>
-    set((state) => {
-      const newItems = state.items.filter((i) => i.id !== id);
-      return {
-        items: newItems,
-        total: newItems.reduce(
-          (acc, item) => acc + item.precio * item.cantidad,
-          0,
-        ),
-      };
-    }),
-
-  clearCart: () => set({ items: [], total: 0 }),
+  removeFromCart: (id) =>
+    set((state) => ({ cart: state.cart.filter((i) => i.id !== id) })),
+  updateCantidad: (id, delta) =>
+    set((state) => ({
+      cart: state.cart.map((i) =>
+        i.id === id ? { ...i, cantidad: Math.max(1, i.cantidad + delta) } : i,
+      ),
+    })),
+  clearCart: () => set({ cart: [] }),
 }));

@@ -1,176 +1,176 @@
 "use client";
 
 import { useState } from "react";
-import { useCart } from "@/context/CartContext";
-import { crearPedido } from "@/app/actions/pedidos";
-import { ShoppingBag, Clock, Send, Loader2 } from "lucide-react";
+import { useCartStore } from "./store/useCartStore";
+import { createClient } from "@/lib/supabase/client";
+import { ShoppingBag, X, Send, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
-// Sub-componentes
-import { CartItem } from "./CartItem";
-import { OrderForm } from "./OrderForm";
-
-interface PublicCartProps {
-  isClosed?: boolean;
-  negocioId: string;
-}
-
-export function PublicCart({ isClosed, negocioId }: PublicCartProps) {
-  const { cart, totalPrice, clearCart } = useCart();
-  const [isSending, setIsSending] = useState(false);
-  const [customerData, setCustomerData] = useState({
+export function PublicCart({ negocioId }: { negocioId: string }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const { cart, clearCart } = useCartStore();
+  const [form, setForm] = useState({
     nombre: "",
-    direccion: "",
     whatsapp: "",
+    delivery: false,
+    direccion: "",
   });
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setCustomerData({ ...customerData, [e.target.name]: e.target.value });
-  };
+  const supabase = createClient();
+  const total = cart.reduce((acc, i) => acc + i.precio * i.cantidad, 0);
 
-  const handleConfirmarPedido = async () => {
+  const enviarPedido = async (e: React.FormEvent) => {
+    e.preventDefault();
     if (cart.length === 0) return;
-
-    // Validación de campos obligatorios
-    if (!customerData.nombre || !customerData.direccion) {
-      toast.error("DATOS INCOMPLETOS", {
-        description: "Necesitamos tu nombre y dirección para el despacho.",
-      });
-      return;
-    }
-
-    setIsSending(true);
+    setLoading(true);
 
     try {
-      // 1. EL CAMBIO CLAVE: Pasamos negocioId como primer argumento independiente
-      // 2. El segundo argumento es el objeto con la data del pedido
-      const res = await crearPedido(negocioId, {
-        nombre: customerData.nombre,
-        whatsapp: customerData.whatsapp,
-        direccion: customerData.direccion,
-        total: totalPrice,
-        items: cart, // Enviamos el array de items del CartContext
-      });
+      const { data: pedido, error: pErr } = await supabase
+        .from("pedidos")
+        .insert([
+          {
+            negocio_id: negocioId,
+            cliente_nombre: form.nombre.toUpperCase(),
+            cliente_whatsapp: form.whatsapp,
+            total,
+            es_delivery: form.delivery,
+            direccion_entrega: form.delivery
+              ? form.direccion
+              : "RETIRO EN LOCAL",
+            estado: "pendiente",
+          },
+        ])
+        .select()
+        .single();
 
-      if (res.success) {
-        toast.success("¡PEDIDO CONFIRMADO! 🚀");
-        clearCart();
-        setCustomerData({ nombre: "", direccion: "", whatsapp: "" });
-      } else {
-        toast.error("Error: " + res.error);
-      }
-    } catch (error) {
-      console.error("Error en la acción de pedido:", error);
-      toast.error("Error de conexión.");
+      if (pErr) throw pErr;
+
+      const { error: iErr } = await supabase.from("pedido_items").insert(
+        cart.map((i) => ({
+          pedido_id: pedido.id,
+          producto_id: i.id,
+          nombre_producto: i.nombre,
+          precio_unitario: i.precio,
+          cantidad: i.cantidad,
+        })),
+      );
+
+      if (iErr) throw iErr;
+
+      toast.success("¡PEDIDO RECIBIDO!");
+      clearCart();
+      setIsOpen(false);
+    } catch (err) {
+      toast.error("Error al procesar el pedido");
     } finally {
-      setIsSending(false);
+      setLoading(false);
     }
   };
 
+  if (cart.length === 0) return null;
+
   return (
-    <aside
-      id="public-cart-container"
-      className={`w-full max-w-[380px] relative transition-all ${isClosed ? "saturate-50" : ""}`}
-    >
-      {/* Decoración Superior */}
-      <div
-        className="absolute top-0 left-0 w-full h-2 bg-transparent z-10"
-        style={{
-          maskImage: "radial-gradient(circle, transparent 4px, black 4px)",
-          maskSize: "12px 12px",
-          maskPosition: "top",
-          backgroundColor: "var(--bg-public)",
-        }}
-      />
-
-      <div
-        className="bg-[#fdfdfd] shadow-2xl p-6 md:p-8 pt-10 min-h-[500px] flex flex-col border-x border-gray-100 text-bg-dark rounded-t-sm"
-        style={{ fontFamily: '"Receiptional Receipt", monospace' }}
+    <>
+      <button
+        onClick={() => setIsOpen(true)}
+        className="fixed bottom-6 right-6 bg-primary text-white p-4 rounded-full shadow-2xl flex gap-3 font-black italic items-center z-50 animate-in fade-in zoom-in"
       >
-        {/* Header del Ticket */}
-        <div className="text-center mb-6">
-          <div className="flex justify-center mb-3">
-            <div className="border-2 border-black rounded-full p-2">
-              <ShoppingBag size={22} />
-            </div>
-          </div>
-          <h2 className="text-xl font-bold uppercase italic tracking-tighter">
-            Resumen de Compra
-          </h2>
-          <p className="text-[10px] opacity-40 my-1">
-            ------------------------------------------
-          </p>
-          <p className="text-[9px] font-black uppercase tracking-[0.2em] italic">
-            {new Date().toLocaleDateString("es-AR")} —{" "}
-            {new Date().toLocaleTimeString("es-AR", {
-              hour: "2-digit",
-              minute: "2-digit",
-            })}
-          </p>
-        </div>
+        <ShoppingBag size={24} />
+        <span className="text-sm">${total.toLocaleString("es-AR")}</span>
+      </button>
 
-        {/* Lista de Items (Scrolleable) */}
-        <div className="flex-1 space-y-5 mb-6 overflow-y-auto max-h-[300px] pr-1 scrollbar-hide border-b border-dashed border-black/10 pb-6">
-          {cart.length === 0 ? (
-            <div className="text-center py-16 opacity-30 italic uppercase font-black text-[10px] tracking-widest">
-              [ Tu bolsa está vacía ]
-            </div>
-          ) : (
-            cart.map((item) => (
-              <CartItem key={item.id} item={item} isClosed={isClosed} />
-            ))
-          )}
-        </div>
-
-        {/* Formulario y Footer */}
-        {cart.length > 0 && (
-          <div className="animate-in fade-in duration-500">
-            <OrderForm data={customerData} onChange={handleInputChange} />
-
-            <div className="flex justify-between items-end mb-6 pt-4 border-t border-black/5">
-              <span className="text-xs font-black uppercase italic opacity-60 tracking-widest">
-                Total Final
-              </span>
-              <span className="text-4xl font-black tracking-tighter italic">
-                ${totalPrice.toLocaleString("es-AR")}
-              </span>
-            </div>
-
-            {isClosed ? (
-              <div className="bg-error/5 p-4 border border-error/20 flex items-center gap-3 rounded-sm mb-2">
-                <Clock className="text-error" size={16} />
-                <p className="text-[9px] leading-tight text-error font-black uppercase italic">
-                  Servicio inactivo por horario
-                </p>
-              </div>
-            ) : (
-              <button
-                onClick={handleConfirmarPedido}
-                disabled={isSending}
-                className="w-full bg-black text-white py-5 font-black text-xs uppercase tracking-[0.3em] hover:invert transition-all flex items-center justify-center gap-3 shadow-xl active:scale-[0.98]"
-              >
-                {isSending ? (
-                  <Loader2 size={16} className="animate-spin" />
-                ) : (
-                  <Send size={14} />
-                )}
-                {isSending ? "CONFIRMANDO..." : "ENVIAR PEDIDO"}
+      {isOpen && (
+        <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex justify-end">
+          <div className="w-full max-w-md bg-white dark:bg-bg-dark h-full p-6 flex flex-col shadow-2xl animate-in slide-in-from-right">
+            <div className="flex justify-between items-center mb-8 border-b-2 pb-4">
+              <h2 className="text-2xl font-black italic uppercase tracking-tighter">
+                Tu Carrito
+              </h2>
+              <button onClick={() => setIsOpen(false)}>
+                <X size={28} />
               </button>
-            )}
-          </div>
-        )}
-      </div>
+            </div>
 
-      {/* Decoración Inferior */}
-      <div
-        className="w-full h-4 bg-transparent"
-        style={{
-          backgroundImage:
-            "linear-gradient(-45deg, #fdfdfd 8px, transparent 0), linear-gradient(45deg, #fdfdfd 8px, transparent 0)",
-          backgroundSize: "16px 16px",
-          backgroundPosition: "bottom",
-        }}
-      />
-    </aside>
+            <div className="flex-1 overflow-y-auto space-y-4">
+              {cart.map((i) => (
+                <div
+                  key={i.id}
+                  className="flex justify-between items-center border-b pb-2 border-dashed"
+                >
+                  <div>
+                    <p className="font-bold text-xs uppercase italic">
+                      {i.cantidad}x {i.nombre}
+                    </p>
+                    <p className="text-[10px] text-text-muted">
+                      ${i.precio} c/u
+                    </p>
+                  </div>
+                  <span className="font-black">${i.precio * i.cantidad}</span>
+                </div>
+              ))}
+            </div>
+
+            <form
+              onSubmit={enviarPedido}
+              className="mt-6 space-y-4 bg-gray-50 p-4 rounded-neo border-2 border-border"
+            >
+              <input
+                placeholder="NOMBRE"
+                required
+                className="w-full p-3 border-2 border-border rounded-neo uppercase font-bold text-xs outline-none focus:border-primary"
+                onChange={(e) => setForm({ ...form, nombre: e.target.value })}
+              />
+              <input
+                placeholder="WHATSAPP"
+                required
+                type="tel"
+                className="w-full p-3 border-2 border-border rounded-neo uppercase font-bold text-xs outline-none focus:border-primary"
+                onChange={(e) => setForm({ ...form, whatsapp: e.target.value })}
+              />
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="del"
+                  className="accent-primary w-4 h-4"
+                  onChange={(e) =>
+                    setForm({ ...form, delivery: e.target.checked })
+                  }
+                />
+                <label
+                  htmlFor="del"
+                  className="text-[10px] font-black uppercase cursor-pointer"
+                >
+                  ¿Es para Envío?
+                </label>
+              </div>
+              {form.delivery && (
+                <input
+                  placeholder="DIRECCIÓN DE ENTREGA"
+                  required
+                  className="w-full p-3 border-2 border-border rounded-neo uppercase font-bold text-xs outline-none focus:border-primary"
+                  onChange={(e) =>
+                    setForm({ ...form, direccion: e.target.value })
+                  }
+                />
+              )}
+
+              <button
+                disabled={loading}
+                className="w-full bg-black text-white py-4 rounded-neo font-black italic uppercase tracking-widest flex justify-center items-center gap-2 hover:bg-primary transition-colors"
+              >
+                {loading ? (
+                  <Loader2 className="animate-spin" />
+                ) : (
+                  <>
+                    <Send size={18} /> ENVIAR AL LOCAL
+                  </>
+                )}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+    </>
   );
 }

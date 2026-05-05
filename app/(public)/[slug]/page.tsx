@@ -1,140 +1,115 @@
 import { createClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
-import { PublicNavbar } from "@/components/menu/PublicNavbar";
-import { MenuCard } from "@/components/menu/MenuCard";
-import { PublicCart } from "@/components/menu/PublicCart";
-import { CartFloatingButton } from "@/components/menu/CartFloatingButton";
-import { estaAbierto } from "@/lib/utils/horarios";
+import { MenuContent } from "@/components/menu/MenuContent";
 
+/**
+ * Página Principal del Menú Público - Versión Estable.
+ * Solo solicita columnas confirmadas para evitar errores de base de datos.
+ */
 export default async function PublicMenuPage({
   params,
 }: {
-  params: Promise<{ slug: string }>; // Next.js 15
+  params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
   const supabase = await createClient();
 
-  // 1. Consulta optimizada según tu tabla 'negocios' y 'productos'
-  const { data: negocio } = await supabase
+  // 1. Obtención de datos del negocio
+  // Hemos omitido 'descripcion' y 'banner_url' para asegurar la compatibilidad con tu esquema actual.
+  const { data: negocio, error: negocioError } = await supabase
     .from("negocios")
-    .select(
-      `
-      *,
-      productos (
-        *,
-        categorias (nombre)
-      )
-    `,
-    )
+    .select("id, nombre, logo_url, slug")
     .eq("slug", slug)
     .single();
 
-  if (!negocio) notFound();
+  // Si hay error en la consulta o el negocio no existe, disparamos el 404 de Next.js
+  if (negocioError || !negocio) {
+    console.error(
+      "DEBUG NEO -> Error al cargar negocio:",
+      negocioError?.message,
+    );
+    return notFound();
+  }
 
-  // 2. Lógica de Horarios usando tu columna 'horarios' (jsonb)
-  const localAbierto = estaAbierto(negocio.horarios);
+  // 2. Carga de categorías y productos vinculados
+  const { data: categorias } = await supabase
+    .from("categorias")
+    .select(
+      `
+      id,
+      nombre,
+      productos (
+        id,
+        nombre,
+        descripcion,
+        precio,
+        imagen_url,
+        disponible
+      )
+    `,
+    )
+    .eq("negocio_id", negocio.id)
+    .order("nombre", { ascending: true });
 
-  // 3. Agrupación por Categorías (Normalizada)
-  const productosPorCategoria = negocio.productos?.reduce(
-    (acc: any, prod: any) => {
-      const cat = prod.categorias?.nombre || "Menú Principal";
-      if (!acc[cat]) acc[cat] = [];
-      acc[cat].push(prod);
-      return acc;
-    },
-    {},
-  );
-
-  const categorias = Object.keys(productosPorCategoria || {});
-
-  // 4. Variables de Branding Dinámico (Usando tus columnas de DB)
-  const brandStyles = {
-    "--brand-color": negocio.color_primario || "#000000",
-    "--bg-public": "#FFFFFF", // Podrías añadir color_fondo a tu SQL luego si querés
-    "--text-public": "#1A1A1A",
-  } as React.CSSProperties;
+  // 3. Procesamiento de datos para el Menú
+  // Filtramos productos no disponibles y categorías que queden vacías tras el filtro.
+  const menuData =
+    categorias
+      ?.map((cat) => ({
+        ...cat,
+        productos: cat.productos.filter((p: any) => p.disponible),
+      }))
+      .filter((cat) => cat.productos.length > 0) || [];
 
   return (
-    <main
-      style={brandStyles}
-      className="min-h-screen bg-[var(--bg-public)] font-montserrat pb-32 selection:bg-[var(--brand-color)] selection:text-white"
-    >
-      {/* Navbar con el logo y nombre de tu tabla */}
-      <PublicNavbar
-        logo={negocio.logo_url}
-        nombre={negocio.nombre}
-        horarios={negocio.horarios}
-      />
+    <div className="min-h-screen bg-bg-main dark:bg-bg-dark selection:bg-primary">
+      {/* Header Neo-Brutalista Minimalista */}
+      <header className="relative h-48 md:h-64 bg-black flex flex-col items-center justify-center overflow-hidden border-b-4 border-primary">
+        {/* Fondo con gradiente estético ante la falta de banner_url */}
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-black to-black opacity-60" />
 
-      <div className="max-w-6xl mx-auto px-4 py-8 md:py-16">
-        <div className="flex flex-col lg:flex-row gap-12 items-start">
-          <div className="flex-1 w-full space-y-16">
-            <header className="mb-12 text-center lg:text-left space-y-4">
-              <h1 className="text-5xl md:text-7xl font-black text-[var(--text-public)] tracking-tighter italic uppercase leading-none">
-                {negocio.nombre}
-              </h1>
-
-              {/* Dirección física de tu tabla public.negocios */}
-              {negocio.direccion && (
-                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400">
-                  {negocio.direccion}
-                </p>
-              )}
-
-              {/* Status de Horario Dinámico */}
-              <div
-                className={`inline-flex items-center gap-2 px-4 py-2 rounded-full font-black uppercase tracking-[0.15em] text-[10px] border-2 ${
-                  localAbierto
-                    ? "bg-emerald-500/5 text-emerald-600 border-emerald-500/10"
-                    : "bg-red-500/5 text-red-600 border-red-500/10"
-                }`}
-              >
-                <span
-                  className={`w-2 h-2 rounded-full ${localAbierto ? "bg-emerald-500 animate-pulse" : "bg-red-500"}`}
-                />
-                {localAbierto
-                  ? "Abierto · Pedí por WhatsApp"
-                  : "Local Cerrado · Consultá horarios"}
-              </div>
-            </header>
-
-            {/* Listado de Categorías */}
-            <div className="space-y-20">
-              {categorias.map((cat) => (
-                <section
-                  key={cat}
-                  className="animate-in fade-in slide-in-from-bottom-4 duration-700"
-                >
-                  <h2 className="text-xl font-black text-[var(--text-public)] uppercase tracking-[0.2em] mb-8 flex items-center gap-4 italic">
-                    <span className="w-10 h-[3px] bg-[var(--brand-color)]" />
-                    {cat}
-                  </h2>
-                  <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-1">
-                    {productosPorCategoria[cat].map((prod: any) => (
-                      <MenuCard
-                        key={prod.id}
-                        {...prod}
-                        isClosed={!localAbierto}
-                      />
-                    ))}
-                  </div>
-                </section>
-              ))}
+        <div className="relative z-10 text-center px-4 flex flex-col items-center">
+          {negocio.logo_url && (
+            <div className="mb-4">
+              <img
+                src={negocio.logo_url}
+                alt="Logo Negocio"
+                className="w-20 h-20 md:w-24 md:h-24 rounded-full border-4 border-white bg-white shadow-2xl object-contain animate-in zoom-in duration-500"
+              />
             </div>
+          )}
+
+          <h1 className="text-4xl md:text-5xl font-black text-white uppercase italic tracking-tighter drop-shadow-xl">
+            {negocio.nombre}
+          </h1>
+
+          <div className="mt-3 flex items-center gap-2">
+            <span className="h-[2px] w-8 bg-primary rounded-full" />
+            <span className="text-[10px] font-black text-primary uppercase tracking-[0.3em] italic">
+              Menu Digital
+            </span>
+            <span className="h-[2px] w-8 bg-primary rounded-full" />
           </div>
-
-          {/* Carrito Lateral Desktop (Sticky) */}
-          <aside className="hidden lg:block sticky top-28 w-[380px]">
-            <PublicCart isClosed={!localAbierto} negocioId={negocio.id} />
-          </aside>
         </div>
-      </div>
+      </header>
 
-      {/* Botón Flotante Móvil */}
-      <CartFloatingButton
-        whatsapp={negocio.whatsapp}
-        disabled={!localAbierto}
-      />
-    </main>
+      {/* Contenido Principal: Listado de Productos y Carrito */}
+      <main className="max-w-5xl mx-auto px-4 py-12">
+        <MenuContent negocioId={negocio.id} categorias={menuData} />
+      </main>
+
+      {/* Footer con Identidad NEO */}
+      <footer className="py-20 border-t border-border/30 flex flex-col items-center justify-center opacity-30 select-none">
+        <p className="text-[9px] font-black uppercase tracking-[0.5em] mb-2 text-text-muted">
+          Plataforma de gestión
+        </p>
+        <h2 className="text-4xl font-black italic tracking-tighter text-text-primary">
+          NEO
+        </h2>
+      </footer>
+
+      {/* Capa de textura sutil para el acabado visual */}
+      <div className="fixed inset-0 pointer-events-none opacity-[0.02] z-[100] bg-[url('https://grainy-gradients.vercel.app/noise.svg')]" />
+    </div>
   );
 }
