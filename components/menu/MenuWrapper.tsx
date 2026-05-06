@@ -1,6 +1,7 @@
 "use client";
 
 import { MenuUnifiedView } from "./layout/MenuUnifiedView";
+import React from "react";
 
 interface Producto {
   id: string;
@@ -29,11 +30,30 @@ export function MenuWrapper({
   categorias,
   colorConfig,
 }: MenuWrapperProps) {
+  const finalColor =
+    !colorConfig || colorConfig === "#000000" ? "#1c7a42" : colorConfig;
+
+  // 🔍 LOG EN CLIENTE 1: Wrapper Maatriz
+  console.log("=== 🚀 CLIENT LOG: MENU WRAPPER ===");
+  console.log("Color prop recibido del Server:", colorConfig);
+  console.log("Color final procesado en Wrapper:", finalColor);
+  console.log("====================================");
+
   return (
-    <MenuUnifiedView
-      negocioId={negocioId}
-      categorias={categorias}
-      colorConfig={colorConfig}
-    />
+    <div
+      style={
+        {
+          "--custom-brand-color": finalColor,
+          "--color-custom": finalColor,
+        } as React.CSSProperties
+      }
+      className="w-full text-custom"
+    >
+      <MenuUnifiedView
+        negocioId={negocioId}
+        categorias={categorias}
+        colorConfig={finalColor}
+      />
+    </div>
   );
 }

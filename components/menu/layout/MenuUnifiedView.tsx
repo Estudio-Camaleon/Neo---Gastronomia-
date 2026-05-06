@@ -5,7 +5,6 @@ import { MenuCard } from "../ui/MenuCard";
 import { PublicCart } from "../cart/PublicCart";
 import { CartFloatingButton } from "../cart/CartFloatingButton";
 import { useCartStore } from "../store/useCartStore";
-import { ChevronRight } from "lucide-react";
 
 interface Producto {
   id: string;
@@ -47,9 +46,15 @@ export function MenuUnifiedView({
   const finalColor =
     !colorConfig || colorConfig === "#000000" ? "#1c7a42" : colorConfig;
 
+  // 🔍 LOG EN CLIENTE 2: Layout Unificado
+  console.log("=== 🛠️ CLIENT LOG: MENU UNIFIED VIEW ===");
+  console.log("colorConfig recibido en la vista:", colorConfig);
+  console.log("finalColor calculado en la vista:", finalColor);
+  console.log("Categoría activa actual:", activeCategory);
+  console.log("=========================================");
+
   return (
     <div
-      // Inyección única en el nodo raíz del cliente para que Tailwind v4 compile flama
       style={{ "--custom-brand-color": finalColor } as React.CSSProperties}
       className="w-full font-sans text-text-primary dark:text-text-inverse animate-in fade-in duration-500"
     >
@@ -62,10 +67,16 @@ export function MenuUnifiedView({
               key={cat.id}
               type="button"
               onClick={() => setActiveCategory(cat.id)}
+              // 🚀 CORREGIDO: Bypass reactivo al motor estático de Tailwind v4 en móviles
+              style={
+                isSelected
+                  ? { backgroundColor: finalColor, borderColor: finalColor }
+                  : {}
+              }
               className={`px-5 py-3 rounded-full font-black text-xs uppercase tracking-wider italic border-2 whitespace-nowrap transition-all snap-start cursor-pointer select-none ${
                 isSelected
-                  ? "bg-custom border-custom text-white shadow-md shadow-custom/10 scale-102"
-                  : "bg-white dark:bg-bg-darker border-border dark:border-border-dark text-text-primary dark:text-text-inverse hover:border-custom/50"
+                  ? "text-white shadow-md shadow-custom/10 scale-102"
+                  : "bg-white dark:bg-bg-darker border-border dark:border-border-dark text-text-primary dark:text-text-inverse hover:border-gray-400"
               }`}
             >
               {cat.nombre}
@@ -77,11 +88,11 @@ export function MenuUnifiedView({
       {/* 2. GRILLA ESTRUCTURAL RESPONSIVA */}
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start mt-4 lg:mt-0">
         {/* SIDEBAR DE CATEGORÍAS (Solo visible en Desktop) */}
-        <aside className="hidden lg:block col-span-1 sticky top-6 space-y-2 bg-white dark:bg-bg-darker border-2 border-border dark:border-border-dark p-4 rounded-super shadow-sm transition-colors z-20">
+        <aside className="hidden lg:block col-span-1 sticky top-6 bg-white dark:bg-bg-darker border-2 border-border dark:border-border-dark p-4 rounded-super shadow-sm transition-colors z-20">
           <p className="text-[9px] font-black uppercase text-text-muted tracking-widest px-2 mb-4 italic select-none">
             Secciones del Menú
           </p>
-          <div className="space-y-1.5">
+          <div className="flex flex-col gap-1.5">
             {categorias.map((cat) => {
               const isSelected = activeCategory === cat.id;
               return (
@@ -89,43 +100,55 @@ export function MenuUnifiedView({
                   key={cat.id}
                   type="button"
                   onClick={() => setActiveCategory(cat.id)}
-                  className={`w-full flex items-center justify-between p-3.5 rounded-xl font-black uppercase text-xs italic tracking-wide transition-all text-left cursor-pointer select-none ${
+                  // 🚀 CORREGIDO: Inyección directa e infalible en el DOM de escritorio
+                  style={
                     isSelected
-                      ? "bg-custom text-white pl-5 shadow-md shadow-custom/10 scale-[1.01]"
-                      : "hover:bg-gray-50 dark:hover:bg-white/5 text-text-primary dark:text-text-inverse"
+                      ? { backgroundColor: finalColor, borderColor: finalColor }
+                      : {}
+                  }
+                  className={`w-full text-left px-5 py-3 rounded-full font-black text-xs uppercase tracking-wider italic border-2 whitespace-nowrap transition-all cursor-pointer select-none ${
+                    isSelected
+                      ? "text-white shadow-md scale-102"
+                      : "bg-white dark:bg-bg-darker border-border dark:border-border-dark text-text-primary dark:text-text-inverse hover:border-gray-400"
                   }`}
                 >
-                  <span>{cat.nombre}</span>
-                  {isSelected && (
-                    <ChevronRight
-                      size={14}
-                      strokeWidth={3}
-                      className="animate-in slide-in-from-left-2 duration-200"
-                    />
-                  )}
+                  {cat.nombre}
                 </button>
               );
             })}
           </div>
         </aside>
 
-        {/* FEED CENTRAL DE ALIMENTOS (Móvil: 1 col, Tablet/Desktop: 2 cols) */}
+        {/* FEED CENTRAL DE ALIMENTOS */}
         <main className="col-span-1 lg:col-span-2 space-y-6">
           <div className="flex items-center gap-4 mb-2 select-none">
-            <h2 className="text-xl font-black uppercase italic tracking-tighter text-text-primary dark:text-text-inverse whitespace-nowrap">
+            {/* Forzamos el color del texto del título de la sección activa */}
+            <h2
+              style={{ color: finalColor }}
+              className="text-xl font-black uppercase italic tracking-tighter whitespace-nowrap font-sans"
+            >
               {categoriaSeleccionada?.nombre || "Catálogo"}
             </h2>
-            <div className="h-[2px] w-full bg-border/40 dark:bg-border-dark/40 border-dashed border-b" />
+            {/* Forzamos el color de la línea punteada divisoria */}
+            <div
+              style={{ borderColor: finalColor }}
+              className="h-[2px] w-full border-dashed border-b opacity-40"
+            />
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {categoriaSeleccionada &&
             categoriaSeleccionada.productos.length > 0 ? (
               categoriaSeleccionada.productos.map((producto) => (
-                <MenuCard key={producto.id} producto={producto} />
+                // 🚀 CORREGIDO: Se inyecta la prop obligatoria colorConfig para hidratar las tarjetas individuales
+                <MenuCard
+                  key={producto.id}
+                  producto={producto}
+                  colorConfig={finalColor}
+                />
               ))
             ) : (
-              <div className="col-span-2 py-12 text-center text-xs font-bold uppercase tracking-widest text-text-muted border-2 border-dashed border-border dark:border-border-dark rounded-super">
+              <div className="col-span-1 md:col-span-2 py-12 text-center text-xs font-bold uppercase tracking-widest text-text-muted border-2 border-dashed border-border dark:border-border-dark rounded-super">
                 Sin productos cargados en esta sección
               </div>
             )}
@@ -140,7 +163,14 @@ export function MenuUnifiedView({
                 Tu Pedido 🛒
               </h3>
               {cart.length > 0 && (
-                <span className="bg-custom/10 text-custom border border-custom/20 font-mono text-[9px] font-black uppercase px-2.5 py-1 rounded-full">
+                <span
+                  style={{
+                    color: finalColor,
+                    borderColor: `${finalColor}33`,
+                    backgroundColor: `${finalColor}1a`,
+                  }}
+                  className="font-mono text-[9px] font-black uppercase px-2.5 py-1 rounded-full border"
+                >
                   {cart.reduce((acc, item) => acc + item.cantidad, 0)} ítems
                 </span>
               )}
