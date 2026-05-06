@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image"; // Importamos el componente de optimización de Next.js
 import { useEffect, useState } from "react";
 import { useTheme } from "@/components/providers/ThemeProvider";
 
@@ -13,8 +14,10 @@ export function Navbar({ showLinks = true, showActions = true }: NavbarProps) {
   const { theme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
+  // Evitamos renders en cascada asincronizando la hidratación
   useEffect(() => {
-    setMounted(true);
+    const timer = setTimeout(() => setMounted(true), 0);
+    return () => clearTimeout(timer);
   }, []);
 
   return (
@@ -23,17 +26,23 @@ export function Navbar({ showLinks = true, showActions = true }: NavbarProps) {
         {/* Logo */}
         <Link
           href="/"
-          className="text-2xl font-black text-primary tracking-tighter"
+          className="text-2xl font-black text-primary tracking-tighter block"
         >
-          <img
-            src={
-              mounted && theme === "light"
-                ? "/icons/neo_logo_negro.svg"
-                : "/icons/neo_logo_blanco.svg"
-            }
-            alt="NEO Logo"
-            className="h-10 w-auto"
-          />
+          <div className="relative h-10 w-32">
+            {" "}
+            {/* Contenedor con dimensiones controladas para el <Image /> */}
+            <Image
+              src={
+                mounted && theme === "light"
+                  ? "/icons/neo_logo_negro.svg"
+                  : "/icons/neo_logo_blanco.svg"
+              }
+              alt="NEO Logo"
+              fill
+              priority
+              className="object-contain"
+            />
+          </div>
         </Link>
 
         {/* Links */}

@@ -1,131 +1,149 @@
 import { createClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
-import { PublicNavbar } from "@/components/menu/PublicNavbar";
-import { MenuCard } from "@/components/menu/MenuCard";
-import { PublicCart } from "@/components/menu/PublicCart";
-import { CartFloatingButton } from "@/components/menu/CartFloatingButton";
-import { estaAbierto } from "@/lib/utils/horarios"; // Importamos nuestra lógica
+import { PublicNavbar } from "@/components/menu/ui/public-navbar";
+import { MenuWrapper } from "@/components/menu/MenuWrapper";
 
-export default async function PublicMenuPage({
-  params,
-}: {
-  params: { slug: string };
-}) {
-  const supabase = await createClient();
+// OPTIMIZACIÓN CRÍTICA: Forzamos a Next.js a bypassear la caché estática y leer en vivo
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
+interface PublicPageProps {
+  params: Promise<{ slug: string }>;
+}
+
+interface HorarioDia {
+  inicio?: string;
+  fin?: string;
+}
+
+/**
+ * Función auxiliar encargada de transformar el objeto jsonb de Supabase
+ * en texto resumido legible para la carga inicial del componente público.
+ */
+function obtenerHorarioFormateado(horariosRaw: unknown): {
+  rango: string;
+  dias: string;
+} {
+  if (
+    !horariosRaw ||
+    typeof horariosRaw !== "object" ||
+    Array.isArray(horariosRaw)
+  ) {
+    return { rango: "Cerrado", dias: "Consulte horarios" };
+  }
+
+  const horarios = horariosRaw as Record<string, HorarioDia | undefined>;
+  const diasSemana = [
+    "lunes",
+    "martes",
+    "miercoles",
+    "jueves",
+    "viernes",
+    "sabado",
+    "domingo",
+  ];
+  const diasActivos: string[] = [];
+  let primerRangoEncontrado = "";
+
+  // Barremos la semana en orden lógico para verificar qué días tienen rangos activos
+  diasSemana.forEach((dia) => {
+    const infoDia = horarios[dia];
+    if (infoDia && infoDia.inicio && infoDia.fin) {
+      diasActivos.push(dia);
+      if (!primerRangoEncontrado) {
+        primerRangoEncontrado = `${infoDia.inicio} - ${infoDia.fin}`;
+      }
+    }
+  });
+
+  // Si el comercio no tiene tildado ningún día operativo en el panel de administración
+  if (diasActivos.length === 0) {
+    return { rango: "Cerrado", dias: "Sin horarios configurados" };
+  }
+
+  // Traducción estética ultra corta para el subtexto de la UI (Ej: "lunes" -> "Lu")
+  const traducirDia = (d: string) => d.charAt(0).toUpperCase() + d.slice(1, 3);
+
+  let diasTexto = "Días variados";
+  if (diasActivos.length === 7) {
+    diasTexto = "Lun - Dom";
+  } else if (diasActivos.length > 1) {
+    diasTexto = `${traducirDia(diasActivos[0])} - ${traducirDia(diasActivos[diasActivos.length - 1])}`;
+  } else if (diasActivos.length === 1) {
+    diasTexto = traducirDia(diasActivos[0]);
+  }
+
+  return {
+    rango: primerRangoEncontrado || "Cerrado",
+    dias: diasTexto,
+  };
+}
+
+export default async function PublicMenuPage({ params }: PublicPageProps) {
   const { slug } = await params;
+  const supabase = await createClient();
 
-  // 1. Consulta optimizada con JOIN a categorías
-  const { data: negocio } = await supabase
+  // Traemos el registro completo del negocio sincronizando sus relaciones en una sola consulta relacional
+  const { data: negocio, error } = await supabase
     .from("negocios")
     .select(
       `
-      *,
-      productos (
-        *,
-        categorias (nombre)
+      id,
+      nombre,
+      slug,
+      color_primary,
+      banner_url,
+      logo_url,
+      direccion,
+      whatsapp,
+      horarios,
+      categorias (
+        id,
+        nombre,
+        slug,
+        productos (
+          id,
+          nombre,
+          descripcion,
+          precio,
+          imagen_url,
+          disponible
+        )
       )
     `,
     )
-    .eq("slug", slug)
+    .eq("slug", slug.toLowerCase())
     .single();
 
-  if (!negocio) notFound();
+  // Control de fallos: Si da error o el slug no mapea con nada en la BD, disparamos el 404 nativo
+  if (error || !negocio) {
+    return notFound();
+  }
 
-  // 2. Lógica de Horarios en tiempo real
-  const localAbierto = estaAbierto(negocio.horarios);
-
-  // 3. Agrupar productos por el nombre real de la categoría (Normalizada)
-  const productosPorCategoria = negocio.productos?.reduce(
-    (acc: any, prod: any) => {
-      // Usamos el nombre de la tabla relacionada 'categorias'
-      const cat = prod.categorias?.nombre || "Menú Principal";
-      if (!acc[cat]) acc[cat] = [];
-      acc[cat].push(prod);
-      return acc;
-    },
-    {},
-  );
-
-  const categorias = Object.keys(productosPorCategoria || {});
-
-  const brandStyles = {
-    "--brand-color": negocio.color_primario || "#E60000",
-    "--bg-public": negocio.color_fondo || "#FFFFFF",
-    "--text-public": negocio.color_texto || "#1A1A1A",
-  } as React.CSSProperties;
+  // Parseamos los rangos de la base de datos de forma dinámica para el fallback del Navbar
+  const infoHorario = obtenerHorarioFormateado(negocio.horarios);
+  const categoriasFormateadas = negocio.categorias || [];
 
   return (
-    <main
-      style={brandStyles}
-      className="min-h-screen bg-[var(--bg-public)] font-montserrat pb-32"
-    >
+    <div className="w-full min-h-screen pb-24">
+      {/* 1. NAVBAR DE MARCA ESTILO MOCKUP (OCUPA EL 100% DEL ANCHO) */}
       <PublicNavbar
-        logo={negocio.logo_url}
         nombre={negocio.nombre}
-        horarios={negocio.horarios}
+        logoUrl={negocio.logo_url}
+        bannerUrl={negocio.banner_url}
+        direccion={negocio.direccion}
+        colorConfig={negocio.color_primary || "#1c7a42"}
+        horariosRaw={negocio.horarios} // Con esto ya le alcanza para armar todo el reloj y el dropdown
       />
 
-      <div className="max-w-6xl mx-auto px-4 py-8">
-        <div className="flex flex-col lg:flex-row gap-12 items-start">
-          <div className="flex-1 w-full">
-            <header className="mb-12 text-center lg:text-left">
-              <h1 className="text-5xl font-black text-[var(--text-public)] tracking-tighter italic uppercase">
-                {negocio.nombre}
-              </h1>
-
-              {/* Status de Horario Dinámico */}
-              <div
-                className={`mt-4 inline-flex items-center gap-2 px-4 py-1.5 rounded-full font-black uppercase tracking-[0.15em] text-[10px] ${
-                  localAbierto
-                    ? "bg-emerald-500/10 text-emerald-600"
-                    : "bg-red-500/10 text-red-600"
-                }`}
-              >
-                <span
-                  className={`w-2 h-2 rounded-full ${localAbierto ? "bg-emerald-500 animate-pulse" : "bg-red-500"}`}
-                />
-                {localAbierto
-                  ? "Abierto ahora · Pedí por WhatsApp"
-                  : "Local cerrado · Consultá horarios"}
-              </div>
-            </header>
-
-            {/* Renderizado de Categorías Normalizadas */}
-            <div className="space-y-16">
-              {categorias.map((cat) => (
-                <section key={cat}>
-                  <h2 className="text-xl font-black text-[var(--text-public)] uppercase tracking-[0.2em] mb-8 flex items-center gap-4">
-                    <span className="w-10 h-[3px] bg-[var(--brand-color)]" />
-                    {cat}
-                  </h2>
-                  <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-1">
-                    {productosPorCategoria[cat].map((prod: any) => (
-                      <MenuCard
-                        key={prod.id}
-                        {...prod}
-                        id={prod.id}
-                        // Deshabilitamos si el local está cerrado (Opcional según UX)
-                        isClosed={!localAbierto}
-                      />
-                    ))}
-                  </div>
-                </section>
-              ))}
-            </div>
-          </div>
-
-          {/* Carrito Lateral (Desktop) */}
-          <div className="hidden lg:block sticky top-28">
-            <PublicCart isClosed={!localAbierto} />
-          </div>
-        </div>
+      {/* 2. ORQUESTADOR INTERACTIVO DEL CATÁLOGO DE PRODUCTOS (PROTEGIDO EN EL CENTRO) */}
+      <div className="max-w-6xl mx-auto px-4 pt-6">
+        <MenuWrapper
+          negocioId={negocio.id}
+          categorias={categoriasFormateadas}
+          colorConfig={negocio.color_primary || "#1c7a42"}
+        />
       </div>
-
-      {/* El botón flotante también recibe el estado de apertura */}
-      <CartFloatingButton
-        whatsapp={negocio.whatsapp}
-        disabled={!localAbierto}
-      />
-    </main>
+    </div>
   );
 }

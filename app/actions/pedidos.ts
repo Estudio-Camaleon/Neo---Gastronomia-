@@ -1,103 +1,111 @@
 "use server";
 
-import { supabaseAdmin } from "@/lib/supabase/admin";
-import { estaAbierto } from "@/lib/utils/horarios";
+import { createClient } from "@/lib/supabase/server";
+import { revalidatePath } from "next/cache";
 
-interface PedidoData {
-  negocioId: string;
-  nombre: string;
-  whatsapp: string;
-  direccion: string;
-  total: number;
-  metodoPago: string;
-  notas?: string;
+// Interfaz para el retorno de las acciones
+interface ActionResponse {
+  success: boolean;
+  error?: string;
+  mensaje?: string;
 }
 
-export async function crearPedido(datos: PedidoData, carrito: any[]) {
-  // 1. Validación básica de entrada
-  if (!carrito || carrito.length === 0) {
-    return { success: false, error: "El carrito está vacío" };
+// Interfaz estricta para mapear la consulta relacional con el inner join de Supabase
+interface PedidoConNegocio {
+  negocio_id: string;
+  negocios: {
+    user_id: string;
+  } | null;
+}
+
+/**
+ * Actualiza el estado de un pedido (ej: de 'pendiente' a 'preparando').
+ * Valida que el usuario autenticado sea el dueño del negocio asociado al pedido.
+ */
+export async function actualizarEstadoPedido(
+  pedidoId: string,
+  nuevoEstado: string,
+): Promise<ActionResponse> {
+  const supabase = await createClient();
+
+  // 1. Obtener el usuario actual
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
+  if (authError || !user) {
+    return {
+      success: false,
+      error: "No autorizado. Inicie sesión nuevamente.",
+    };
   }
 
   try {
-    // 2. Traemos los horarios del negocio desde la DB
-    const { data: negocio, error: errorNegocio } = await supabaseAdmin
-      .from("negocios")
-      .select("horarios")
-      .eq("id", datos.negocioId)
-      .single();
-
-    if (errorNegocio || !negocio) {
-      console.error("Error al obtener negocio:", errorNegocio);
-      return {
-        success: false,
-        error: "No se pudo verificar el estado del negocio",
-      };
-    }
-
-    // 3. VALIDACIÓN DE HORARIOS (Lógica de Estudio Camaleón)
-    // Si el local está cerrado, cortamos la ejecución aquí mismo.
-    if (!estaAbierto(negocio.horarios)) {
-      return {
-        success: false,
-        error:
-          "El local se encuentra cerrado en este momento. Por favor, consulta los horarios de atención.",
-      };
-    }
-
-    // 4. Insertamos el Pedido (Cabecera)
-    const { data: pedido, error: errorPedido } = await supabaseAdmin
+    // 2. Verificación de seguridad:
+    // Forzamos el tipado de la respuesta relacional de Supabase usando nuestra interfaz
+    const { data, error: fetchError } = await supabase
       .from("pedidos")
-      .insert({
-        negocio_id: datos.negocioId,
-        cliente_nombre: datos.nombre,
-        cliente_whatsapp: datos.whatsapp,
-        direccion_entrega: datos.direccion,
-        total: datos.total,
-        metodo_pago: datos.metodoPago,
-        notas: datos.notas,
-        estado: "pendiente",
-      })
-      .select()
+      .select("negocio_id, negocios!inner(user_id)")
+      .eq("id", pedidoId)
       .single();
 
-    if (errorPedido) {
-      console.error("Error Pedido:", errorPedido);
-      return {
-        success: false,
-        error: "Error de base de datos al crear el pedido",
-      };
+    // Hacemos un cast seguro para que TypeScript sepa exactamente la estructura del join
+    const pedido = data as unknown as PedidoConNegocio;
+
+    if (fetchError || !pedido) {
+      return { success: false, error: "Pedido no encontrado." };
     }
 
-    // 5. Preparamos los items para inserción masiva
-    const itemsParaInsertar = carrito.map((item) => ({
-      pedido_id: pedido.id,
-      producto_id: item.id,
-      nombre_producto: item.nombre,
-      precio_unitario: item.precio,
-      cantidad: item.cantidad,
-    }));
-
-    // 6. Insertamos los items
-    const { error: errorItems } = await supabaseAdmin
-      .from("pedido_items")
-      .insert(itemsParaInsertar);
-
-    if (errorItems) {
-      console.error("Error Items:", errorItems);
-      // Opcional: Podrías borrar el pedido (rollback) si los items fallan
-      return {
-        success: false,
-        error: "Pedido creado, pero falló el registro de productos",
-      };
+    // Validación de seguridad estricta y tipada sin necesidad de deshabilitar el linter
+    if (!pedido.negocios || pedido.negocios.user_id !== user.id) {
+      return { success: false, error: "No tienes permisos sobre este pedido." };
     }
 
-    return { success: true, pedidoId: pedido.id };
+    // 3. Ejecutar la actualización
+    const { error: updateError } = await supabase
+      .from("pedidos")
+      .update({
+        estado: nuevoEstado.toLowerCase(),
+      })
+      .eq("id", pedidoId);
+
+    if (updateError) throw updateError;
+
+    // 4. Revalidar la ruta para actualizar el radar y el historial en tiempo real
+    revalidatePath("/(adminPanel)/pedidos");
+
+    return {
+      success: true,
+      mensaje: `Pedido marcado como ${nuevoEstado.toUpperCase()}`,
+    };
   } catch (err) {
-    console.error("Error inesperado en crearPedido:", err);
+    // En las versiones modernas de TS, los errores de catch son 'unknown'.
+    // Evaluamos si viene con un mensaje de error para reportarlo limpiamente sin usar 'any'.
+    const errorMessage = err instanceof Error ? err.message : "Unknown error";
+    console.error("Critical Order Error:", errorMessage);
     return {
       success: false,
-      error: "Ocurrió un error inesperado al procesar el pedido",
+      error: "Error interno al procesar el cambio de estado.",
     };
   }
+}
+
+/**
+ * Elimina o cancela un pedido del registro (Solo si el flujo de negocio lo permite).
+ * Generalmente se prefiere cambiar el estado a 'cancelado', pero incluimos
+ * la función por si necesitas una purga administrativa.
+ */
+export async function eliminarPedido(
+  pedidoId: string,
+): Promise<ActionResponse> {
+  const supabase = await createClient();
+
+  const { error } = await supabase.from("pedidos").delete().eq("id", pedidoId);
+
+  if (error) {
+    return { success: false, error: error.message };
+  }
+
+  revalidatePath("/(adminPanel)/pedidos");
+  return { success: true };
 }

@@ -15,7 +15,10 @@ export function LoginForm() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
   const router = useRouter();
+  // Movido arriba de la función de login para evitar problemas de hoisting y acceso antes de inicialización
+  const supabase = createClient();
 
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -41,16 +44,19 @@ export function LoginForm() {
             : signInError.message,
         );
       } else {
-        router.push("/pedidos");
+        // Forzamos el refresh para que el Middleware detecte la sesión
         router.refresh();
+        // Redirigimos a la ruta protegida
+        router.push("/productos");
       }
-    } catch (err) {
+    } catch {
+      // Saneamos removiendo el parámetro 'err' que no se utilizaba para limpiar el linter
       setError("Ocurrió un error inesperado");
     } finally {
       setLoading(false);
     }
   };
-  const supabase = createClient();
+
   return (
     <form onSubmit={handleLogin} className="w-full space-y-4">
       {/* Campo Email */}

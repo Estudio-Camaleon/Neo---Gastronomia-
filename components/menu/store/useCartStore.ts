@@ -1,81 +1,71 @@
-"use client";
-
 import { create } from "zustand";
 
-interface CartItem {
+// Interfaz para representar un ítem individual dentro del carrito de compras
+export interface CartItem {
   id: string;
   nombre: string;
   precio: number;
   cantidad: number;
 }
 
-interface CartStore {
-  items: CartItem[];
-  total: number;
-  addItem: (item: any) => void;
-  updateQuantity: (id: string, change: number) => void;
+// Contrato de la API de estado global del carrito gerenciado por Zustand
+interface CartState {
+  cart: CartItem[];
+  addItem: (item: CartItem) => void;
   removeItem: (id: string) => void;
   clearCart: () => void;
 }
 
-export const useCartStore = create<CartStore>((set) => ({
-  items: [],
-  total: 0,
+export const useCartStore = create<CartState>((set) => ({
+  // Estado inicial plano
+  cart: [],
 
+  // Agrega un ítem al carrito o incrementa su cantidad si ya existe
   addItem: (newItem) =>
     set((state) => {
-      const existingItem = state.items.find((i) => i.id === newItem.id);
-      let newItems;
+      const existingItemIndex = state.cart.findIndex(
+        (item) => item.id === newItem.id,
+      );
 
-      if (existingItem) {
-        newItems = state.items.map((i) =>
-          i.id === newItem.id ? { ...i, cantidad: i.cantidad + 1 } : i,
-        );
-      } else {
-        newItems = [...state.items, { ...newItem, cantidad: 1 }];
+      if (existingItemIndex > -1) {
+        // Clonamos el arreglo para respetar la inmutabilidad de Zustand
+        const updatedCart = [...state.cart];
+        updatedCart[existingItemIndex] = {
+          ...updatedCart[existingItemIndex],
+          cantidad: updatedCart[existingItemIndex].cantidad + newItem.cantidad,
+        };
+        return { cart: updatedCart };
       }
 
-      return {
-        items: newItems,
-        total: newItems.reduce(
-          (acc, item) => acc + item.precio * item.cantidad,
-          0,
-        ),
-      };
+      // Si el ítem es nuevo, lo incorporamos al final del arreglo
+      return { cart: [...state.cart, newItem] };
     }),
 
-  updateQuantity: (id, change) =>
-    set((state) => {
-      const newItems = state.items
-        .map((i) => {
-          if (i.id === id) {
-            const newQty = Math.max(0, i.cantidad + change);
-            return { ...i, cantidad: newQty };
-          }
-          return i;
-        })
-        .filter((i) => i.cantidad > 0);
-
-      return {
-        items: newItems,
-        total: newItems.reduce(
-          (acc, item) => acc + item.precio * item.cantidad,
-          0,
-        ),
-      };
-    }),
-
+  // Decrementa la cantidad de un producto o lo remueve por completo si llega a cero
   removeItem: (id) =>
     set((state) => {
-      const newItems = state.items.filter((i) => i.id !== id);
-      return {
-        items: newItems,
-        total: newItems.reduce(
-          (acc, item) => acc + item.precio * item.cantidad,
-          0,
-        ),
-      };
+      const existingItemIndex = state.cart.findIndex((item) => item.id === id);
+
+      if (existingItemIndex > -1) {
+        const updatedCart = [...state.cart];
+        const currentItem = updatedCart[existingItemIndex];
+
+        if (currentItem.cantidad > 1) {
+          // Si tiene más de una unidad, restamos una
+          updatedCart[existingItemIndex] = {
+            ...currentItem,
+            cantidad: currentItem.cantidad - 1,
+          };
+          return { cart: updatedCart };
+        } else {
+          // Si tiene una sola unidad, lo barremos del carrito por completo
+          return { cart: state.cart.filter((item) => item.id !== id) };
+        }
+      }
+
+      return { cart: state.cart };
     }),
 
-  clearCart: () => set({ items: [], total: 0 }),
+  // Vacía el carrito por completo (útil para cancelaciones o despachos exitosos)
+  clearCart: () => set({ cart: [] }),
 }));

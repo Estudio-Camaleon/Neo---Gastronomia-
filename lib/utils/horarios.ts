@@ -1,23 +1,44 @@
-import { format } from "date-fns";
-import { toZonedTime } from "date-fns-tz";
+// Interfaces estrictas para evitar el 'any' y unificar el comportamiento con el panel de administración
+interface HorarioDia {
+  inicio: string;
+  fin: string;
+}
 
-export function estaAbierto(horarios: any): boolean {
-  // 1. Si horarios es null o undefined, permitimos la venta por defecto
-  // (O podés retornar false si preferís que esté cerrado por defecto)
-  if (!horarios) return true;
+interface ScheduleData {
+  [dayId: string]: HorarioDia | undefined;
+}
 
-  const zonaHoraria = "America/Argentina/Buenos_Aires";
-  const ahora = toZonedTime(new Date(), zonaHoraria);
+/**
+ * Evalúa si el negocio se encuentra actualmente abierto según su configuración horaria indexada.
+ */
+export function estaAbierto(
+  horarios: ScheduleData | null | undefined,
+): boolean {
+  if (!horarios) return false;
 
-  const diaSemana = ahora.getDay(); // 0-6
-  const horaActual = format(ahora, "HH:mm");
+  const ahora = new Date();
+  const diasSemana = [
+    "domingo",
+    "lunes",
+    "martes",
+    "miercoles",
+    "jueves",
+    "viernes",
+    "sabado",
+  ];
 
-  // 2. Acceso seguro a la propiedad
-  const horarioHoy = horarios[diaSemana.toString()] || horarios[diaSemana];
+  const diaActual = diasSemana[ahora.getDay()];
+  const horarioHoy = horarios[diaActual];
 
-  if (!horarioHoy || horarioHoy.cerrado_todo_dia) {
-    return false;
-  }
+  // Si el día no está configurado o está marcado como cerrado/undefined, retorna false
+  if (!horarioHoy || !horarioHoy.inicio || !horarioHoy.fin) return false;
 
-  return horaActual >= horarioHoy.abierto && horaActual <= horarioHoy.cerrado;
+  const [horaInicio, minInicio] = horarioHoy.inicio.split(":").map(Number);
+  const [horaFin, minFin] = horarioHoy.fin.split(":").map(Number);
+
+  const ahoraEnMinutos = ahora.getHours() * 60 + ahora.getMinutes();
+  const inicioEnMinutos = horaInicio * 60 + minInicio;
+  const finEnMinutos = horaFin * 60 + minFin;
+
+  return ahoraEnMinutos >= inicioEnMinutos && ahoraEnMinutos <= finEnMinutos;
 }

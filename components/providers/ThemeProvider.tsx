@@ -2,32 +2,34 @@
 
 import React, { createContext, useContext, useEffect, useState } from "react";
 
-// 1. Creamos el contexto para NEO
-const ThemeContext = createContext({
+// 1. Creamos el contexto para NEO con tipos explícitos para evitar warnings
+interface ThemeContextType {
+  theme: string;
+  setTheme: (theme: string) => void;
+}
+
+const ThemeContext = createContext<ThemeContextType>({
   theme: "light",
-  setTheme: (theme: string) => {},
+  setTheme: () => {},
 });
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = useState("light");
+  // Inicialización perezosa: El estado nace directamente con el valor correcto
+  const [theme, setThemeState] = useState<string>(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("neo-theme") || "light";
+    }
+    return "light";
+  });
 
-  // Al montar, leemos la preferencia guardada
+  // Este efecto solo se encarga de sincronizar el DOM externo (el HTML) cuando cambia el tema
   useEffect(() => {
-    const savedTheme = localStorage.getItem("neo-theme") || "light";
-    setThemeState(savedTheme);
-    document.documentElement.classList.toggle("dark", savedTheme === "dark");
-  }, []);
+    document.documentElement.classList.toggle("dark", theme === "dark");
+  }, [theme]);
 
   const setTheme = (newTheme: string) => {
     setThemeState(newTheme);
     localStorage.setItem("neo-theme", newTheme);
-
-    // Aplicamos o quitamos la clase .dark al HTML
-    if (newTheme === "dark") {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-    }
   };
 
   return (
@@ -37,5 +39,5 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
-// Hook personalizado para usar en el Sidebar
+// Hook personalizado para usar en la aplicación
 export const useTheme = () => useContext(ThemeContext);

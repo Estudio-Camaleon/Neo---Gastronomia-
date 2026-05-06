@@ -8,6 +8,7 @@ import {
   Handbag,
 } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image"; // Importación del optimizador nativo de Next.js
 
 export default function LoginPage() {
   return (
@@ -15,19 +16,23 @@ export default function LoginPage() {
       <div className="flex-1 grid lg:grid-cols-12 overflow-hidden">
         {/* === SECCIÓN IZQUIERDA: HERO DE MARCA === */}
         <section className="hidden lg:flex lg:col-span-7 bg-bg-alt relative p-16 flex-col justify-between items-center text-center overflow-hidden">
-          {/* Nota: Quité el 'ml-4' para que se pegue a la izquierda y el redondeado destaque a la derecha */}
-
           {/* Logo Superior */}
           <div className="w-full text-left z-10">
             <Link
               href="/"
               className="inline-block transition-transform hover:scale-105 active:scale-95"
             >
-              <img
-                src="/icons/neo_logo_negro.svg"
-                alt="NEO Logo"
-                className="h-10 w-auto"
-              />
+              {/* Envoltura relativa con dimensiones controladas para el logo nativo */}
+              <div className="relative h-10 w-32">
+                <Image
+                  src="/icons/neo_logo_negro.svg"
+                  alt="NEO Logo"
+                  fill
+                  priority // Evita penalizaciones de LCP dándole prioridad en la carga inicial
+                  sizes="128px"
+                  className="object-contain"
+                />
+              </div>
             </Link>
           </div>
 
@@ -102,12 +107,19 @@ export default function LoginPage() {
             </div>
 
             {/* Botón Social */}
-            <button className="w-full flex items-center justify-center gap-3 py-4 px-6 border border-border dark:border-border-dark rounded-2xl bg-surface dark:bg-surface-dark hover:bg-bg-main dark:hover:bg-bg-darker transition-all text-text-primary dark:text-text-inverse font-bold text-sm shadow-sm active:scale-95 group">
-              <img
-                src="https://www.google.com/favicon.ico"
-                alt="Google"
-                className="h-5 w-5 group-hover:rotate-12 transition-transform"
-              />
+            <button
+              type="button"
+              className="w-full flex items-center justify-center gap-3 py-4 px-6 border border-border dark:border-border-dark rounded-2xl bg-surface dark:bg-surface-dark hover:bg-bg-main dark:hover:bg-bg-darker transition-all text-text-primary dark:text-text-inverse font-bold text-sm shadow-sm active:scale-95 group"
+            >
+              <div className="relative h-5 w-5 group-hover:rotate-12 transition-transform duration-300">
+                <Image
+                  src="/icons/google.svg" // <-- Ruta estática local libre de bloqueos
+                  alt="Google"
+                  fill
+                  sizes="20px"
+                  className="object-contain"
+                />
+              </div>
               Continuar con Google
             </button>
 

@@ -1,7 +1,8 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
+import { Users } from "lucide-react";
+import { ClientRadar } from "@/components/adminPanel/clientes/ClientRadar"; // Orquestador unificado
 
-// Definimos la estructura del resumen del cliente
 interface ClienteResumen {
   nombre: string;
   totalGasto: number;
@@ -11,34 +12,39 @@ interface ClienteResumen {
 export default async function ClientesPage() {
   const supabase = await createClient();
 
+  // Verificación estricta de sesión activa
   const {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
+  // Obtención del contexto comercial del inquilino
   const { data: negocio } = await supabase
     .from("negocios")
     .select("id")
     .eq("user_id", user.id)
     .single();
 
-  if (!negocio)
+  if (!negocio) {
     return (
-      <div className="p-8 text-text-primary dark:text-text-inverse">
-        Negocio no encontrado.
+      <div className="p-12 text-center font-sans">
+        <h2 className="text-xl font-black uppercase italic text-primary">
+          Negocio no configurado
+        </h2>
       </div>
     );
+  }
 
-  // Obtenemos los pedidos
+  // Traemos los campos exactos requeridos de la tabla transaccional
   const { data: pedidos } = await supabase
     .from("pedidos")
     .select("cliente_nombre, total")
     .eq("negocio_id", negocio.id);
 
-  // Agrupamos y calculamos totales usando tipado
+  // Agrupamiento analítico optimizado en el servidor
   const resumenClientes = (pedidos || []).reduce(
     (acc: Record<string, ClienteResumen>, pedido) => {
-      const nombre = pedido.cliente_nombre || "Anónimo";
+      const nombre = pedido.cliente_nombre?.trim() || "Consumidor Final";
 
       if (!acc[nombre]) {
         acc[nombre] = { nombre, totalGasto: 0, pedidos: 0 };
@@ -51,55 +57,33 @@ export default async function ClientesPage() {
     {},
   );
 
-  // Convertimos a array y tipamos explícitamente
-  const listaClientes: ClienteResumen[] = Object.values(resumenClientes);
+  // Ordenamiento de mayor a menor inversión
+  const listaClientes: ClienteResumen[] = Object.values(resumenClientes).sort(
+    (a, b) => b.totalGasto - a.totalGasto,
+  );
 
   return (
-    <div className="p-8 max-w-7xl mx-auto">
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-text-primary dark:text-text-inverse">
-          Tus Clientes
+    <div className="p-6 md:p-10 max-w-7xl mx-auto min-h-screen pb-32 font-sans space-y-10">
+      {/* Cabecera Estética de Operaciones */}
+      <header className="animate-in fade-in slide-in-from-top-4 duration-500">
+        <div className="flex items-center gap-2 mb-2">
+          <Users className="text-primary w-4 h-4" />
+          <span className="text-[10px] font-black uppercase tracking-[0.3em] text-primary italic">
+            Community Analytics
+          </span>
+        </div>
+        <h1 className="text-5xl font-black text-text-primary dark:text-text-inverse uppercase tracking-tighter italic leading-none">
+          Tu Comunidad
         </h1>
-        <p className="text-text-secondary">
-          Historial y resumen de compras de tus clientes.
+        <p className="text-text-muted text-xs font-bold uppercase tracking-widest mt-2">
+          Análisis de fidelidad y comportamiento de compra histórico
         </p>
-      </div>
+      </header>
 
-      <div className="bg-surface dark:bg-surface-dark rounded-2xl border border-border dark:border-border-dark overflow-hidden">
-        <table className="w-full text-left">
-          <thead className="bg-bg-main dark:bg-bg-darker text-text-primary dark:text-text-inverse text-sm border-b border-border dark:border-border-dark">
-            <tr>
-              <th className="p-4">Nombre</th>
-              <th className="p-4">Total Gastado</th>
-              <th className="p-4">Pedidos</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-border-dark">
-            {listaClientes.length === 0 ? (
-              <tr>
-                <td colSpan={3} className="p-8 text-center text-text-muted">
-                  No hay clientes registrados aún.
-                </td>
-              </tr>
-            ) : (
-              listaClientes.map((cliente) => (
-                <tr
-                  key={cliente.nombre}
-                  className="hover:bg-bg-main dark:bg-bg-darker transition-colors"
-                >
-                  <td className="p-4 text-text-primary dark:text-text-inverse font-medium">
-                    {cliente.nombre}
-                  </td>
-                  <td className="p-4 text-text-secondary">
-                    ${cliente.totalGasto.toFixed(2)}
-                  </td>
-                  <td className="p-4 text-text-secondary">{cliente.pedidos}</td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+      {/* Renderizado de la sección interactiva */}
+      <main className="animate-in fade-in duration-500 delay-150">
+        <ClientRadar initialClientes={listaClientes} />
+      </main>
     </div>
   );
 }
