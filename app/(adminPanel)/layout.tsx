@@ -28,21 +28,23 @@ export default async function AdminPanelLayout({
     .eq("user_id", user.id)
     .single();
 
-  // SI NO HAY NEGOCIO: Bloqueamos el acceso con el Modal de configuración inicial
   if (error || !negocio) {
     return (
-      <ErrorModal
-        title="Negocio no configurado"
-        message="No pudimos encontrar un negocio asociado a tu cuenta. Para acceder al panel, necesitas crear tu primer negocio."
-        action={
-          <Link
-            href="/crear-negocio"
-            className="block w-full py-3 bg-primary text-white font-bold rounded-xl hover:bg-primary/90 transition-all text-center border-t border-white/10"
-          >
-            Crear mi negocio ahora
-          </Link>
-        }
-      />
+      <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-[9999] flex items-center justify-center p-4">
+        <ErrorModal
+          title="Configuración Requerida"
+          message="Tu cuenta está activa, pero no detectamos ningún negocio vinculado. Necesitás configurar tu local para acceder a las herramientas de gestión."
+          action={
+            <Link
+              // CAMBIO CLAVE: Apuntamos a una ruta que SÍ existe en tu proyecto
+              href="/configuracion" 
+              className="block w-full py-4 bg-primary text-black font-black uppercase tracking-widest italic rounded-2xl border-4 border-black shadow-[6px_6px_0px_0px_rgba(255,255,255,1)] hover:translate-x-[-2px] hover:translate-y-[-2px] transition-all text-center"
+            >
+              Configurar mi negocio
+            </Link>
+          }
+        />
+      </div>
     );
   }
 

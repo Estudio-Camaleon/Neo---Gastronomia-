@@ -18,6 +18,7 @@ export async function middleware(request: NextRequest) {
         setAll(cookiesToSet) {
           cookiesToSet.forEach(({ name, value, options }) => {
             request.cookies.set(name, value);
+            // Actualizamos la respuesta para que los cambios en las cookies se mantengan
             response = NextResponse.next({
               request: { headers: request.headers },
             });
@@ -28,28 +29,44 @@ export async function middleware(request: NextRequest) {
     },
   );
 
-  // IMPORTANTE: getUser() es el que refresca el token automáticamente
   const {
     data: { user },
   } = await supabase.auth.getUser();
-
   const { pathname } = request.nextUrl;
 
-  // Rutas públicas (Incluimos el slug dinámico si lo tenés)
-  // Ajusté esto para que no bloquee las páginas de los locales
-  const isPublicRoute =
-    pathname === "/login" ||
-    pathname === "/registro" ||
-    pathname === "/" ||
-    pathname.startsWith("/api/"); // Opcional: permitir APIs
+  // --- REVISIÓN DE RUTAS (Auditoría de Acceso) ---
 
-  // 1. Si no hay usuario y no es ruta pública -> al login
-  if (!isPublicRoute && !user) {
+  // 1. Rutas estáticas públicas
+  const publicStaticRoutes = ["/", "/login", "/registro", "/onboarding"];
+  const isStaticPublic = publicStaticRoutes.includes(pathname);
+
+  // 2. Rutas de API y archivos (No tocarlas)
+  const isApiOrAsset = pathname.startsWith("/api/") || pathname.includes(".");
+
+  /**
+   * 3. EL PUNTO CIEGO: Rutas de Locales (Public Menu)
+   * Si la ruta no empieza con (adminPanel), login o registro,
+   * probablemente es el menú de un cliente (ej: /burgers-tucuman).
+   * Necesitamos que sea pública.
+   */
+  const isReservedRoute =
+    pathname.startsWith("/pedidos") ||
+    pathname.startsWith("/productos") ||
+    pathname.startsWith("/configuracion") ||
+    pathname.startsWith("/admin");
+
+  // Definimos si la ruta requiere autenticación
+  const requiresAuth = !isStaticPublic && !isApiOrAsset && isReservedRoute;
+
+  // --- LÓGICA DE REDIRECCIÓN ---
+
+  // A. No hay usuario y la ruta requiere protección -> al login
+  if (requiresAuth && !user) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
-  // 2. Si ya hay usuario y va a login/registro -> a pedidos
-  if ((pathname === "/login" || pathname === "/registro") && user) {
+  // B. Hay usuario pero intenta entrar a login/registro -> al panel
+  if (user && (pathname === "/login" || pathname === "/registro")) {
     return NextResponse.redirect(new URL("/pedidos", request.url));
   }
 
@@ -58,6 +75,7 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
+    // Excluir archivos estáticos internos de Next.js
     "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
 };
