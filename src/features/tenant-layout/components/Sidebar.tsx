@@ -16,7 +16,7 @@ import {
 import { SidebarLogo } from "./SidebarLogo";
 import { SidebarRadar } from "./SidebarRadar";
 import { SidebarFooter } from "./SidebarFooter";
-import Link from "next/link";
+import { TransitionLink } from "@/components/ui/transition-link";
 
 export function Sidebar({
   slug,
@@ -80,7 +80,7 @@ export function Sidebar({
             const Icon = item.icon;
 
             return (
-              <Link
+              <TransitionLink
                 key={item.name}
                 href={item.href}
                 className={`
@@ -108,7 +108,7 @@ export function Sidebar({
                 {isActive && (
                   <div className="absolute right-2 w-1.5 h-1.5 bg-[var(--admin-bg)] rounded-full animate-pulse" />
                 )}
-              </Link>
+              </TransitionLink>
             );
           })}
         </nav>
