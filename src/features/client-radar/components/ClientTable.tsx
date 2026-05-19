@@ -11,61 +11,61 @@ export function ClientTable({ clientes }: { clientes: ClienteResumen[] }) {
     notasActuales: string | null,
   ) => {
     const promptNueva = window.prompt(
-      "EDITAR NOTAS TÉCNICAS DEL CLIENTE:",
+      "Editar notas técnicas del cliente:",
       notasActuales || "",
     );
     if (promptNueva === null) return;
 
     try {
       await updateClientSystemNotes(id, promptNueva);
-      toast.success("EXPEDIENTE DE CLIENTE ACTUALIZADO");
+      toast.success("Notas de cliente actualizadas");
     } catch {
-      toast.error("FALLO DE RED");
+      toast.error("Error al actualizar notas");
     }
   };
 
   return (
-    <div className="w-full font-sans text-black">
-      {/* VISTA DESKTOP (TABLE ESTRUCTURADA) */}
+    <div className="w-full">
+      {/* VISTA DESKTOP */}
       <div className="hidden md:block overflow-x-auto">
         <table className="w-full text-left border-collapse">
           <thead>
-            <tr className="border-b-4 border-black bg-gray-50 text-xs font-black uppercase tracking-wider text-black">
-              <th className="p-4">Rango / Comprador</th>
-              <th className="p-4 text-center">Inversión Bruta</th>
-              <th className="p-4 text-center">Frecuencia</th>
-              <th className="p-4 text-center">Notas de Control</th>
-              <th className="p-4 text-right">Acciones</th>
+            <tr className="border-b border-gray-200 bg-white text-xs font-semibold text-gray-500 uppercase tracking-wider">
+              <th className="p-4 pl-6 font-medium">Cliente</th>
+              <th className="p-4 text-center font-medium">Inversión</th>
+              <th className="p-4 text-center font-medium">Pedidos</th>
+              <th className="p-4 font-medium">Notas</th>
+              <th className="p-4 pr-6 text-right font-medium">Acciones</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-black/10 text-sm">
+          <tbody className="divide-y divide-gray-100 bg-white text-sm">
             {clientes.map((cliente, index) => {
               const esTop1 = index === 0;
               return (
                 <tr
                   key={cliente.id}
-                  className="hover:bg-gray-50/80 transition-colors group"
+                  className="hover:bg-gray-50/50 transition-colors group"
                 >
-                  <td className="p-4">
+                  <td className="p-4 pl-6">
                     <div className="flex items-center gap-3">
-                      <span className="text-xs font-mono font-black text-gray-400 w-5">
+                      <span className="text-xs font-medium text-gray-400 w-4">
                         {index + 1}.
                       </span>
                       <div
-                        className={`w-10 h-10 border-2 border-black flex items-center justify-center shadow-[2px_2px_0px_0px_#000000] shrink-0 ${esTop1 ? "bg-[#A3FF00]" : "bg-black text-white"}`}
+                        className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 ${esTop1 ? "bg-amber-100 text-amber-600" : "bg-gray-100 text-gray-500"}`}
                       >
                         {esTop1 ? (
-                          <Trophy size={16} className="text-black" />
+                          <Trophy size={16} />
                         ) : (
                           <User size={16} />
                         )}
                       </div>
                       <div className="flex flex-col">
-                        <span className="font-black uppercase italic tracking-tight text-black">
+                        <span className="font-semibold text-gray-900 truncate max-w-[200px]">
                           {cliente.nombre}
                         </span>
                         {cliente.email && (
-                          <span className="text-[10px] text-gray-400 font-mono">
+                          <span className="text-xs text-gray-500 truncate max-w-[200px]">
                             {cliente.email}
                           </span>
                         )}
@@ -73,45 +73,46 @@ export function ClientTable({ clientes }: { clientes: ClienteResumen[] }) {
                     </div>
                   </td>
 
-                  <td className="p-4 text-center font-mono font-black text-base text-black">
-                    ${Number(cliente.totalGasto).toFixed(2)}
+                  <td className="p-4 text-center">
+                    <span className="font-medium text-gray-900">
+                      ${Number(cliente.totalGasto).toFixed(2)}
+                    </span>
                   </td>
 
                   <td className="p-4 text-center">
                     <span
-                      className={`inline-block border border-black text-[10px] font-black px-2 py-0.5 uppercase tracking-wide ${cliente.pedidos >= 5 ? "bg-emerald-100 text-emerald-800" : "bg-gray-100 text-gray-700"}`}
+                      className={`inline-flex items-center justify-center px-2.5 py-1 rounded-full text-xs font-medium ${cliente.pedidos >= 5 ? "bg-[var(--admin-accent)]/10 text-[var(--admin-accent)]" : "bg-gray-100 text-gray-700"}`}
                     >
-                      {cliente.pedidos}{" "}
-                      {cliente.pedidos === 1 ? "Pedido" : "Pedidos"}
+                      {cliente.pedidos}
                     </span>
                   </td>
 
-                  <td className="p-4 text-center max-w-[200px]">
-                    <p className="text-xs font-medium text-gray-500 truncate italic">
-                      {cliente.notas ? `"${cliente.notas}"` : "Sin anotaciones"}
+                  <td className="p-4 max-w-[250px]">
+                    <p className="text-xs text-gray-600 truncate">
+                      {cliente.notas ? cliente.notas : <span className="text-gray-400 italic">Sin notas</span>}
                     </p>
                   </td>
 
-                  <td className="p-4 text-right">
-                    <div className="flex justify-end gap-1.5">
+                  <td className="p-4 pr-6 text-right">
+                    <div className="flex justify-end gap-2">
                       <button
                         onClick={() =>
                           handleAuditarNotas(cliente.id, cliente.notas)
                         }
-                        className="p-2 border-2 border-black bg-white shadow-[2px_2px_0px_0px_#000000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all text-black hover:bg-black hover:text-white"
-                        title="Editar expediente"
+                        className="p-2 text-gray-400 hover:text-[var(--admin-accent)] hover:bg-[var(--admin-accent)]/10 rounded-lg transition-colors border border-transparent hover:border-[var(--admin-accent)]/20"
+                        title="Editar notas"
                       >
-                        <StickyNote size={14} />
+                        <StickyNote size={16} />
                       </button>
                       {cliente.telefono && (
                         <a
                           href={`https://wa.me/${cliente.telefono.replace(/\D/g, "")}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="p-2 border-2 border-black bg-[#25D366] text-black shadow-[2px_2px_0px_0px_#000000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all"
-                          title="Abrir chat"
+                          className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors border border-transparent hover:border-green-200"
+                          title="Abrir chat en WhatsApp"
                         >
-                          <MessageCircle size={14} strokeWidth={2.5} />
+                          <MessageCircle size={16} />
                         </a>
                       )}
                     </div>
@@ -119,78 +120,95 @@ export function ClientTable({ clientes }: { clientes: ClienteResumen[] }) {
                 </tr>
               );
             })}
+            
+            {clientes.length === 0 && (
+               <tr>
+                  <td colSpan={5} className="p-8 text-center text-gray-500">
+                     No se encontraron clientes que coincidan con la búsqueda.
+                  </td>
+               </tr>
+            )}
           </tbody>
         </table>
       </div>
 
-      {/* VISTA MÓVIL (TARJETAS COMPACTAS PLANAS) */}
-      <div className="grid grid-cols-1 gap-4 md:hidden p-4 bg-gray-50">
-        {clientes.map((cliente, index) => (
+      {/* VISTA MÓVIL */}
+      <div className="grid grid-cols-1 gap-4 md:hidden p-4 bg-gray-50/50">
+        {clientes.map((cliente, index) => {
+           const esTop1 = index === 0;
+           
+           return (
           <div
             key={cliente.id}
-            className="p-4 bg-white border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex flex-col space-y-3"
+            className="p-4 bg-white border border-gray-200 rounded-xl shadow-sm flex flex-col space-y-4"
           >
             <div className="flex justify-between items-start">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-3">
                 <div
-                  className={`w-8 h-8 border border-black flex items-center justify-center ${index === 0 ? "bg-[#A3FF00]" : "bg-black text-white"}`}
+                  className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${esTop1 ? "bg-amber-100 text-amber-600" : "bg-gray-100 text-gray-500"}`}
                 >
-                  {index === 0 ? <Trophy size={14} /> : <User size={14} />}
+                  {esTop1 ? <Trophy size={18} /> : <User size={18} />}
                 </div>
                 <div>
-                  <span className="text-[10px] font-mono font-black text-gray-400 block">
-                    RANGO #{index + 1}
+                  <span className="text-xs font-semibold text-[var(--admin-accent)] block mb-0.5">
+                    Rango #{index + 1}
                   </span>
-                  <h4 className="font-black uppercase italic tracking-tight text-sm text-black">
+                  <h4 className="font-bold text-gray-900 leading-tight">
                     {cliente.nombre}
                   </h4>
                 </div>
               </div>
-              <span className="font-mono font-black text-xs bg-black text-white px-2 py-0.5">
+              <span className="font-bold text-lg text-gray-900">
                 ${Number(cliente.totalGasto).toFixed(0)}
               </span>
             </div>
 
-            <div className="bg-gray-50 p-2 border border-black/5 flex justify-between items-center text-xs">
-              <span className="font-bold text-gray-500 uppercase text-[10px]">
-                Frecuencia:
+            <div className="bg-gray-50 p-3 rounded-lg border border-gray-100 flex justify-between items-center text-sm">
+              <span className="font-medium text-gray-500">
+                Frecuencia
               </span>
-              <span className="font-black italic">{cliente.pedidos} Peds</span>
+              <span className="font-semibold text-gray-900 bg-white px-2 py-1 rounded border border-gray-200 shadow-sm">{cliente.pedidos} pedidos</span>
             </div>
 
             {cliente.notas && (
-              <p className="text-[11px] font-medium text-gray-500 bg-amber-50/50 p-2 border border-dashed border-black/10 italic">
-                "{cliente.notas}"
+              <p className="text-xs text-amber-800 bg-amber-50 p-3 rounded-lg border border-amber-100 leading-relaxed">
+                {cliente.notas}
               </p>
             )}
 
-            <div className="grid grid-cols-2 gap-2 pt-1">
+            <div className="grid grid-cols-2 gap-3 pt-2">
               <button
                 onClick={() => handleAuditarNotas(cliente.id, cliente.notas)}
-                className="p-2 border-2 border-black bg-white text-xs font-black uppercase text-center active:translate-y-0.5"
+                className="py-2.5 px-3 bg-white border border-gray-300 text-gray-700 rounded-lg text-sm font-semibold hover:bg-gray-50 transition-colors flex justify-center items-center gap-2 shadow-sm"
               >
-                Expediente
+                <StickyNote size={16} /> Notas
               </button>
               {cliente.telefono ? (
                 <a
                   href={`https://wa.me/${cliente.telefono.replace(/\D/g, "")}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="p-2 border-2 border-black bg-[#25D366] text-black text-xs font-black uppercase text-center active:translate-y-0.5"
+                  className="py-2.5 px-3 bg-[#25D366] text-white rounded-lg text-sm font-semibold hover:bg-[#25D366]/90 transition-colors flex justify-center items-center gap-2 shadow-sm"
                 >
-                  WhatsApp
+                  <MessageCircle size={16} /> WhatsApp
                 </a>
               ) : (
                 <button
                   disabled
-                  className="p-2 border border-gray-300 text-gray-400 text-xs font-black uppercase text-center cursor-not-allowed opacity-40"
+                  className="py-2.5 px-3 bg-gray-100 border border-gray-200 text-gray-400 rounded-lg text-sm font-semibold cursor-not-allowed flex justify-center items-center"
                 >
-                  Sin Tel
+                  Sin Teléfono
                 </button>
               )}
             </div>
           </div>
-        ))}
+        )})}
+        
+        {clientes.length === 0 && (
+           <div className="p-8 text-center text-gray-500 bg-white rounded-xl border border-gray-200">
+              No hay clientes para mostrar.
+           </div>
+        )}
       </div>
     </div>
   );

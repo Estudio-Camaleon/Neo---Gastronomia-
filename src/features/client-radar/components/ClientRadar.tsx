@@ -28,37 +28,35 @@ export function ClientRadar({ initialClientes }: ClientRadarProps) {
   );
 
   return (
-    <div className="space-y-6 font-sans text-black">
-      {/* BARRA DE BÚSQUEDA NEO-BRUTALISTA */}
-      <div className="bg-white border-4 border-black p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+    <div className="space-y-6">
+      <div className="admin-card flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div className="space-y-1">
-          <h2 className="text-2xl font-black uppercase italic tracking-tight flex items-center gap-2">
-            <Users className="h-6 w-6 text-black stroke-[2.5]" /> RADAR DE
-            COMUNIDAD
+          <h2 className="text-xl font-bold text-[var(--admin-text)] flex items-center gap-2">
+            <Users className="h-6 w-6 text-[var(--admin-accent)]" /> 
+            Radar de Clientes
           </h2>
-          <p className="text-xs text-gray-500 font-mono uppercase tracking-wider">
-            Ranking de fidelidad, volumen de transacciones y bases analíticas.
+          <p className="text-sm text-[var(--admin-text-muted)] font-medium">
+            Ranking de fidelidad, volumen de transacciones y notas.
           </p>
         </div>
 
         <div className="relative group w-full md:max-w-md">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-black shrink-0" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
           <input
             type="text"
-            placeholder="BUSCAR COMPRADOR POR NOMBRE O WHATSAPP..."
+            placeholder="Buscar por nombre o teléfono..."
             value={busqueda}
             onChange={(e) => setBusqueda(e.target.value)}
-            className="w-full bg-white border-2 border-black p-3 pl-12 font-bold text-xs uppercase tracking-wider outline-none focus:bg-[#A3FF00]/5 text-black"
+            className="w-full bg-white border border-gray-300 rounded-lg py-2.5 pl-10 pr-4 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[var(--admin-accent)] transition-all shadow-sm"
           />
         </div>
       </div>
 
-      {/* CONTENEDOR DE TABLA DE RANGOS */}
-      <div className="bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] overflow-hidden">
-        <div className="p-4 bg-black text-white font-mono text-xs uppercase tracking-widest flex justify-between items-center">
-          <span>📊 PANEL DE INSIGHTS B2B</span>
-          <span className="text-[10px] text-[#A3FF00] font-black">
-            {clientesFiltrados.length} CONTACTOS
+      <div className="admin-card !p-0 overflow-hidden">
+        <div className="px-5 py-4 border-b border-[var(--admin-border)] flex justify-between items-center bg-gray-50/50">
+          <span className="font-semibold text-gray-700">Listado de Clientes</span>
+          <span className="text-xs font-semibold bg-[var(--admin-accent)]/10 text-[var(--admin-accent)] px-2.5 py-1 rounded-full">
+            {clientesFiltrados.length} Registros
           </span>
         </div>
         <ClientTable clientes={clientesFiltrados} />

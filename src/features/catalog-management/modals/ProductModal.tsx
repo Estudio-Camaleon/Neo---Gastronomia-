@@ -14,7 +14,7 @@ interface Categoria {
 interface ProductModalProps {
   negocioId: string;
   onClose: () => void;
-  initialData?: UnifiedProduct | null; // Sincronizado perfectamente con la prop de AddProductSection
+  initialData?: UnifiedProduct | null; 
 }
 
 export function ProductModal({
@@ -38,7 +38,6 @@ export function ProductModal({
     };
     fetchCategorias();
 
-    // UX Pro: Bloqueamos el scroll del fondo mientras el modal está abierto
     document.body.style.overflow = "hidden";
     return () => {
       document.body.style.overflow = "unset";
@@ -46,29 +45,34 @@ export function ProductModal({
   }, [negocioId]);
 
   return (
-    <div className="fixed inset-0 z-[9999] flex items-end md:items-center justify-center bg-black/70 sm:p-4 transition-all">
-      <div className="relative w-full max-w-5xl max-h-[95vh] md:max-h-[90vh] flex flex-col animate-in slide-in-from-bottom-full md:slide-in-from-bottom-8 md:zoom-in-95 duration-300">
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6">
+      <div 
+        className="absolute inset-0 bg-gray-900/40 backdrop-blur-sm transition-opacity"
+        onClick={onClose}
+      />
+      
+      <div className="relative w-full max-w-5xl max-h-[90vh] flex flex-col bg-white rounded-2xl shadow-2xl animate-in zoom-in-95 duration-200">
         <button
           onClick={onClose}
-          className="absolute z-50 top-4 right-4 md:-top-5 md:-right-5 p-2 md:p-3 bg-error text-white rounded-full border-2 md:border-4 border-black hover:scale-110 hover:rotate-90 active:scale-95 transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex items-center justify-center"
+          className="absolute z-50 -top-3 -right-3 p-2 bg-white text-gray-500 hover:text-gray-900 rounded-full border border-gray-200 shadow-md hover:scale-105 active:scale-95 transition-all flex items-center justify-center"
           aria-label="Cerrar"
         >
-          <X size={24} strokeWidth={3} />
+          <X size={20} />
         </button>
 
-        <div className="w-full h-full overflow-y-auto bg-transparent rounded-t-[32px] md:rounded-[32px] pb-10 md:pb-0">
+        <div className="w-full h-full overflow-hidden flex flex-col rounded-2xl">
           {loadingCats ? (
-            <div className="bg-white dark:bg-bg-darker p-20 w-full rounded-t-[32px] md:rounded-[32px] flex flex-col justify-center items-center h-[50vh] md:h-64 border-t-4 md:border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
-              <Loader2 className="animate-spin text-primary mb-4" size={48} />
-              <p className="text-[10px] font-black uppercase tracking-widest text-text-muted italic">
-                Cargando sistema...
+            <div className="flex flex-col justify-center items-center h-[50vh] text-gray-500 gap-3">
+              <Loader2 className="animate-spin text-[var(--admin-accent)]" size={32} />
+              <p className="text-sm font-medium">
+                Cargando formulario...
               </p>
             </div>
           ) : (
             <ProductoForm
               negocioId={negocioId}
               categorias={categorias}
-              initialData={initialData} // Sincronizado aguas abajo con el formulario
+              initialData={initialData}
               onSuccess={onClose}
             />
           )}

@@ -16,10 +16,9 @@ import {
   Loader2,
   ListPlus,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { CategorySelect } from "../components/CategorySelect";
-// Importamos el contrato rey del catálogo para consistencia total
 import type { UnifiedProduct } from "../components/ProductTable";
+import { Switch } from "@/components/ui/switch";
 
 export interface Variant {
   nombre: string;
@@ -34,7 +33,7 @@ interface CategoriaOption {
 interface ProductoFormProps {
   negocioId: string;
   categorias: CategoriaOption[];
-  initialData?: UnifiedProduct | null; // Sincronizado aguas arriba con el Modal y la Tabla
+  initialData?: UnifiedProduct | null; 
   onSuccess?: () => void;
 }
 
@@ -46,7 +45,6 @@ export function ProductoForm({
 }: ProductoFormProps) {
   const [isPending, setIsPending] = useState(false);
 
-  // Estado maestro unificado de campos base
   const [formData, setFormData] = useState({
     nombre: initialData?.nombre || "",
     descripcion: initialData?.descripcion || "",
@@ -56,7 +54,6 @@ export function ProductoForm({
     disponible: initialData?.disponible ?? true,
   });
 
-  // Mapeo seguro de estructuras JSONB a tipos interactivos de TypeScript
   const [variantes, setVariantes] = useState<Variant[]>(
     (initialData?.configuracion?.variantes as unknown as Variant[]) || [],
   );
@@ -65,7 +62,6 @@ export function ProductoForm({
       ?.grupos_opciones as unknown as JSONBExtraGroup[]) || [],
   );
 
-  // --- HANDLERS DINÁMICOS (VARIACIONES Y GRUPOS DE EXTRAS) ---
   const agregarVariante = () => {
     setVariantes([...variantes, { nombre: "", precio: 0 }]);
   };
@@ -149,7 +145,6 @@ export function ProductoForm({
     setIsPending(true);
 
     try {
-      // Normalización estricta de tipos numéricos antes de empujar el payload
       const payload = {
         nombre: formData.nombre.trim(),
         descripcion: formData.descripcion.trim() || null,
@@ -176,16 +171,15 @@ export function ProductoForm({
 
       await upsertProductAction(payload, initialData?.id);
 
-      toast.success(initialData ? "CAMBIOS GUARDADOS" : "ÍTEM DESPLEGADO", {
-        icon: <CheckCircle className="text-black" />,
-        description: `${formData.nombre.toUpperCase()} se sincronizó correctamente.`,
+      toast.success(initialData ? "Producto actualizado" : "Producto creado", {
+        icon: <CheckCircle className="text-[var(--admin-accent)]" />,
       });
 
       if (onSuccess) onSuccess();
     } catch {
-      toast.error("ERROR AL GUARDAR", { description: "Error con Supabase." });
+      toast.error("Error al guardar el producto", { description: "Hubo un problema de conexión." });
     } finally {
-      setFormData((prev) => ({ ...prev })); // Fix menor para asegurar limpieza de render loops
+      setFormData((prev) => ({ ...prev })); 
       setIsPending(false);
     }
   };
@@ -193,20 +187,20 @@ export function ProductoForm({
   return (
     <form
       onSubmit={handleSubmit}
-      className="bg-white border-4 border-black p-4 md:p-8 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] font-sans w-full max-w-5xl"
+      className="bg-white rounded-xl font-sans w-full max-w-5xl flex flex-col h-full"
     >
-      {/* HEADER BRUTALISTA */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8 border-b-4 border-black pb-6">
+      {/* HEADER LIMPIO */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 border-b border-gray-100 shrink-0 bg-gray-50/50 rounded-t-xl">
         <div className="flex items-center gap-3">
-          <div className="p-3 bg-[#A3FF00] border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
-            <Package className="w-6 h-6 text-black stroke-[2.5]" />
+          <div className="p-2.5 bg-white border border-gray-200 rounded-lg shadow-sm text-gray-500">
+            <Package className="w-5 h-5" />
           </div>
           <div>
-            <h2 className="text-2xl md:text-3xl font-black uppercase italic tracking-tighter leading-none text-black">
+            <h2 className="text-xl font-bold text-gray-900 leading-tight">
               {initialData ? "Editar Producto" : "Nuevo Producto"}
             </h2>
-            <p className="text-[10px] font-mono font-black text-gray-400 uppercase tracking-widest mt-1">
-              ENGINE DE INVENTARIO MULTI-TENANT v3.0
+            <p className="text-xs font-medium text-gray-500 mt-1">
+              Completa los detalles para tu catálogo.
             </p>
           </div>
         </div>
@@ -214,278 +208,298 @@ export function ProductoForm({
         <button
           type="submit"
           disabled={isPending}
-          className="md:hidden flex items-center justify-center gap-2 bg-black text-white p-4 font-black uppercase text-xs border-2 border-black shadow-[2px_2px_0px_0px_#A3FF00] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all disabled:opacity-40"
+          className="md:hidden flex items-center justify-center gap-2 bg-[var(--admin-accent)] hover:bg-[var(--admin-accent)]/90 text-white px-4 py-2.5 rounded-lg text-sm font-semibold transition-all disabled:opacity-50 shadow-sm"
         >
           {isPending ? (
-            <Loader2 className="animate-spin" size={14} />
+            <Loader2 className="animate-spin" size={16} />
           ) : (
-            <Save size={14} />
+            <Save size={16} />
           )}
-          <span>Salvar</span>
+          <span>Guardar</span>
         </button>
       </div>
 
-      {/* CUERPO DEL FORMULARIO */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        {/* COLUMNA IZQUIERDA: INFORMACIÓN CORE */}
-        <div className="lg:col-span-5 space-y-5">
-          <div className="space-y-1.5">
-            <label className="text-xs font-black uppercase tracking-wider text-black">
-              Nombre Comercial
-            </label>
-            <input
-              required
-              type="text"
-              value={formData.nombre}
-              onChange={(e) =>
-                setFormData({ ...formData, nombre: e.target.value })
-              }
-              className="w-full p-3 bg-white border-2 border-black font-bold outline-none text-sm uppercase text-black"
-              placeholder="Ej: Triple Bacon Burger"
-            />
-          </div>
-
-          <div className="space-y-1.5">
-            <label className="text-xs font-black uppercase tracking-wider text-black">
-              Descripción Corta
-            </label>
-            <textarea
-              value={formData.descripcion}
-              onChange={(e) =>
-                setFormData({ ...formData, descripcion: e.target.value })
-              }
-              className="w-full p-3 bg-white border-2 border-black font-medium outline-none text-sm resize-none h-20 text-black"
-              placeholder="Detalla los ingredientes del plato..."
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
+      {/* CUERPO DEL FORMULARIO CON SCROLL */}
+      <div className="p-6 overflow-y-auto flex-1 custom-scrollbar">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          
+          {/* COLUMNA IZQUIERDA: INFORMACIÓN CORE */}
+          <div className="lg:col-span-5 space-y-5">
             <div className="space-y-1.5">
-              <label className="text-xs font-black uppercase tracking-wider text-black">
-                Precio Base ($)
+              <label className="text-sm font-semibold text-gray-700">
+                Nombre Comercial
               </label>
               <input
                 required
-                type="number"
-                step="0.01"
-                value={formData.precio}
+                type="text"
+                value={formData.nombre}
                 onChange={(e) =>
-                  setFormData({ ...formData, precio: e.target.value })
+                  setFormData({ ...formData, nombre: e.target.value })
                 }
-                className="w-full p-3 bg-white border-2 border-black font-mono font-black text-sm text-black"
-                placeholder="0.00"
+                className="w-full p-2.5 bg-white border border-gray-300 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[var(--admin-accent)] transition-all"
+                placeholder="Ej: Triple Bacon Burger"
               />
             </div>
 
             <div className="space-y-1.5">
-              <CategorySelect
-                negocioId={negocioId}
-                selectedId={formData.categoria_id}
-                onChange={(id) =>
-                  setFormData({ ...formData, categoria_id: id })
+              <label className="text-sm font-semibold text-gray-700">
+                Descripción Corta
+              </label>
+              <textarea
+                value={formData.descripcion}
+                onChange={(e) =>
+                  setFormData({ ...formData, descripcion: e.target.value })
                 }
+                className="w-full p-2.5 bg-white border border-gray-300 rounded-lg text-sm text-gray-900 resize-none h-24 focus:outline-none focus:ring-2 focus:ring-[var(--admin-accent)] transition-all"
+                placeholder="Detalla los ingredientes del plato..."
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <label className="text-sm font-semibold text-gray-700">
+                  Precio Base ($)
+                </label>
+                <input
+                  required
+                  type="number"
+                  step="0.01"
+                  value={formData.precio}
+                  onChange={(e) =>
+                    setFormData({ ...formData, precio: e.target.value })
+                  }
+                  className="w-full p-2.5 bg-white border border-gray-300 rounded-lg font-medium text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[var(--admin-accent)] transition-all"
+                  placeholder="0.00"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <CategorySelect
+                  negocioId={negocioId}
+                  selectedId={formData.categoria_id}
+                  onChange={(id) =>
+                    setFormData({ ...formData, categoria_id: id })
+                  }
+                />
+              </div>
+            </div>
+
+            <div className="flex flex-row items-center justify-between gap-4 bg-gray-50 border border-gray-100 rounded-xl p-4 mt-2">
+              <div className="space-y-0.5">
+                <label
+                  className="text-sm font-semibold text-gray-900 block"
+                >
+                  Estado de Venta
+                </label>
+                <p className="text-xs text-gray-500">¿Mostrar en el catálogo público?</p>
+              </div>
+              <Switch
+                checked={formData.disponible}
+                onCheckedChange={(checked) => setFormData({ ...formData, disponible: checked })}
               />
             </div>
           </div>
 
-          <div className="flex items-center gap-3 bg-gray-50 p-4 border-2 border-black">
-            <input
-              type="checkbox"
-              id="disponible"
-              checked={formData.disponible}
-              onChange={(e) =>
-                setFormData({ ...formData, disponible: e.target.checked })
-              }
-              className="w-4 h-4 accent-black border-2 border-black cursor-pointer"
-            />
-            <label
-              htmlFor="disponible"
-              className="text-xs font-black uppercase tracking-wider cursor-pointer text-black"
-            >
-              ¿Habilitar stock para venta inmediata?
-            </label>
-          </div>
-        </div>
-
-        {/* COLUMNA DERECHA: CONFIGURADORES COMPLEJOS (JSONB) */}
-        <div className="lg:col-span-7 space-y-6 border-t-4 lg:border-t-0 lg:border-l-4 border-dashed border-black pt-6 lg:pt-0 lg:pl-6">
-          {/* SECCIÓN VARIANTES */}
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <h3 className="text-xs font-mono font-black bg-black text-white px-2 py-0.5 uppercase tracking-wider">
-                [01] Tamaños / Variaciones
-              </h3>
-              <button
-                type="button"
-                onClick={agregarVariante}
-                className="text-[10px] font-black uppercase tracking-tight flex items-center gap-1 text-black bg-[#A3FF00] border border-black px-2 py-0.5"
-              >
-                <Plus size={10} strokeWidth={3} /> Añadir
-              </button>
-            </div>
-
-            <div className="space-y-2 max-h-36 overflow-y-auto pr-1">
-              {variantes.map((v, idx) => (
-                <div
-                  key={idx}
-                  className="flex gap-2 items-center bg-gray-50 p-2 border border-black"
+          {/* COLUMNA DERECHA: CONFIGURADORES (JSONB) */}
+          <div className="lg:col-span-7 space-y-8 border-t lg:border-t-0 lg:border-l border-gray-200 pt-8 lg:pt-0 lg:pl-8">
+            
+            {/* SECCIÓN VARIANTES */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between pb-2 border-b border-gray-100">
+                <h3 className="text-sm font-bold text-gray-800">
+                  Tamaños / Variaciones
+                </h3>
+                <button
+                  type="button"
+                  onClick={agregarVariante}
+                  className="text-xs font-semibold flex items-center gap-1 text-[var(--admin-accent)] hover:bg-[var(--admin-accent)]/10 px-2.5 py-1.5 rounded-md transition-colors"
                 >
-                  <input
-                    type="text"
-                    required
-                    value={v.nombre}
-                    onChange={(e) =>
-                      actualizarVariante(idx, { nombre: e.target.value })
-                    }
-                    placeholder="Ej: Grande"
-                    className="flex-1 p-1.5 bg-white border border-black text-xs font-bold text-black uppercase"
-                  />
-                  <input
-                    type="number"
-                    required
-                    value={v.precio}
-                    onChange={(e) =>
-                      actualizarVariante(idx, {
-                        precio:
-                          e.target.value === "" ? 0 : Number(e.target.value),
-                      })
-                    }
-                    placeholder="Precio"
-                    className="w-24 p-1.5 bg-white border border-black text-xs font-mono font-bold text-black"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => eliminarVariante(idx)}
-                    className="p-1.5 text-red-600 hover:bg-black hover:text-white transition-colors"
+                  <Plus size={14} /> Añadir
+                </button>
+              </div>
+
+              <div className="space-y-3">
+                {variantes.map((v, idx) => (
+                  <div
+                    key={idx}
+                    className="flex gap-2 items-center bg-white p-2 border border-gray-200 rounded-lg shadow-sm"
                   >
-                    <Trash2 size={14} />
-                  </button>
-                </div>
-              ))}
-              {variantes.length === 0 && (
-                <p className="text-[11px] text-gray-400 font-mono italic">
-                  No se definieron variantes de precio base.
-                </p>
-              )}
-            </div>
-          </div>
-
-          {/* SECCIÓN MODIFICADORES COMPLEJOS */}
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <h3 className="text-xs font-mono font-black bg-black text-white px-2 py-0.5 uppercase tracking-wider">
-                [02] Grupos de Opciones (Adiciones / Salsas)
-              </h3>
-              <button
-                type="button"
-                onClick={agregarGrupoOpcion}
-                className="text-[10px] font-black uppercase tracking-tight flex items-center gap-1 text-black bg-[#A3FF00] border border-black px-2 py-0.5"
-              >
-                <ListPlus size={12} /> Crear Grupo
-              </button>
-            </div>
-
-            <div className="space-y-4 max-h-64 overflow-y-auto pr-1">
-              {gruposOpciones.map((grupo) => (
-                <div
-                  key={grupo.id}
-                  className="border-2 border-black bg-white p-3 space-y-3 shadow-[2px_2px_0px_0px_#000000]"
-                >
-                  <div className="flex gap-2 items-center">
                     <input
                       type="text"
                       required
-                      value={grupo.titulo}
+                      value={v.nombre}
                       onChange={(e) =>
-                        actualizarGrupoOpcion(grupo.id, e.target.value)
+                        actualizarVariante(idx, { nombre: e.target.value })
                       }
-                      placeholder="Nombre del Grupo (Ej: Elige tus salsas)"
-                      className="flex-1 p-2 bg-gray-50 border border-black text-xs font-black uppercase text-black"
+                      placeholder="Ej: Grande"
+                      className="flex-1 p-2 bg-gray-50 border-transparent rounded-md text-sm font-medium text-gray-900 focus:bg-white focus:border-[var(--admin-accent)] focus:ring-1 focus:ring-[var(--admin-accent)] outline-none transition-all"
                     />
+                    <div className="relative">
+                      <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-500 text-sm">$</span>
+                      <input
+                        type="number"
+                        required
+                        value={v.precio}
+                        onChange={(e) =>
+                          actualizarVariante(idx, {
+                            precio:
+                              e.target.value === "" ? 0 : Number(e.target.value),
+                          })
+                        }
+                        placeholder="0.00"
+                        className="w-24 p-2 pl-6 bg-gray-50 border-transparent rounded-md text-sm font-medium text-gray-900 focus:bg-white focus:border-[var(--admin-accent)] focus:ring-1 focus:ring-[var(--admin-accent)] outline-none transition-all"
+                      />
+                    </div>
                     <button
                       type="button"
-                      onClick={() => agregarItemAGrupo(grupo.id)}
-                      className="text-[9px] font-black uppercase bg-black text-white px-2 py-1.5"
+                      onClick={() => eliminarVariante(idx)}
+                      className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-md transition-colors"
                     >
-                      + Item
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => eliminarGrupoOpcion(grupo.id)}
-                      className="p-1.5 text-red-600 border border-black hover:bg-red-50"
-                    >
-                      <Trash2 size={14} />
+                      <Trash2 size={16} />
                     </button>
                   </div>
+                ))}
+                {variantes.length === 0 && (
+                  <p className="text-xs text-gray-400 italic">
+                    Sin variantes (usa el precio base).
+                  </p>
+                )}
+              </div>
+            </div>
 
-                  {/* Sub-items del Grupo */}
-                  <div className="space-y-1.5 pl-4 border-l-2 border-black">
-                    {grupo.items?.map((item) => (
-                      <div key={item.id} className="flex gap-2 items-center">
-                        <input
-                          type="text"
-                          required
-                          value={item.nombre}
-                          onChange={(e) =>
-                            actualizarItemDeGrupo(grupo.id, item.id, {
-                              nombre: e.target.value,
-                            })
-                          }
-                          placeholder="Ingrediente extra"
-                          className="flex-1 p-1 bg-white border border-gray-400 text-xs font-medium text-black"
-                        />
-                        <input
-                          type="number"
-                          required
-                          value={item.precio}
-                          onChange={(e) =>
-                            actualizarItemDeGrupo(grupo.id, item.id, {
-                              precio:
-                                e.target.value === ""
-                                  ? 0
-                                  : Number(e.target.value),
-                            })
-                          }
-                          placeholder="+$0"
-                          className="w-20 p-1 bg-white border border-gray-400 text-xs font-mono text-black"
-                        />
+            {/* SECCIÓN MODIFICADORES COMPLEJOS */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between pb-2 border-b border-gray-100">
+                <h3 className="text-sm font-bold text-gray-800">
+                  Grupos de Extras / Salsas
+                </h3>
+                <button
+                  type="button"
+                  onClick={agregarGrupoOpcion}
+                  className="text-xs font-semibold flex items-center gap-1.5 text-blue-600 hover:bg-blue-50 px-2.5 py-1.5 rounded-md transition-colors"
+                >
+                  <ListPlus size={14} /> Crear Grupo
+                </button>
+              </div>
+
+              <div className="space-y-5">
+                {gruposOpciones.map((grupo) => (
+                  <div
+                    key={grupo.id}
+                    className="border border-gray-200 bg-gray-50/30 rounded-xl p-4 space-y-4"
+                  >
+                    <div className="flex flex-col sm:flex-row gap-3 sm:items-center justify-between">
+                      <input
+                        type="text"
+                        required
+                        value={grupo.titulo}
+                        onChange={(e) =>
+                          actualizarGrupoOpcion(grupo.id, e.target.value)
+                        }
+                        placeholder="Nombre (Ej: Elige tus salsas)"
+                        className="flex-1 p-2 bg-white border border-gray-300 rounded-md text-sm font-semibold text-gray-900 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
+                      />
+                      <div className="flex gap-2 shrink-0">
                         <button
                           type="button"
-                          onClick={() => eliminarItemDeGrupo(grupo.id, item.id)}
-                          className="text-red-500 hover:text-black"
+                          onClick={() => agregarItemAGrupo(grupo.id)}
+                          className="px-3 py-2 text-xs font-semibold bg-white border border-gray-200 rounded-md text-gray-700 hover:text-blue-600 hover:border-blue-200 hover:bg-blue-50 transition-colors"
                         >
-                          <Trash2 size={12} />
+                          + Ítem
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => eliminarGrupoOpcion(grupo.id)}
+                          className="px-3 py-2 text-xs font-semibold bg-white border border-gray-200 rounded-md text-red-500 hover:border-red-200 hover:bg-red-50 transition-colors"
+                        >
+                          Eliminar Grupo
                         </button>
                       </div>
-                    ))}
+                    </div>
+
+                    {/* Sub-items del Grupo */}
+                    <div className="space-y-2 pl-2 sm:pl-4 border-l-2 border-gray-200">
+                      {grupo.items?.map((item) => (
+                        <div key={item.id} className="flex gap-2 items-center">
+                          <input
+                            type="text"
+                            required
+                            value={item.nombre}
+                            onChange={(e) =>
+                              actualizarItemDeGrupo(grupo.id, item.id, {
+                                nombre: e.target.value,
+                              })
+                            }
+                            placeholder="Ingrediente extra"
+                            className="flex-1 p-2 bg-white border border-gray-200 rounded-md text-sm text-gray-900 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
+                          />
+                          <div className="relative">
+                            <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 text-sm">+$</span>
+                            <input
+                              type="number"
+                              required
+                              value={item.precio}
+                              onChange={(e) =>
+                                actualizarItemDeGrupo(grupo.id, item.id, {
+                                  precio:
+                                    e.target.value === ""
+                                      ? 0
+                                      : Number(e.target.value),
+                                })
+                              }
+                              placeholder="0.00"
+                              className="w-20 p-2 pl-7 bg-white border border-gray-200 rounded-md text-sm text-gray-900 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
+                            />
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => eliminarItemDeGrupo(grupo.id, item.id)}
+                            className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-md transition-colors"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                      ))}
+                      {grupo.items.length === 0 && (
+                        <p className="text-xs text-gray-400 italic mt-2">
+                           Añade opciones a este grupo.
+                        </p>
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
+                {gruposOpciones.length === 0 && (
+                   <div className="border border-dashed border-gray-300 rounded-xl p-6 flex flex-col items-center justify-center text-center text-gray-500">
+                      <ListPlus className="mb-2 opacity-50" size={24} />
+                      <span className="text-sm font-medium">Sin grupos adicionales</span>
+                   </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
       </div>
 
       {/* FOOTER ACCIONES DE RED */}
-      <div className="mt-8 pt-6 border-t-4 border-black flex flex-col sm:flex-row items-center justify-between gap-4">
-        <p className="text-[10px] font-mono font-black text-gray-400 uppercase tracking-wide">
-          * LOS MODIFICADORES AFECTAN EL TICKET FINAL EN PRODUCCIÓN
+      <div className="p-6 border-t border-gray-100 bg-white rounded-b-xl flex flex-col sm:flex-row items-center justify-between gap-4 shrink-0 mt-auto">
+        <p className="text-xs font-medium text-gray-500">
+           Los cambios impactarán en el catálogo público al instante.
         </p>
-        <Button
+        <button
           type="submit"
           disabled={isPending}
-          className="w-full sm:w-auto bg-[#A3FF00] hover:bg-black hover:text-white border-2 border-black text-black font-black uppercase text-sm px-10 py-5 shadow-[4px_4px_0px_0px_#000000] active:translate-x-[4px] active:translate-y-[4px] active:shadow-none transition-all flex items-center justify-center gap-2"
+          className="w-full sm:w-auto bg-[var(--admin-text)] hover:bg-gray-800 text-white rounded-lg font-semibold text-sm px-8 py-3 transition-all flex items-center justify-center gap-2 shadow-md disabled:opacity-70 disabled:cursor-not-allowed"
         >
           {isPending ? (
             <>
-              <Loader2 className="w-4 h-4 animate-spin" /> SINCRONIZANDO...
+              <Loader2 className="w-4 h-4 animate-spin" /> Guardando...
             </>
           ) : (
             <>
-              <Save size={16} strokeWidth={2.5} /> Guardar Cambios en Servidor
+              <Save size={16} /> Guardar Producto
             </>
           )}
-        </Button>
+        </button>
       </div>
     </form>
   );

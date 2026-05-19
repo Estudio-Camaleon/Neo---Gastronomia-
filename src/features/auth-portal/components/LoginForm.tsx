@@ -4,7 +4,8 @@ import { useState } from "react";
 import { createClient } from "@/core/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { z } from "zod";
-import { LogIn, AlertTriangle } from "lucide-react";
+import { LogIn, AlertTriangle, Loader2 } from "lucide-react";
+import { Input } from "@/components/ui/input";
 
 const loginSchema = z.object({
   email: z.string().email("Ingresa un correo válido"),
@@ -56,46 +57,46 @@ export function LoginForm() {
 
   return (
     <form onSubmit={handleLogin} className="w-full space-y-5">
-      <div className="space-y-2">
-        <label className="block text-xs font-black uppercase tracking-wider text-black">
+      <div className="space-y-1.5">
+        <label className="block text-sm font-semibold text-[var(--admin-text)]">
           Correo Electrónico
         </label>
-        <input
+        <Input
           type="email"
           disabled={loading}
-          className="w-full p-4 bg-white border-4 border-black text-black font-bold outline-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] focus:translate-x-[1px] focus:translate-y-[1px] focus:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all placeholder:text-gray-400 text-sm"
           placeholder="admin@tuimperio.com"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
+          className="h-12 border-[var(--admin-border)]"
         />
       </div>
 
-      <div className="space-y-2">
+      <div className="space-y-1.5">
         <div className="flex justify-between items-center">
-          <label className="block text-xs font-black uppercase tracking-wider text-black">
+          <label className="block text-sm font-semibold text-[var(--admin-text)]">
             Contraseña
           </label>
           <button
             type="button"
-            className="text-xs font-black uppercase underline tracking-tight text-black hover:text-gray-700"
+            className="text-xs font-semibold text-[var(--admin-accent)] hover:underline"
           >
             ¿Olvidaste tu contraseña?
           </button>
         </div>
-        <input
+        <Input
           type="password"
           disabled={loading}
-          className="w-full p-4 bg-white border-4 border-black text-black font-bold outline-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] focus:translate-x-[1px] focus:translate-y-[1px] focus:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all placeholder:text-gray-400 text-sm"
           placeholder="••••••••"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
+          className="h-12 border-[var(--admin-border)]"
         />
       </div>
 
       {error && (
-        <div className="flex items-center gap-3 text-black text-xs font-black uppercase bg-red-100 p-4 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] animate-in fade-in zoom-in duration-200">
+        <div className="flex items-center gap-2 text-[var(--admin-danger)] bg-[var(--admin-danger)]/10 p-3 rounded-xl border border-[var(--admin-danger)]/20 text-sm font-medium animate-in fade-in duration-200">
           <AlertTriangle className="h-4 w-4 shrink-0" />
           <span>{error}</span>
         </div>
@@ -104,14 +105,16 @@ export function LoginForm() {
       <button
         type="submit"
         disabled={loading}
-        className="w-full bg-[#A3FF00] text-black font-black uppercase text-sm tracking-wider p-5 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:bg-white active:translate-x-[4px] active:translate-y-[4px] active:shadow-none disabled:opacity-50 disabled:pointer-events-none transition-all flex items-center justify-center gap-2"
+        className="w-full bg-[var(--admin-accent)] hover:bg-[var(--admin-accent)]/90 text-white font-bold text-sm py-4 rounded-xl shadow-md hover:shadow-lg hover:-translate-y-0.5 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none transition-all flex items-center justify-center gap-2 mt-2"
       >
         {loading ? (
-          <span className="w-5 h-5 border-4 border-black border-t-transparent rounded-full animate-spin" />
+          <>
+            <Loader2 className="h-5 w-5 animate-spin" /> Procesando...
+          </>
         ) : (
           <>
-            <LogIn className="h-4 w-4 stroke-[3]" />
-            Ingresar a mi terminal
+            <LogIn className="h-5 w-5" />
+            Ingresar a mi cuenta
           </>
         )}
       </button>

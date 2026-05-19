@@ -21,9 +21,9 @@ export function SidebarNavigation() {
   const pathname = usePathname();
 
   return (
-    <nav className="flex-1 mt-8 space-y-2 overflow-y-auto custom-scrollbar">
-      <span className="text-[9px] font-black uppercase tracking-[0.3em] text-[var(--admin-text-muted)] ml-2 mb-4 block opacity-50">
-        Main Terminal
+    <nav className="flex-1 mt-8 space-y-2 overflow-y-auto custom-scrollbar px-2">
+      <span className="text-xs font-semibold uppercase tracking-wider text-[var(--admin-text-muted)] ml-2 mb-4 block opacity-70">
+        Menú Principal
       </span>
       {LINKS.map((link) => {
         const isActive =
@@ -36,29 +36,26 @@ export function SidebarNavigation() {
             key={link.name}
             href={link.href}
             className={`
-              flex items-center gap-4 px-4 py-3 border-2 transition-all duration-200 group relative
+              flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-300 group relative
               ${
                 isActive
-                  ? "bg-[var(--admin-accent)] text-white shadow-md"
-                  : "text-[var(--admin-text-muted)] hover:bg-[var(--admin-border)]/20 hover:text-[var(--admin-text)]"
+                  ? "bg-[var(--admin-accent)] text-white shadow-md shadow-[var(--admin-accent)]/30"
+                  : "text-[var(--admin-text-muted)] hover:bg-[var(--admin-surface-accent)]/50 hover:text-[var(--admin-text)]"
               }
             `}
           >
             <Icon
-              size={18}
-              strokeWidth={isActive ? 3 : 2}
+              size={20}
+              strokeWidth={isActive ? 2.5 : 2}
               className={
                 isActive
-                  ? "text-[var(--admin-bg)]"
-                  : "text-[var(--admin-accent)] opacity-60 group-hover:opacity-100"
+                  ? "text-white"
+                  : "text-[var(--admin-accent)] opacity-70 group-hover:opacity-100 transition-opacity"
               }
             />
-            <span className="text-xs font-black uppercase tracking-widest italic">
+            <span className="text-sm font-medium tracking-wide">
               {link.name}
             </span>
-            {isActive && (
-              <div className="absolute right-2 w-1.5 h-1.5 bg-[var(--admin-bg)] rounded-full animate-pulse" />
-            )}
           </Link>
         );
       })}

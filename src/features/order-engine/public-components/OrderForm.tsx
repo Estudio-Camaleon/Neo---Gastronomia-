@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { ArrowLeft, Loader2, Store, Truck, Banknote, CreditCard } from "lucide-react";
 import { toast } from "sonner";
 import { createClient } from "@/core/lib/supabase/client";
 import { submitOrderPublicAction } from "../actions";
@@ -89,9 +89,9 @@ export function OrderForm({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.nombre.trim() || !form.whatsapp.trim())
-      return toast.error("CAMPOS INCOMPLETOS");
+      return toast.error("Por favor completa tus datos personales.");
     if (form.esDelivery && !form.direccion.trim())
-      return toast.error("DIRECCIÓN DE ENVÍO REQUERIDA");
+      return toast.error("La dirección de envío es requerida.");
 
     setIsPending(true);
     try {
@@ -123,11 +123,11 @@ export function OrderForm({
       };
 
       const orderId = await submitOrderPublicAction(payload);
-      toast.success("ORDEN DE COMPRA CAPTURADA");
+      toast.success("Pedido procesado con éxito.");
       dispararWhatsAppExterno(negocio.whatsapp, orderId);
       onSuccess();
     } catch {
-      toast.error("ERROR");
+      toast.error("Ocurrió un error al procesar el pedido.");
     } finally {
       setIsPending(false);
     }
@@ -136,73 +136,67 @@ export function OrderForm({
   return (
     <form
       onSubmit={handleSubmit}
-      className="flex flex-col h-full justify-between space-y-4 font-sans text-black"
+      className="flex flex-col h-full justify-between space-y-4"
     >
-      <div className="space-y-4 overflow-y-auto max-h-[450px] pr-1">
+      <div className="space-y-6 overflow-y-auto max-h-[450px] pr-2 custom-scrollbar">
         <button
           type="button"
           onClick={onBack}
-          className="text-xs font-black uppercase tracking-wider flex items-center gap-2 border-2 border-black p-2 bg-white shadow-[2px_2px_0px_0px_#000000]"
+          className="text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors flex items-center gap-2 mb-2"
         >
-          <ArrowLeft size={14} strokeWidth={3} /> VOLVER A LA BOLSA
+          <ArrowLeft size={16} /> Volver al carrito
         </button>
 
-        <div className="space-y-3">
-          <div className="space-y-1">
-            <Label className="font-black text-xs uppercase">
-              Tu Nombre Completo
-            </Label>
+        <div className="space-y-4 bg-gray-50/50 p-4 rounded-xl border border-gray-100">
+          <div className="space-y-1.5">
+            <Label>Tu Nombre Completo</Label>
             <Input
               name="nombre"
               required
               value={form.nombre}
               onChange={handleInputChange}
-              className="border-2 border-black p-3 text-sm font-bold uppercase rounded-none"
-              placeholder="Ej: MATEO GÓMEZ"
+              className="bg-white"
+              placeholder="Ej: Juan Pérez"
             />
           </div>
-          <div className="space-y-1">
-            <Label className="font-black text-xs uppercase">
-              WhatsApp de Contacto
-            </Label>
+          <div className="space-y-1.5">
+            <Label>WhatsApp de Contacto</Label>
             <Input
               name="whatsapp"
               type="tel"
               required
               value={form.whatsapp}
               onChange={handleInputChange}
-              className="border-2 border-black p-3 text-sm font-bold rounded-none"
-              placeholder="Ej: 381555666"
+              className="bg-white"
+              placeholder="Ej: +54 9 11 1234-5678"
             />
           </div>
         </div>
 
-        <div className="space-y-2">
-          <Label className="font-black text-xs uppercase block">
-            Forma de Despacho
-          </Label>
-          <div className="grid grid-cols-2 gap-2">
+        <div className="space-y-3">
+          <Label className="block">Forma de Entrega</Label>
+          <div className="grid grid-cols-2 gap-3">
             <button
               type="button"
               onClick={() => setForm({ ...form, esDelivery: false })}
-              className={`p-3 font-black text-xs uppercase border-2 border-black shadow-[2px_2px_0px_0px_#000000] ${!form.esDelivery ? "bg-[#A3FF00]" : "bg-white"}`}
+              className={`flex items-center justify-center gap-2 p-3 text-sm font-medium rounded-xl border transition-all ${!form.esDelivery ? "bg-[var(--admin-accent,#34a35f)] border-[var(--admin-accent,#34a35f)] text-white shadow-sm" : "bg-white border-gray-200 text-gray-700 hover:border-[var(--admin-accent,#34a35f)] hover:bg-[var(--admin-accent,#34a35f)]/5"}`}
             >
-              🛍️ Retiro Local
+              <Store size={16} /> Retiro
             </button>
             <button
               type="button"
               onClick={() => setForm({ ...form, esDelivery: true })}
-              className={`p-3 font-black text-xs uppercase border-2 border-black shadow-[2px_2px_0px_0px_#000000] ${form.esDelivery ? "bg-[#A3FF00]" : "bg-white"}`}
+              className={`flex items-center justify-center gap-2 p-3 text-sm font-medium rounded-xl border transition-all ${form.esDelivery ? "bg-[var(--admin-accent,#34a35f)] border-[var(--admin-accent,#34a35f)] text-white shadow-sm" : "bg-white border-gray-200 text-gray-700 hover:border-[var(--admin-accent,#34a35f)] hover:bg-[var(--admin-accent,#34a35f)]/5"}`}
             >
-              🛵 Envío Cadete
+              <Truck size={16} /> Envío
             </button>
           </div>
 
           {form.esDelivery && (
-            <div className="p-3 border-4 border-black border-dashed bg-gray-50 space-y-2 animate-in zoom-in-95">
-              <div className="flex justify-between items-center text-xs font-bold uppercase">
-                <span>Costo logístico de envío:</span>
-                <span className="font-mono font-black">
+            <div className="p-4 rounded-xl border border-[var(--admin-accent,#34a35f)]/30 bg-[var(--admin-accent,#34a35f)]/5 space-y-3 animate-in fade-in zoom-in-95 duration-200">
+              <div className="flex justify-between items-center text-sm font-medium text-gray-700">
+                <span>Costo de envío:</span>
+                <span className="font-semibold text-gray-900">
                   {simbolo}
                   {config.costo_envio?.toFixed(2)}
                 </span>
@@ -210,57 +204,53 @@ export function OrderForm({
               <Input
                 name="direccion"
                 required
-                placeholder="CALLE, NÚMERO, DETALLES DE PUERTA..."
+                placeholder="Calle, Número, Depto..."
                 value={form.direccion}
                 onChange={handleInputChange}
-                className="border-2 border-black text-xs font-bold uppercase bg-white rounded-none"
+                className="bg-white"
               />
             </div>
           )}
         </div>
 
-        <div className="space-y-2">
-          <Label className="font-black text-xs uppercase block">
-            Medio de Pago
-          </Label>
-          <div className="grid grid-cols-2 gap-2">
+        <div className="space-y-3">
+          <Label className="block">Medio de Pago</Label>
+          <div className="grid grid-cols-2 gap-3">
             <button
               type="button"
               onClick={() => setForm({ ...form, metodoPago: "efectivo" })}
-              className={`p-3 font-black text-xs uppercase border-2 border-black shadow-[2px_2px_0px_0px_#000000] ${form.metodoPago === "efectivo" ? "bg-[#A3FF00]" : "bg-white"}`}
+              className={`flex items-center justify-center gap-2 p-3 text-sm font-medium rounded-xl border transition-all ${form.metodoPago === "efectivo" ? "bg-[var(--admin-accent,#34a35f)] border-[var(--admin-accent,#34a35f)] text-white shadow-sm" : "bg-white border-gray-200 text-gray-700 hover:border-[var(--admin-accent,#34a35f)] hover:bg-[var(--admin-accent,#34a35f)]/5"}`}
             >
-              💵 Cash
+              <Banknote size={16} /> Efectivo
             </button>
             <button
               type="button"
               onClick={() => setForm({ ...form, metodoPago: "transferencia" })}
-              className={`p-3 font-black text-xs uppercase border-2 border-black shadow-[2px_2px_0px_0px_#000000] ${form.metodoPago === "transferencia" ? "bg-[#A3FF00]" : "bg-white"}`}
+              className={`flex items-center justify-center gap-2 p-3 text-sm font-medium rounded-xl border transition-all ${form.metodoPago === "transferencia" ? "bg-[var(--admin-accent,#34a35f)] border-[var(--admin-accent,#34a35f)] text-white shadow-sm" : "bg-white border-gray-200 text-gray-700 hover:border-[var(--admin-accent,#34a35f)] hover:bg-[var(--admin-accent,#34a35f)]/5"}`}
             >
-              💳 Transfer
+              <CreditCard size={16} /> Transferencia
             </button>
           </div>
         </div>
 
-        <div className="space-y-1">
-          <Label className="font-black text-xs uppercase">
-            Aclaraciones Especiales
-          </Label>
+        <div className="space-y-1.5 pb-4">
+          <Label>Aclaraciones (Opcional)</Label>
           <textarea
             name="notas"
             value={form.notas}
             onChange={handleInputChange}
-            className="w-full p-3 bg-white border-2 border-black text-xs font-medium resize-none h-16 outline-none text-black"
-            placeholder="Ej: Sin aderezos, tocar timbre fuerte..."
+            className="w-full p-3 bg-white border border-gray-300 rounded-md text-sm resize-none h-20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--admin-accent,#34a35f)] focus-visible:ring-offset-2"
+            placeholder="Ej: Sin aderezos, timbre no anda..."
           />
         </div>
       </div>
 
-      <div className="pt-4 border-t-4 border-black bg-white space-y-2">
-        <div className="flex justify-between items-baseline">
-          <span className="text-[10px] font-mono font-black uppercase text-gray-400">
-            Total Neto Compra:
+      <div className="pt-5 border-t border-gray-100 bg-white space-y-4">
+        <div className="flex justify-between items-end">
+          <span className="text-sm font-medium text-gray-500">
+            Total Final:
           </span>
-          <span className="text-3xl font-mono font-black italic tracking-tighter">
+          <span className="text-3xl font-bold text-gray-900 tracking-tight">
             {simbolo}
             {totalFinal.toFixed(2)}
           </span>
@@ -268,12 +258,14 @@ export function OrderForm({
         <button
           type="submit"
           disabled={isPending}
-          className="w-full bg-[#A3FF00] border-4 border-black p-4 font-black uppercase tracking-wider text-xs shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:translate-x-[4px] active:translate-y-[4px] active:shadow-none transition-all flex items-center justify-center gap-2"
+          className="w-full bg-[var(--admin-accent,#34a35f)] hover:bg-[var(--admin-accent,#34a35f)]/90 text-white rounded-xl py-3.5 font-semibold text-sm shadow-md transition-all flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
         >
           {isPending ? (
-            <Loader2 className="animate-spin text-black" size={16} />
+            <>
+              <Loader2 className="animate-spin" size={18} /> Procesando...
+            </>
           ) : (
-            "DESPACHAR COMANDA POR WHATSAPP 🚀"
+            "Confirmar Pedido por WhatsApp"
           )}
         </button>
       </div>

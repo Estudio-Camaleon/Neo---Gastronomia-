@@ -1,5 +1,5 @@
 import { createClient } from "@/core/lib/supabase/server";
-import { Users } from "lucide-react";
+import { Users, AlertTriangle } from "lucide-react";
 import {
   ClientRadar,
   ClienteResumen,
@@ -20,10 +20,13 @@ export default async function ClientesPage() {
 
   if (!negocio) {
     return (
-      <div className="flex items-center justify-center min-h-[50vh] font-sans">
-        <h2 className="text-sm font-black uppercase bg-red-100 text-red-700 p-5 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-          [CRITICAL ERROR]: INFRAESTRUCTURA TENANT INCOMPLETA.
-        </h2>
+      <div className="flex items-center justify-center min-h-[50vh] relative z-10">
+        <div className="bg-red-50 text-red-600 p-6 rounded-2xl border border-red-100 flex items-center gap-4 shadow-sm">
+          <AlertTriangle size={24} />
+          <h2 className="text-sm font-semibold tracking-wide">
+            Infraestructura Tenant Incompleta. Por favor, configura tu local.
+          </h2>
+        </div>
       </div>
     );
   }
@@ -64,25 +67,24 @@ export default async function ClientesPage() {
   );
 
   return (
-    <div className="space-y-10 font-sans text-black max-w-7xl mx-auto">
+    <div className="space-y-10 max-w-7xl mx-auto relative z-10">
       {/* HEADER DE COMUNIDAD */}
-      <header className="space-y-3">
-        <div className="flex items-center gap-2">
-          <div className="bg-[#A3FF00] p-2 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] text-black">
-            <Users size={18} strokeWidth={2.5} />
+      <header className="space-y-4">
+        <div className="flex items-center gap-3">
+          <div className="bg-[var(--admin-accent)] text-white p-2.5 rounded-xl shadow-sm shadow-[var(--admin-accent)]/20">
+            <Users size={20} />
           </div>
-          <span className="text-[10px] font-mono font-black uppercase tracking-widest text-gray-400">
-            METRICS // DATA RADAR COMMUNITY
+          <span className="text-xs font-semibold uppercase tracking-wider text-[var(--admin-text-muted)]">
+            Métricas de Comunidad
           </span>
         </div>
 
-        <div className="space-y-4">
-          <h1 className="text-5xl md:text-7xl font-black uppercase tracking-tighter italic leading-[0.8] text-black">
-            NUESTRA <br /> COMUNIDAD
+        <div className="space-y-3">
+          <h1 className="text-3xl md:text-5xl font-bold tracking-tight text-[var(--admin-text)]">
+            Tus Clientes
           </h1>
-          <p className="max-w-2xl text-xs font-bold uppercase text-gray-500 border-l-4 border-black pl-4 leading-normal">
-            Análisis algorítmico de volumen de compra, ranking de retención y
-            control de expedientes de usuarios en hora pico.
+          <p className="max-w-2xl text-sm font-medium text-[var(--admin-text-muted)] border-l-2 border-[var(--admin-accent)] pl-4 leading-relaxed">
+            Análisis de volumen de compra, ranking de retención y seguimiento de usuarios en tu plataforma.
           </p>
         </div>
       </header>

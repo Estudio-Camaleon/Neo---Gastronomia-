@@ -13,19 +13,19 @@ interface SocialLinksProps {
 
 export function SocialLinksSection({ formData, onChange }: SocialLinksProps) {
   return (
-    <div className="bg-white border-4 border-black p-4 md:p-6 space-y-5 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] text-black font-sans h-full flex flex-col justify-between">
-      <div className="space-y-4">
-        <div className="flex items-center gap-2 border-b-4 border-black pb-3">
-          <Share2 size={18} className="stroke-[2.5]" />
-          <h2 className="font-black uppercase italic text-sm tracking-tight">
-            Canales Sociales Externos
+    <div className="admin-card h-full flex flex-col justify-between">
+      <div className="space-y-5">
+        <div className="flex items-center gap-2 border-b border-gray-100 pb-3">
+          <Share2 size={18} className="text-[var(--admin-accent)]" />
+          <h2 className="font-semibold text-gray-900">
+            Redes Sociales
           </h2>
         </div>
 
-        <div className="space-y-3 text-xs">
-          <div className="space-y-1">
-            <label className="font-black uppercase block">
-              Perfil de Instagram
+        <div className="space-y-4">
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium text-gray-700 block">
+              Instagram
             </label>
             <input
               name="instagram_url"
@@ -33,13 +33,13 @@ export function SocialLinksSection({ formData, onChange }: SocialLinksProps) {
               value={formData.instagram_url}
               onChange={onChange}
               placeholder="https://instagram.com/tu_marca"
-              className="w-full p-2.5 bg-white border-2 border-black font-mono font-medium text-black text-xs"
+              className="w-full p-2.5 bg-white border border-gray-300 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[var(--admin-accent)] transition-all"
             />
           </div>
 
-          <div className="space-y-1">
-            <label className="font-black uppercase block">
-              Página de Facebook
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium text-gray-700 block">
+              Facebook
             </label>
             <input
               name="facebook_url"
@@ -47,13 +47,13 @@ export function SocialLinksSection({ formData, onChange }: SocialLinksProps) {
               value={formData.facebook_url}
               onChange={onChange}
               placeholder="https://facebook.com/tu_marca"
-              className="w-full p-2.5 bg-white border-2 border-black font-mono font-medium text-black text-xs"
+              className="w-full p-2.5 bg-white border border-gray-300 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[var(--admin-accent)] transition-all"
             />
           </div>
 
-          <div className="space-y-1">
-            <label className="font-black uppercase block">
-              Canal de TikTok
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium text-gray-700 block">
+              TikTok
             </label>
             <input
               name="tiktok_url"
@@ -61,18 +61,16 @@ export function SocialLinksSection({ formData, onChange }: SocialLinksProps) {
               value={formData.tiktok_url}
               onChange={onChange}
               placeholder="https://tiktok.com/@tu_marca"
-              className="w-full p-2.5 bg-white border-2 border-black font-mono font-medium text-black text-xs"
+              className="w-full p-2.5 bg-white border border-gray-300 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[var(--admin-accent)] transition-all"
             />
           </div>
         </div>
       </div>
 
-      <div className="bg-gray-50 border border-black p-3 flex gap-2 mt-4 opacity-70">
-        <Info size={14} className="shrink-0 text-gray-400 mt-0.5" />
-        <p className="text-[9px] font-bold text-gray-500 uppercase leading-relaxed tracking-tight">
-          Es mandatorio incluir el prefijo{" "}
-          <span className="underline">https://</span> completo para asegurar la
-          correcta redirección web del comensal.
+      <div className="bg-blue-50/50 border border-blue-100 rounded-lg p-3 flex gap-2 mt-6">
+        <Info size={16} className="shrink-0 text-blue-500 mt-0.5" />
+        <p className="text-xs text-blue-800 leading-relaxed">
+          Recuerda incluir <strong>https://</strong> al principio de cada enlace para que los botones funcionen correctamente en el catálogo público.
         </p>
       </div>
     </div>

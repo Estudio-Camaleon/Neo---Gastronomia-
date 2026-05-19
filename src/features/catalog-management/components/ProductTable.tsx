@@ -8,8 +8,8 @@ import Image from "next/image";
 import { IngredientBadge } from "./IngredientBadge";
 import { deleteProductAction } from "../actions";
 import type { RealtimeChannel } from "@supabase/supabase-js";
+import { Badge } from "@/components/ui/badge";
 
-// Contrato único y unificado para todo el ecosistema de Catálogo NEO
 export interface UnifiedProduct {
   id: string;
   nombre: string;
@@ -44,7 +44,6 @@ export function ProductTable({ negocioId, onEdit }: ProductTableProps) {
 
   const cargarProductos = useCallback(async () => {
     try {
-      // Inyectamos categoria_id en el select para hidratar el formulario de edición de forma directa
       const { data, error } = await supabase
         .from("productos")
         .select(
@@ -57,7 +56,7 @@ export function ProductTable({ negocioId, onEdit }: ProductTableProps) {
       setProductos((data as unknown as UnifiedProduct[]) || []);
     } catch (error) {
       console.error("Error Sync Catálogo:", error);
-      toast.error("Error de sincronización con el almacén");
+      toast.error("Error al cargar los productos");
     } finally {
       setLoading(false);
     }
@@ -88,109 +87,115 @@ export function ProductTable({ negocioId, onEdit }: ProductTableProps) {
   }, [cargarProductos, supabase, negocioId]);
 
   const handleEliminar = async (id: string, nombre: string) => {
-    if (!confirm(`¿Eliminar irreversiblemente "${nombre.toUpperCase()}"?`))
+    if (!confirm(`¿Eliminar irreversiblemente "${nombre}"?`))
       return;
 
     try {
       await deleteProductAction(id);
-      toast.success("PRODUCTO REMOVIDO DEL ALMACÉN");
+      toast.success("Producto eliminado correctamente");
     } catch {
-      toast.error("ERROR AL ELIMINAR");
+      toast.error("Error al eliminar el producto");
     }
   };
 
   if (loading) {
     return (
-      <div className="py-24 flex flex-col items-center justify-center space-y-2 font-mono text-xs text-gray-500">
-        <Loader2 className="animate-spin text-black shrink-0" size={24} />
-        <span>Sincronizando registros con Supabase...</span>
+      <div className="py-24 flex flex-col items-center justify-center space-y-3 text-sm text-gray-500">
+        <Loader2 className="animate-spin text-[var(--admin-accent)]" size={28} />
+        <span>Cargando catálogo...</span>
       </div>
     );
   }
 
   return (
     <div className="overflow-x-auto">
-      <table className="w-full text-left border-collapse font-sans">
+      <table className="w-full text-left border-collapse">
         <thead>
-          <tr className="border-b-4 border-black bg-gray-50 text-xs font-black uppercase tracking-wider text-black">
-            <th className="p-4">Detalle del Producto</th>
+          <tr className="border-b border-gray-200 bg-gray-50/50 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+            <th className="p-4 pl-6">Producto</th>
             <th className="p-4 hidden md:table-cell">Sección</th>
             <th className="p-4">Precio</th>
             <th className="p-4">Estado</th>
-            <th className="p-4 text-right">Acciones</th>
+            <th className="p-4 pr-6 text-right">Acciones</th>
           </tr>
         </thead>
-        <tbody className="divide-y-2 divide-black/10 text-sm">
+        <tbody className="divide-y divide-gray-100 text-sm">
           {productos.map((prod) => (
             <tr
               key={prod.id}
-              className="hover:bg-gray-50/80 transition-colors group"
+              className="hover:bg-gray-50/50 transition-colors group bg-white"
             >
-              <td className="p-4">
+              <td className="p-4 pl-6">
                 <div className="flex items-center gap-4">
-                  <div className="relative w-12 h-12 shrink-0 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] bg-gray-100 overflow-hidden">
+                  <div className="relative w-12 h-12 shrink-0 rounded-lg bg-gray-100 border border-gray-200 overflow-hidden shadow-sm">
                     {prod.imagen_url ? (
                       <Image
                         src={prod.imagen_url}
                         alt={prod.nombre}
                         fill
-                        className="object-cover"
+                        className="object-cover transition-transform group-hover:scale-105"
                         sizes="48px"
                       />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <Package size={18} />
+                      <div className="w-full h-full flex items-center justify-center text-gray-400">
+                        <Package size={20} />
                       </div>
                     )}
                   </div>
-                  <div className="space-y-0.5">
-                    <p className="font-black uppercase italic tracking-tight leading-none text-black">
+                  <div className="space-y-1">
+                    <p className="font-semibold text-gray-900 leading-none">
                       {prod.nombre}
                     </p>
                     <IngredientBadge configuracion={prod.configuracion} />
-                    <p className="text-[11px] text-gray-400 font-medium line-clamp-1 max-w-[240px]">
-                      {prod.descripcion || "Sin especificaciones técnicas"}
+                    <p className="text-xs text-gray-500 line-clamp-1 max-w-[240px]">
+                      {prod.descripcion || "Sin descripción"}
                     </p>
                   </div>
                 </div>
               </td>
               <td className="p-4 hidden md:table-cell">
-                <span className="inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-tight bg-gray-100 px-2 py-1 border border-black rounded-md">
-                  <Tag size={10} /> {prod.categorias?.nombre || "General"}
+                <span className="inline-flex items-center gap-1.5 text-xs font-medium text-gray-600 bg-gray-100 px-2.5 py-1 rounded-md border border-gray-200">
+                  <Tag size={12} /> {prod.categorias?.nombre || "General"}
                 </span>
               </td>
-              <td className="p-4 font-mono font-black italic">
+              <td className="p-4 font-semibold text-gray-900">
                 ${Number(prod.precio).toFixed(2)}
               </td>
               <td className="p-4">
                 {prod.disponible ? (
-                  <span className="bg-emerald-100 border border-emerald-500 text-emerald-800 text-[10px] font-black px-2 py-0.5 uppercase tracking-wide">
-                    Activo
-                  </span>
+                  <Badge variant="default" className="bg-green-100 text-green-700 hover:bg-green-100 border-green-200">Activo</Badge>
                 ) : (
-                  <span className="bg-gray-100 border border-gray-400 text-gray-600 text-[10px] font-black px-2 py-0.5 uppercase tracking-wide opacity-60">
-                    Pausado
-                  </span>
+                  <Badge variant="secondary" className="bg-gray-100 text-gray-500 hover:bg-gray-100 border-gray-200">Pausado</Badge>
                 )}
               </td>
-              <td className="p-4 text-right">
-                <div className="flex justify-end gap-1">
+              <td className="p-4 pr-6 text-right">
+                <div className="flex justify-end gap-2">
                   <button
                     onClick={() => onEdit(prod)}
-                    className="p-2 border-2 border-black bg-white shadow-[2px_2px_0px_0px_#000000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all text-black hover:bg-black hover:text-white"
+                    className="p-2 text-gray-400 hover:text-[var(--admin-accent)] hover:bg-[var(--admin-accent)]/10 rounded-lg transition-colors border border-transparent hover:border-[var(--admin-accent)]/20"
+                    title="Editar producto"
                   >
-                    <Edit3 size={14} strokeWidth={2.5} />
+                    <Edit3 size={16} />
                   </button>
                   <button
                     onClick={() => handleEliminar(prod.id, prod.nombre)}
-                    className="p-2 border-2 border-black bg-white shadow-[2px_2px_0px_0px_#000000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all text-red-600 hover:bg-red-600 hover:text-white"
+                    className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors border border-transparent hover:border-red-200"
+                    title="Eliminar producto"
                   >
-                    <Trash2 size={14} strokeWidth={2.5} />
+                    <Trash2 size={16} />
                   </button>
                 </div>
               </td>
             </tr>
           ))}
+          
+          {productos.length === 0 && (
+             <tr>
+                <td colSpan={5} className="p-12 text-center text-gray-500 bg-white">
+                   No hay productos registrados en el catálogo.
+                </td>
+             </tr>
+          )}
         </tbody>
       </table>
     </div>

@@ -4,23 +4,22 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/core/lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center whitespace-nowrap text-xs font-black uppercase italic tracking-widest transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black disabled:pointer-events-none disabled:opacity-50 border-4 border-black",
+  "inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
   {
     variants: {
       variant: {
-        default:
-          "bg-[var(--color-custom,#000000)] text-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:opacity-90 active:translate-x-[4px] active:translate-y-[4px] active:shadow-none",
-        outline:
-          "bg-white text-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:bg-gray-50 active:translate-x-[4px] active:translate-y-[4px] active:shadow-none",
-        error:
-          "bg-red-500 text-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:bg-red-600 active:translate-x-[4px] active:translate-y-[4px] active:shadow-none",
-        ghost:
-          "border-transparent hover:bg-gray-100 active:bg-gray-200 shadow-none",
+        default: "bg-[var(--admin-accent,#34a35f)] text-white hover:bg-[var(--admin-accent,#34a35f)]/90",
+        destructive: "bg-red-500 text-white hover:bg-red-500/90",
+        outline: "border border-input bg-background hover:bg-accent hover:text-accent-foreground",
+        secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
+        ghost: "hover:bg-accent hover:text-accent-foreground",
+        link: "text-primary underline-offset-4 hover:underline",
+        error: "bg-red-500 text-white hover:bg-red-600",
       },
       size: {
-        default: "h-12 px-6 py-3",
-        sm: "h-9 px-3 text-[10px]",
-        lg: "h-14 px-10 text-sm",
+        default: "h-10 px-4 py-2",
+        sm: "h-9 rounded-md px-3",
+        lg: "h-11 rounded-md px-8",
         icon: "h-10 w-10",
       },
     },

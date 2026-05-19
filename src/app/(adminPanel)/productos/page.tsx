@@ -4,7 +4,7 @@
  */
 import { createClient } from "@/core/lib/supabase/server";
 import { redirect } from "next/navigation";
-import { Package } from "lucide-react";
+import { Package, CheckCircle2 } from "lucide-react";
 import { AddProductSection } from "@/features/catalog-management/components/AddProductSection";
 
 export default async function ProductosAdminPage() {
@@ -22,22 +22,22 @@ export default async function ProductosAdminPage() {
   if (!negocio) redirect("/configuracion");
 
   return (
-    <div className="space-y-8 max-w-7xl mx-auto font-sans text-black pb-16">
+    <div className="space-y-8 max-w-7xl mx-auto pb-16 relative z-10">
       {/* HEADER DE ALMACÉN */}
-      <header className="border-b-4 border-black pb-4 space-y-1">
-        <div className="flex items-center gap-2 text-gray-400">
-          <Package size={14} className="text-black" />
-          <span className="text-[10px] font-mono font-black uppercase tracking-widest">
-            LOGISTICS // CATALOG ARCHITECTURE
+      <header className="border-b border-[var(--admin-border)]/50 pb-6 space-y-3">
+        <div className="flex items-center gap-2 text-[var(--admin-text-muted)]">
+          <Package size={16} />
+          <span className="text-xs font-semibold uppercase tracking-wider">
+            Gestión de Catálogo
           </span>
         </div>
-        <h1 className="text-5xl font-black uppercase tracking-tighter italic leading-none text-black">
+        <h1 className="text-3xl md:text-5xl font-bold tracking-tight text-[var(--admin-text)]">
           Menú & Stock
         </h1>
-        <p className="text-gray-500 text-xs font-bold uppercase tracking-wider">
+        <p className="text-[var(--admin-text-muted)] text-sm font-medium">
           Administrando las existencias del catálogo público de:{" "}
-          <span className="underline font-black text-black">
-            {negocio.nombre.toUpperCase()}
+          <span className="font-semibold text-[var(--admin-text)]">
+            {negocio.nombre}
           </span>
         </p>
       </header>
@@ -46,12 +46,12 @@ export default async function ProductosAdminPage() {
       <AddProductSection negocioId={negocio.id} />
 
       {/* FOOTER ADAPTATIVO */}
-      <footer className="pt-8 border-t-2 border-dashed border-black/10 opacity-30 flex justify-between items-center select-none">
-        <p className="text-[9px] font-black uppercase tracking-widest italic font-mono">
-          NEO ENGINE LOG v3.0
+      <footer className="pt-8 border-t border-[var(--admin-border)]/30 flex justify-between items-center select-none text-[var(--admin-text-muted)]">
+        <p className="text-xs font-medium tracking-wide">
+          NEO ENGINE v3.0
         </p>
-        <div className="flex gap-2 items-center text-[9px] font-mono font-black uppercase">
-          <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+        <div className="flex gap-2 items-center text-xs font-semibold">
+          <CheckCircle2 size={14} className="text-[var(--admin-accent)]" />
           <span>Sincronizado</span>
         </div>
       </footer>

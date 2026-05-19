@@ -19,12 +19,26 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const savedTheme = localStorage.getItem("neo-theme") || "light";
     setThemeState(savedTheme);
+    
+    // Aplicar clase al cargar
+    if (savedTheme === "dark") {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+    
     setMounted(true);
   }, []);
 
   const setTheme = (newTheme: string) => {
     setThemeState(newTheme);
     localStorage.setItem("neo-theme", newTheme);
+    
+    if (newTheme === "dark") {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
   };
 
   return (

@@ -3,17 +3,46 @@
 
 /* 2. Definición de variables CSS (Theme) */
 @theme {
-  --color-admin-surface: #ffffff;
-  --color-admin-bg: #f8fafc;
-  --color-admin-border: #e2e8f0;
-  --color-admin-text: #0f172a;
-  --color-admin-text-muted: #64748b;
-  --color-admin-accent: #2563eb;
+  --color-admin-surface: var(--admin-surface);
+  --color-admin-bg: var(--admin-bg);
+  --color-admin-border: var(--admin-border);
+  --color-admin-text: var(--admin-text);
+  --color-admin-text-muted: var(--admin-text-muted);
+  --color-admin-accent: var(--admin-accent);
+  --color-admin-danger: var(--admin-danger);
+  --color-admin-surface-accent: var(--admin-surface-accent);
+}
+
+/* Variables globales aplicadas para compatibilidad con código existente */
+:root {
+  --admin-surface: rgba(255, 255, 255, 0.85);
+  --admin-bg: #ecf8f1;
+  --admin-border: #c8ebd7;
+  --admin-text: #000000;
+  --admin-text-muted: rgba(0, 0, 0, 0.6);
+  --admin-accent: #34a35f;
+  --admin-danger: #e3342f;
+  --admin-surface-accent: #c8ebd7;
+}
+
+.dark {
+  --admin-surface: rgba(24, 24, 27, 0.85); /* zinc-900 con transparencia */
+  --admin-bg: #09090b; /* zinc-950 */
+  --admin-border: #27272a; /* zinc-800 */
+  --admin-text: #fafafa; /* zinc-50 */
+  --admin-text-muted: #a1a1aa; /* zinc-400 */
+  --admin-accent: #34a35f;
+  --admin-danger: #ef4444; /* red-500 */
+  --admin-surface-accent: #27272a; /* zinc-800 */
 }
 
 /* 3. Tus clases utilitarias */
 @layer components {
   .admin-card {
-    @apply bg-[var(--color-admin-surface)] border border-[var(--color-admin-border)] rounded-xl shadow-sm transition-all duration-200;
+    @apply bg-[var(--admin-surface)] border border-[var(--admin-border)] rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] backdrop-blur-md transition-all duration-300;
+  }
+  
+  .admin-sidebar {
+    @apply flex flex-col h-full bg-[var(--admin-surface)] backdrop-blur-xl border-r border-[var(--admin-border)];
   }
 }

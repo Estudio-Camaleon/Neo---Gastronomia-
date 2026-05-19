@@ -28,19 +28,17 @@ export function CategoriaManager({
   const [loadingList, setLoadingList] = useState(true);
   const supabase = createClient();
 
-  // Función pura para normalizar strings y generar slugs limpios para la URL pública
   const slugificar = (texto: string): string => {
     return texto
       .toLowerCase()
       .trim()
       .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "") // Remueve acentos nativos
-      .replace(/[^a-z0-9\s-]/g, "") // Remueve caracteres especiales molestos
-      .replace(/[\s-]+/g, "-") // Reemplaza espacios por guiones
-      .replace(/(^-|-$)+/g, ""); // Sanea guiones huérfanos en los extremos
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9\s-]/g, "")
+      .replace(/[\s-]+/g, "-")
+      .replace(/(^-|-$)+/g, "");
   };
 
-  // Traer las categorías asociadas al local de forma estable
   const cargarCategorias = useCallback(async () => {
     try {
       const { data, error } = await supabase
@@ -58,7 +56,6 @@ export function CategoriaManager({
     }
   }, [supabase, negocioId]);
 
-  // Suscripción Realtime activa de alto rendimiento
   useEffect(() => {
     cargarCategorias();
 
@@ -92,7 +89,6 @@ export function CategoriaManager({
     const slug = slugificar(nombreLimpio);
 
     try {
-      // Mutación optimizada directa al Almacén
       const { error } = await supabase.from("categorias").insert({
         nombre: nombreLimpio,
         slug,
@@ -101,19 +97,18 @@ export function CategoriaManager({
 
       if (error) {
         if (error.code === "23505") {
-          // Código Postgres para violación de restricción única
-          toast.error("SECCIÓN DUPLICADA", {
-            description: "Esta categoría ya existe en tu terminal.",
+          toast.error("Categoría duplicada", {
+            description: "Ya existe una sección con ese nombre.",
           });
         } else {
           throw error;
         }
       } else {
         setNuevoNombre("");
-        toast.success("SECCIÓN DESPLEGADA CON ÉXITO");
+        toast.success("Categoría creada con éxito");
       }
     } catch {
-      toast.error("FALLO DE ESCRITURA", { description: "Error con Supabase." });
+      toast.error("Error al crear la categoría");
     } finally {
       setIsPending(false);
     }
@@ -122,7 +117,7 @@ export function CategoriaManager({
   const handleRemove = async (id: string, nombre: string) => {
     if (
       !confirm(
-        `¿ELIMINAR "${nombre.toUpperCase()}"?\nEsto afectará la visibilidad de los productos asociados en el menú público.`,
+        `¿Eliminar la categoría "${nombre}"?\nLos productos asociados quedarán sin sección.`,
       )
     )
       return;
@@ -132,125 +127,124 @@ export function CategoriaManager({
         .from("categorias")
         .delete()
         .eq("id", id)
-        .eq("negocio_id", negocioId); // Doble reaseguro Multi-tenant
+        .eq("negocio_id", negocioId);
 
       if (error) throw error;
-      toast.success("SECCIÓN REMOVIDA");
+      toast.success("Categoría eliminada");
     } catch {
-      toast.error("FALLO DE ELIMINACIÓN", { description: "Error con Supabase." });
+      toast.error("Error al eliminar la categoría");
     }
   };
 
   return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[99999] flex items-center justify-center p-4 font-sans">
-      <div className="bg-white w-full max-w-lg border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] overflow-hidden animate-in zoom-in-95 duration-150">
-        {/* CABECERA MODAL BRUTALISTA */}
-        <div className="p-6 flex justify-between items-center border-b-4 border-black bg-black text-white">
-          <div className="flex items-center gap-3">
-            <Tag size={20} className="text-[#A3FF00]" />
-            <h2 className="font-black uppercase italic text-xl tracking-tighter">
+    <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4">
+      <div 
+        className="absolute inset-0 bg-gray-900/40 backdrop-blur-sm transition-opacity"
+        onClick={onClose}
+      />
+      
+      <div className="relative bg-white w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
+        <div className="px-6 py-4 flex justify-between items-center border-b border-gray-100 bg-gray-50/50">
+          <div className="flex items-center gap-2">
+            <Tag size={18} className="text-[var(--admin-accent)]" />
+            <h2 className="font-bold text-gray-900 text-lg">
               Secciones del Menú
             </h2>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="p-1 text-white border-2 border-transparent hover:border-white hover:bg-red-600 transition-all rounded-none"
+            className="p-1.5 text-gray-500 hover:text-gray-900 hover:bg-gray-200 rounded-full transition-colors"
           >
-            <X size={20} strokeWidth={3} />
+            <X size={20} />
           </button>
         </div>
 
-        {/* FORMULARIO DE ALTA */}
         <div className="p-6 space-y-6">
           <form onSubmit={handleAdd} className="space-y-2">
-            <label className="text-xs font-black uppercase tracking-wider text-black block">
-              Crear Nueva Sección Comercial
+            <label className="text-sm font-semibold text-gray-700 block">
+              Crear Nueva Sección
             </label>
             <div className="flex gap-2">
               <div className="relative flex-1">
-                <Hash className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-black shrink-0" />
+                <Hash className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <input
                   type="text"
                   required
                   value={nuevoNombre}
                   onChange={(e) => setNuevoNombre(e.target.value)}
-                  placeholder="EJ: BURGERS, ENTRADAS, BEBIDAS..."
-                  className="w-full bg-white p-4 pl-10 border-2 border-black text-black outline-none font-black uppercase text-xs focus:bg-[#A3FF00]/5 placeholder:text-gray-400"
+                  placeholder="Ej: Hamburguesas, Bebidas..."
+                  className="w-full bg-white py-2.5 pl-9 pr-3 border border-gray-300 rounded-lg text-sm text-gray-900 focus:outline-none focus:border-[var(--admin-accent)] focus:ring-1 focus:ring-[var(--admin-accent)] transition-all disabled:opacity-50"
                   disabled={isPending || loadingList}
                 />
               </div>
               <button
                 type="submit"
                 disabled={isPending || !nuevoNombre.trim() || loadingList}
-                className="bg-[#A3FF00] border-2 border-black text-black font-black uppercase text-xs px-6 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none disabled:opacity-40 transition-all flex items-center justify-center shrink-0"
+                className="bg-[var(--admin-accent)] hover:bg-[var(--admin-accent)]/90 text-white font-semibold text-sm px-4 rounded-lg shadow-sm transition-all flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isPending ? (
-                  <Loader2 className="animate-spin" size={16} />
+                  <Loader2 className="animate-spin" size={18} />
                 ) : (
-                  <Plus size={16} strokeWidth={3} />
+                  <Plus size={18} />
                 )}
               </button>
             </div>
           </form>
 
-          {/* LISTADO ACTIVO */}
           <div className="space-y-3">
-            <p className="text-xs font-mono font-black text-gray-400 uppercase tracking-widest">
-              Lista de Canales Activos ({categorias.length})
-            </p>
+            <div className="flex items-center justify-between pb-2 border-b border-gray-100">
+               <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                 Secciones Activas
+               </p>
+               <span className="text-xs font-semibold bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
+                  {categorias.length}
+               </span>
+            </div>
 
             {loadingList ? (
-              <div className="py-8 flex items-center justify-center text-xs font-mono text-gray-500 gap-2">
+              <div className="py-8 flex flex-col items-center justify-center text-sm text-gray-500 gap-3">
                 <Loader2
-                  className="animate-spin text-black shrink-0"
-                  size={16}
+                  className="animate-spin text-[var(--admin-accent)]"
+                  size={24}
                 />
-                <span>Sincronizando índice con Supabase...</span>
+                <span>Cargando secciones...</span>
               </div>
             ) : (
-              <div className="flex flex-col gap-2 max-h-48 overflow-y-auto pr-1">
+              <div className="flex flex-col gap-2 max-h-[40vh] overflow-y-auto custom-scrollbar pr-2">
                 {categorias.map((cat) => (
                   <div
                     key={cat.id}
-                    className="group flex items-center justify-between bg-gray-50 p-3 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all hover:bg-gray-100"
+                    className="group flex items-center justify-between bg-white border border-gray-200 rounded-lg p-3 shadow-sm hover:border-[var(--admin-accent)]/30 transition-all"
                   >
                     <div className="flex flex-col">
-                      <span className="text-xs font-black uppercase text-black tracking-wide">
+                      <span className="text-sm font-semibold text-gray-900">
                         {cat.nombre}
                       </span>
-                      <span className="text-[9px] font-mono text-gray-400">
-                        URL: /{cat.slug}
+                      <span className="text-xs text-gray-400">
+                        /{cat.slug}
                       </span>
                     </div>
                     <button
                       type="button"
                       onClick={() => handleRemove(cat.id, cat.nombre)}
-                      className="p-1.5 border border-transparent text-gray-400 hover:text-red-600 hover:border-black transition-all"
-                      title="Eliminar categoría"
+                      className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                      title="Eliminar sección"
                     >
-                      <Trash2 size={14} />
+                      <Trash2 size={16} />
                     </button>
                   </div>
                 ))}
 
                 {categorias.length === 0 && (
-                  <div className="w-full py-8 text-center border-4 border-dashed border-black/10 opacity-60 bg-gray-50">
-                    <p className="text-xs font-black uppercase text-gray-400 font-mono italic">
-                      Sin secciones asignadas.
+                  <div className="w-full py-8 text-center border border-dashed border-gray-300 rounded-xl bg-gray-50/50">
+                    <p className="text-sm text-gray-500">
+                      Aún no has creado ninguna sección.
                     </p>
                   </div>
                 )}
               </div>
             )}
-          </div>
-
-          {/* CLÁUSULA OPERATIVA DE SEGURIDAD */}
-          <div className="pt-4 border-t-2 border-dashed border-black/10">
-            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-tight leading-normal font-mono">
-              🔒 REASEGURO MULTI-TENANT ACTIVADO: Las mutaciones están validadas
-              por hardware criptográfico a nivel RLS.
-            </p>
           </div>
         </div>
       </div>

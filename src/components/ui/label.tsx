@@ -6,7 +6,7 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/core/lib/utils";
 
 const labelVariants = cva(
-  "text-[10px] font-black uppercase tracking-widest leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-black dark:text-gray-400 italic",
+  "text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-gray-900 dark:text-gray-100",
 );
 
 const Label = React.forwardRef<
@@ -21,7 +21,6 @@ const Label = React.forwardRef<
   />
 ));
 
-// Usamos un string seguro para evitar conflictos con index signatures estrictos de librerías externas
-Label.displayName = "Label";
+Label.displayName = LabelPrimitive.Root.displayName;
 
 export { Label };

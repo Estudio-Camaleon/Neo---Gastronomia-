@@ -14,21 +14,23 @@ export function CartFloatingButton({ onClick }: CartFloatingButtonProps) {
   if (totalItems === 0) return null;
 
   return (
-    <div className="fixed bottom-6 right-6 z-40 font-sans md:right-8 md:bottom-8 animate-in fade-in slide-in-from-bottom-4 duration-200">
+    <div className="fixed bottom-6 right-6 z-40 md:right-8 md:bottom-8 animate-in fade-in slide-in-from-bottom-4 duration-300">
       <button
         type="button"
         onClick={onClick}
-        className="relative flex items-center justify-center gap-2 bg-black text-[#A3FF00] border-4 border-black p-4 font-black uppercase text-xs tracking-wider shadow-[4px_4px_0px_0px_rgba(163,255,0,1)] hover:bg-[#A3FF00] hover:text-black transition-all cursor-pointer select-none group"
+        className="relative flex items-center justify-center gap-2 bg-[var(--admin-accent,#34a35f)] text-white px-5 py-3.5 rounded-full font-semibold shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group"
       >
         <ShoppingBag
-          size={16}
-          strokeWidth={3}
-          className="group-hover:rotate-12 transition-transform"
+          size={18}
+          className="group-hover:rotate-12 transition-transform duration-300"
         />
-        <span>REVISAR PEDIDO</span>
-        <span className="ml-1 bg-[#A3FF00] text-black group-hover:bg-black group-hover:text-[#A3FF00] font-mono font-black border border-black text-[10px] h-5 w-5 flex items-center justify-center transition-colors">
-          {totalItems}
-        </span>
+        <span className="text-sm">Ver Pedido</span>
+        
+        {totalItems > 0 && (
+          <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold w-6 h-6 flex items-center justify-center rounded-full border-2 border-white shadow-sm animate-in zoom-in">
+            {totalItems}
+          </span>
+        )}
       </button>
     </div>
   );

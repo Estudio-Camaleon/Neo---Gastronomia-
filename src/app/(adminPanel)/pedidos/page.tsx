@@ -4,6 +4,7 @@
  */
 import { createClient } from "@/core/lib/supabase/server";
 import { redirect } from "next/navigation";
+import { MapPin } from "lucide-react";
 import {
   PedidosRadar,
   type PedidoData,
@@ -40,20 +41,21 @@ export default async function PedidosPage() {
   const listaPedidos = (pedidosIniciales || []) as unknown as PedidoData[];
 
   return (
-    <div className="max-w-7xl mx-auto space-y-8 relative font-sans text-black">
+    <div className="max-w-7xl mx-auto space-y-8 relative z-10">
       {/* HEADER DE MONITOREO VIVO */}
-      <header className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b-4 border-black pb-4">
-        <div className="space-y-1">
-          <h1 className="text-5xl md:text-7xl font-black uppercase italic tracking-tighter leading-none">
-            Pedidos<span className="text-[#A3FF00]">.</span>
+      <header className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 pb-6 border-b border-[var(--admin-border)]/50">
+        <div className="space-y-2">
+          <h1 className="text-3xl md:text-5xl font-bold tracking-tight text-[var(--admin-text)]">
+            Pedidos en vivo
           </h1>
-          <p className="text-gray-400 font-mono font-black uppercase text-[10px] tracking-widest">
-            Control de comisiones y despacho inmediato en tiempo real
+          <p className="text-[var(--admin-text-muted)] font-medium text-sm">
+            Control de órdenes y despacho inmediato en tiempo real
           </p>
         </div>
 
-        <div className="bg-black text-[#A3FF00] px-4 py-2 border-2 border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] font-mono font-black uppercase text-xs tracking-wider transform -rotate-1">
-          📍 LOCAL: {negocio.nombre.toUpperCase()}
+        <div className="flex items-center gap-2 bg-[var(--admin-accent)] text-white px-4 py-2 rounded-xl shadow-md shadow-[var(--admin-accent)]/20 font-semibold text-xs tracking-wide">
+          <MapPin size={16} />
+          {negocio.nombre}
         </div>
       </header>
 
@@ -63,13 +65,6 @@ export default async function PedidosPage() {
         negocioId={negocio.id}
         negocioNombre={negocio.nombre}
       />
-
-      {/* MARCA DE AGUA INDUSTRIAL FLOOD BACKGROUND */}
-      <div className="fixed bottom-12 right-12 pointer-events-none opacity-[0.02] select-none hidden xl:block z-0">
-        <h2 className="text-[16rem] font-black italic leading-none tracking-tighter">
-          NEO
-        </h2>
-      </div>
     </div>
   );
 }

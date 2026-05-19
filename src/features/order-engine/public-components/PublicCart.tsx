@@ -47,87 +47,86 @@ export function PublicCart({
 
   const handleVaciar = () => {
     clearCart();
-    toast.success("BOLSA DE COMPRA REINICIADA");
+    toast.success("Carrito vaciado");
     if (isDrawer && onCloseDrawer) onCloseDrawer();
   };
 
   const renderCartContent = () => (
-    <div className="flex flex-col h-full justify-between flex-1 text-black">
+    <div className="flex flex-col h-full justify-between flex-1">
       {cart.length === 0 ? (
         <div className="flex flex-col items-center justify-center text-center py-16 px-4 flex-1 select-none">
-          <div className="border-4 border-dashed border-black p-4 mb-3 text-gray-300">
-            <ShoppingBag size={32} />
+          <div className="p-4 bg-gray-50 rounded-full mb-4 text-gray-400">
+            <ShoppingBag size={40} strokeWidth={1.5} />
           </div>
-          <h4 className="font-black uppercase italic text-sm tracking-tight">
-            Tu bolsa está vacía
+          <h4 className="text-lg font-semibold text-gray-900 tracking-tight">
+            Tu carrito está vacío
           </h4>
-          <p className="text-gray-400 text-xs font-medium max-w-[220px] mt-1 leading-normal">
-            Sumá productos del catálogo para configurar tu comanda.
+          <p className="text-gray-500 text-sm mt-2 max-w-[220px]">
+            Explora nuestro menú y agrega productos para comenzar.
           </p>
         </div>
       ) : !showOrderForm ? (
         <div className="flex flex-col flex-1 justify-between h-full">
-          <div className="divide-y-2 divide-dashed divide-black/10 overflow-y-auto max-h-[350px] lg:max-h-[500px] pr-1">
+          <div className="divide-y divide-gray-100 overflow-y-auto max-h-[350px] lg:max-h-[500px] pr-2 custom-scrollbar">
             {cart.map((item) => (
               <div
                 key={item.id}
-                className="py-3 flex items-center justify-between gap-2 animate-in fade-in duration-100"
+                className="py-4 flex items-center justify-between gap-3 animate-in fade-in duration-200"
               >
-                <div className="space-y-0.5 flex-1 pr-1">
-                  <p className="font-black uppercase italic text-xs tracking-tight line-clamp-1">
+                <div className="space-y-1 flex-1 min-w-0">
+                  <p className="font-semibold text-sm text-gray-900 truncate">
                     {item.nombre}
                   </p>
                   {item.detalles && (
-                    <p className="text-[10px] leading-tight font-medium text-gray-500 line-clamp-1">
-                      ↳ {item.detalles}
+                    <p className="text-xs text-gray-500 truncate">
+                      Nota: {item.detalles}
                     </p>
                   )}
-                  <p className="font-mono text-xs font-black text-gray-400">
+                  <p className="text-sm font-medium text-[var(--admin-accent,#34a35f)]">
                     {config.moneda_simbolo}
                     {(item.precio * item.cantidad).toFixed(2)}
                   </p>
                 </div>
 
-                <div className="flex items-center bg-white border-2 border-black p-0.5 select-none shrink-0">
+                <div className="flex items-center bg-gray-50 rounded-lg border border-gray-200 p-0.5 shadow-sm shrink-0">
                   <button
                     type="button"
                     onClick={() => removeItem(item.id)}
-                    className="p-1 hover:bg-black hover:text-white transition-colors"
+                    className="p-1.5 text-gray-500 hover:text-gray-900 hover:bg-gray-200 rounded-md transition-colors"
                   >
-                    <Minus size={10} strokeWidth={3} />
+                    <Minus size={14} />
                   </button>
-                  <span className="font-mono font-black text-xs px-2 text-center min-w-[20px]">
+                  <span className="text-sm font-semibold w-6 text-center text-gray-900">
                     {item.cantidad}
                   </span>
                   <button
                     type="button"
                     onClick={() => addItem({ ...item, cantidad: 1 })}
-                    className="p-1 hover:bg-black hover:text-white transition-colors"
+                    className="p-1.5 text-gray-500 hover:text-gray-900 hover:bg-gray-200 rounded-md transition-colors"
                   >
-                    <Plus size={10} strokeWidth={3} />
+                    <Plus size={14} />
                   </button>
                 </div>
               </div>
             ))}
           </div>
 
-          <div className="pt-4 border-t-4 border-black space-y-3 mt-auto bg-white">
+          <div className="pt-6 mt-auto space-y-4">
             {!esPedidoValido && (
-              <div className="flex items-center gap-2 p-3 bg-red-50 border-2 border-black text-red-600 font-mono text-[10px] font-black uppercase tracking-wide animate-pulse">
-                <AlertCircle size={14} />
-                <span>
-                  Te restan {config.moneda_simbolo}
-                  {faltaParaMinimo.toFixed(2)} para alcanzar el mínimo.
-                </span>
+              <div className="flex items-start gap-3 p-3 bg-blue-50/50 border border-blue-100 rounded-xl text-blue-700 text-sm">
+                <AlertCircle size={16} className="mt-0.5 shrink-0" />
+                <p>
+                  Agrega <strong>{config.moneda_simbolo}{faltaParaMinimo.toFixed(2)}</strong> más para alcanzar el pedido mínimo.
+                </p>
               </div>
             )}
 
-            <div className="flex items-end justify-between select-none">
+            <div className="flex items-end justify-between bg-gray-50 p-4 rounded-xl border border-gray-100">
               <div>
-                <span className="text-[9px] font-mono font-black text-gray-400 block tracking-widest">
-                  SUBTOTAL COMPRA
+                <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider block mb-1">
+                  Subtotal
                 </span>
-                <p className="font-mono font-black text-2xl tracking-tighter mt-0.5">
+                <p className="text-2xl font-bold text-gray-900 tracking-tight">
                   {config.moneda_simbolo}
                   {subtotal.toFixed(2)}
                 </p>
@@ -135,9 +134,9 @@ export function PublicCart({
               <button
                 type="button"
                 onClick={handleVaciar}
-                className="flex items-center gap-1 text-[10px] font-black uppercase text-red-600 border border-black p-1.5 hover:bg-red-50"
+                className="flex items-center gap-1.5 text-xs font-medium text-red-500 hover:text-red-700 transition-colors bg-red-50/50 hover:bg-red-50 px-3 py-1.5 rounded-lg border border-red-100/50"
               >
-                <Trash2 size={11} /> Reiniciar bolsa
+                <Trash2 size={14} /> Vaciar
               </button>
             </div>
 
@@ -145,9 +144,9 @@ export function PublicCart({
               type="button"
               disabled={!esPedidoValido}
               onClick={() => setShowOrderForm(true)}
-              className={`w-full py-4 border-4 border-black font-black uppercase text-xs tracking-wider flex items-center justify-center gap-2 transition-all ${esPedidoValido ? "bg-[#A3FF00] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:translate-x-[4px] active:translate-y-[4px] active:shadow-none" : "bg-gray-100 text-gray-400 opacity-50 cursor-not-allowed"}`}
+              className={`w-full py-4 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 transition-all duration-300 ${esPedidoValido ? "bg-[var(--admin-accent,#34a35f)] hover:bg-[var(--admin-accent,#34a35f)]/90 text-white shadow-md hover:shadow-lg" : "bg-gray-100 text-gray-400 cursor-not-allowed"}`}
             >
-              INGRESAR DATOS DE ENTREGA <ArrowRight size={14} strokeWidth={3} />
+              Continuar con el pago <ArrowRight size={16} />
             </button>
           </div>
         </div>
@@ -173,25 +172,25 @@ export function PublicCart({
     return (
       <div className="fixed inset-0 z-[99999] flex justify-end font-sans">
         <div
-          className="absolute inset-0 bg-black/60 backdrop-blur-xs transition-opacity"
+          className="absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity"
           onClick={onCloseDrawer}
         />
-        <div className="relative w-full max-w-md h-full bg-white border-l-4 border-black p-6 shadow-2xl flex flex-col justify-between animate-in slide-in-from-right duration-200">
-          <div className="flex items-center justify-between border-b-4 border-black pb-3 mb-2 text-black">
-            <h3 className="font-black uppercase italic tracking-tight text-md flex items-center gap-2">
-              Mi Comanda 🛒
+        <div className="relative w-full max-w-md h-full bg-white shadow-2xl flex flex-col p-6 animate-in slide-in-from-right duration-300">
+          <div className="flex items-center justify-between pb-4 border-b border-gray-100 mb-4">
+            <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+              Tu Pedido
               {totalItems > 0 && (
-                <span className="bg-black text-[#A3FF00] font-mono text-[9px] font-black px-2 py-0.5">
-                  {totalItems} Ítems
+                <span className="bg-[var(--admin-accent,#34a35f)]/10 text-[var(--admin-accent,#34a35f)] text-xs font-semibold px-2.5 py-0.5 rounded-full">
+                  {totalItems} {totalItems === 1 ? 'ítem' : 'ítems'}
                 </span>
               )}
             </h3>
             <button
               type="button"
               onClick={onCloseDrawer}
-              className="p-1 border-2 border-transparent hover:border-black transition-all"
+              className="p-2 text-gray-400 hover:text-gray-900 hover:bg-gray-100 rounded-full transition-colors"
             >
-              <X size={16} strokeWidth={3} />
+              <X size={20} />
             </button>
           </div>
           {renderCartContent()}
@@ -201,7 +200,7 @@ export function PublicCart({
   }
 
   return (
-    <div className="w-full h-full flex flex-col bg-transparent">
+    <div className="w-full h-full flex flex-col bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
       {renderCartContent()}
     </div>
   );

@@ -11,11 +11,11 @@ export function IngredientBadge({ configuracion }: IngredientBadgeProps) {
   if (cantidadGrupos === 0) return null;
 
   return (
-    <div className="inline-flex items-center gap-1 bg-[#A3FF00] border border-black px-1.5 py-0.5 shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] text-black select-none w-fit">
-      <Layers size={9} strokeWidth={3} />
-      <span className="text-[9px] font-black uppercase tracking-tighter italic">
+    <div className="inline-flex items-center gap-1.5 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded-md text-blue-700 select-none w-fit">
+      <Layers size={10} className="text-blue-500" />
+      <span className="text-[10px] font-semibold uppercase tracking-wide">
         {cantidadGrupos}{" "}
-        {cantidadGrupos === 1 ? "Modificador" : "Modificadores"}
+        {cantidadGrupos === 1 ? "Extra" : "Extras"}
       </span>
     </div>
   );

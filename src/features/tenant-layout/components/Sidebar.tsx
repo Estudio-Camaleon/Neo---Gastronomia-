@@ -38,19 +38,19 @@ export function Sidebar({
 
   if (!mounted)
     return (
-      <aside className="w-72 bg-[var(--admin-surface)] border-r-2 border-[var(--admin-border)]" />
+      <aside className="w-72 bg-[var(--admin-surface)] border-r border-[var(--admin-border)]" />
     );
 
   return (
     <>
-      <aside className="admin-sidebar p-6 z-40">
+      <aside className="admin-sidebar p-6 z-40 relative">
         <SidebarLogo />
-        <div className="my-8 border-t border-[var(--admin-border)]" />
+        <div className="my-8 border-t border-[var(--admin-border)]/50" />
         <SidebarRadar negocioId={negocioId} />
 
         <SidebarNavigation />
 
-        <div className="mt-auto pt-6 border-t border-[var(--admin-border)]" />
+        <div className="mt-auto pt-6 border-t border-[var(--admin-border)]/50" />
 
         <SidebarFooter
           slug={slug}
@@ -63,20 +63,19 @@ export function Sidebar({
 
       {/* MODAL DE DESCONEXIÓN */}
       {showLogoutConfirm && (
-        <div className="fixed inset-0 bg-[#0f4023]/80 backdrop-blur-md z-[100] flex items-center justify-center p-4 animate-in fade-in duration-300">
-          <div className="bg-[var(--admin-bg)] border-2 border-[var(--admin-border)] p-8 max-w-sm w-full shadow-[8px_8px_0px_0px_var(--admin-border)] relative">
-            <div className="mx-auto w-14 h-14 bg-[var(--admin-danger)]/10 text-[var(--admin-danger)] flex items-center justify-center mb-6 border-2 border-[var(--admin-danger)] rounded-full">
-              <AlertCircle size={28} strokeWidth={2.5} />
+        <div className="fixed inset-0 bg-[#0f4023]/60 backdrop-blur-md z-[100] flex items-center justify-center p-4 animate-in fade-in duration-300">
+          <div className="bg-[var(--admin-surface)] rounded-2xl p-8 max-w-sm w-full shadow-[0_20px_50px_rgba(0,0,0,0.1)] relative border border-[var(--admin-border)]">
+            <div className="mx-auto w-14 h-14 bg-red-50 text-red-500 flex items-center justify-center mb-6 rounded-full">
+              <AlertCircle size={28} />
             </div>
 
-            <h3 className="font-black text-xl text-[var(--admin-text)] text-center uppercase italic tracking-tighter mb-2">
-              Desconectar{" "}
-              <span className="text-[var(--admin-accent)]">Terminal</span>
+            <h3 className="font-bold text-xl text-[var(--admin-text)] text-center tracking-tight mb-2">
+              Desconectar <span className="text-[var(--admin-accent)]">Terminal</span>
             </h3>
 
-            <p className="text-[10px] font-bold text-[var(--admin-text-muted)] text-center uppercase tracking-widest leading-tight mb-8 opacity-70">
+            <p className="text-sm font-medium text-[var(--admin-text-muted)] text-center leading-relaxed mb-8">
               ¿Confirmás la salida de <br />
-              <span className="text-[var(--admin-text)] font-black">
+              <span className="text-[var(--admin-text)] font-semibold">
                 {negocioNombre || "la unidad actual"}
               </span>
               ?
@@ -85,13 +84,13 @@ export function Sidebar({
             <div className="flex flex-col gap-3">
               <button
                 onClick={handleSignOut}
-                className="w-full py-4 bg-[var(--admin-border)] text-[var(--admin-bg)] font-black uppercase italic text-xs tracking-[0.2em] hover:bg-[var(--admin-accent)] transition-all shadow-[4px_4px_0px_0px_var(--admin-accent)]/20"
+                className="w-full py-3.5 bg-red-500 text-white rounded-xl font-semibold tracking-wide hover:bg-red-600 transition-colors shadow-sm"
               >
                 Cerrar Terminal
               </button>
               <button
                 onClick={() => setShowLogoutConfirm(false)}
-                className="w-full py-4 border-2 border-[var(--admin-border)] text-[var(--admin-text)] font-black uppercase italic text-[10px] tracking-[0.2em] hover:bg-[var(--admin-surface-accent)] transition-all"
+                className="w-full py-3.5 border border-[var(--admin-border)] bg-transparent text-[var(--admin-text)] rounded-xl font-medium tracking-wide hover:bg-[var(--admin-bg)] transition-colors"
               >
                 Cancelar y Volver
               </button>

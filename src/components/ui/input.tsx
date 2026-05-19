@@ -9,14 +9,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
       <input
         type={type}
         className={cn(
-          // Estructura Base
-          "flex h-12 w-full bg-white dark:bg-zinc-900 px-4 py-3 text-sm font-bold transition-all placeholder:text-gray-400",
-          // Estilo Neo-Brutalista Puro
-          "border-4 border-black dark:border-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)]",
-          // Control del Foco Mecánico Sincronizado (Desplazamiento 4px = Sombra 0px)
-          "focus-visible:outline-none focus-visible:translate-x-[4px] focus-visible:translate-y-[4px] focus-visible:shadow-none",
-          // Estados Deshabilitados
-          "disabled:cursor-not-allowed disabled:opacity-50 disabled:bg-gray-100 disabled:translate-x-0 disabled:translate-y-0 disabled:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]",
+          "flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm ring-offset-white file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-gray-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#34a35f] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-800 dark:bg-zinc-950 dark:text-gray-100 dark:ring-offset-zinc-950 dark:placeholder:text-gray-400 dark:focus-visible:ring-[#34a35f]",
           className,
         )}
         ref={ref}

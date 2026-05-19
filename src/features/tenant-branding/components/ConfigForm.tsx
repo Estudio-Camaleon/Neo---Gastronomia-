@@ -16,7 +16,6 @@ import {
   type UpdateTenantBrandingPayload,
 } from "../actions";
 
-// Subsecciones Modulares del Core de Configuración
 import { BrandingSection } from "../sections/BrandingSection";
 import { GeneralInfoSection } from "../sections/GeneralInfoSection";
 import { CatalogDesignSection } from "../sections/CatalogDesignSection";
@@ -68,7 +67,6 @@ export function ConfigForm({
   const [isPending, setIsPending] = useState(false);
   const [uploading, setUploading] = useState<string | null>(null);
 
-  // Inicialización de estado plano para sincronización perfecta con subsecciones
   const [formData, setFormData] = useState<ConfigFormState>({
     nombre: initialData?.nombre || "",
     slug: initialData?.slug || "",
@@ -76,7 +74,7 @@ export function ConfigForm({
     direccion: initialData?.direccion || "",
     localidad: initialData?.localidad || "",
     direccion_notas: initialData?.direccion_notas || "",
-    color_primary: initialData?.color_primary || "#A3FF00",
+    color_primary: initialData?.color_primary || "#34a35f",
     logo_url: initialData?.logo_url || "",
     banner_url: initialData?.banner_url || "",
     instagram_url: initialData?.instagram_url || "",
@@ -85,7 +83,6 @@ export function ConfigForm({
     horarios: (initialData?.horarios as unknown as ScheduleData) || {},
   });
 
-  // UX PREVENTIVA: Monitoreo estricto del cambio de URL pública (Slug Change Radar)
   const hasSlugChanged =
     initialData?.slug !== undefined && initialData?.slug !== formData.slug;
 
@@ -95,12 +92,11 @@ export function ConfigForm({
     const { name, value } = e.target;
 
     if (name === "slug") {
-      // Saneamiento en caliente: remueve espacios, acentos y fuerza minúsculas en tiempo real
       const sanitizedSlug = value
         .toLowerCase()
         .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "") // Limpia tildes
-        .replace(/[^a-z0-9-_]/g, ""); // Solo permite caracteres válidos para URLs
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-z0-9-_]/g, "");
 
       setFormData((prev) => ({ ...prev, [name]: sanitizedSlug }));
       return;
@@ -116,7 +112,7 @@ export function ConfigForm({
     const file = e.target.files?.[0];
     if (!file) return;
     if (file.size > 2 * 1024 * 1024) {
-      return toast.error("EL ARCHIVO EXCEDE EL LÍMITE DE 2MB");
+      return toast.error("El archivo excede el límite de 2MB");
     }
 
     setUploading(field);
@@ -136,9 +132,9 @@ export function ConfigForm({
       } = supabase.storage.from("imagenes-negocios").getPublicUrl(filePath);
 
       setFormData((prev) => ({ ...prev, [field]: publicUrl }));
-      toast.success("ASSET DE MARCA SINCRONIZADO EN TERMINAL");
+      toast.success("Imagen subida correctamente");
     } catch {
-      toast.error("FALLO DE CARGA DE ASSET EN SERVIDOR");
+      toast.error("Error al subir la imagen");
     } finally {
       setUploading(null);
     }
@@ -147,12 +143,11 @@ export function ConfigForm({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!initialData?.id) {
-      return toast.error("ERROR CRÍTICO: ID DE TENANT AUSENTE");
+      return toast.error("Error: ID del negocio no encontrado");
     }
 
     setIsPending(true);
     try {
-      // Payload blindado mapeando las propiedades planas requeridas por el backend
       const payload: UpdateTenantBrandingPayload = {
         id: initialData.id,
         nombre: formData.nombre,
@@ -173,13 +168,13 @@ export function ConfigForm({
       const res = await updateTenantBrandingAction(payload);
 
       setFormData((prev) => ({ ...prev, slug: res.slugSaneado }));
-      toast.success("INFRAESTRUCTURA DE MARCA ACTUALIZADA", {
-        icon: <CheckCircle2 className="text-[#A3FF00]" />,
+      toast.success("Configuración guardada", {
+        icon: <CheckCircle2 className="text-[var(--admin-accent)]" />,
       });
 
       router.refresh();
     } catch {
-      toast.error("FALLO DE SINCRONIZACIÓN EN BASE DE DATOS");
+      toast.error("Error al guardar la configuración");
     } finally {
       setFormData((prev) => ({ ...prev, slug: formData.slug.trim() }));
       setIsPending(false);
@@ -189,26 +184,17 @@ export function ConfigForm({
   return (
     <form
       onSubmit={handleSubmit}
-      className="space-y-8 font-sans text-black max-w-5xl"
+      className="space-y-6 max-w-5xl"
     >
-      {/* ALERTA CRÍTICA DE SLUG */}
       {hasSlugChanged && (
-        <div className="bg-[#FF3333] text-white border-4 border-black p-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex items-start gap-3 animate-pulse">
-          <AlertTriangle className="h-6 w-6 shrink-0 stroke-[2.5]" />
-          <div className="font-mono text-xs uppercase tracking-wide">
-            <span className="font-black block text-sm mb-1">
-              ⚠️ [CRITICAL SATELLITE WARNING]:
+        <div className="bg-red-50 text-red-900 border border-red-200 p-4 rounded-xl flex items-start gap-3 shadow-sm">
+          <AlertTriangle className="h-5 w-5 shrink-0 text-red-600 mt-0.5" />
+          <div className="text-sm">
+            <span className="font-semibold block mb-1">
+              Atención: Estás cambiando la URL de tu menú
             </span>
-            Estás alterando el enlace de acceso de tus clientes. Al guardar, la
-            URL antigua de tu menú
-            <span className="bg-black text-[#FF3333] px-1 mx-1 font-bold">
-              /{initialData?.slug}
-            </span>
-            dejará de responder y dará error 404. La nueva ruta será
-            <span className="bg-black text-[#A3FF00] px-1 mx-1 font-bold">
-              /{formData.slug}
-            </span>
-            .
+            La URL antigua <span className="font-mono bg-red-100 px-1 rounded">/{initialData?.slug}</span> dejará de funcionar. 
+            La nueva URL será <span className="font-mono bg-green-100 text-green-800 px-1 rounded">/{formData.slug}</span>.
           </div>
         </div>
       )}
@@ -220,10 +206,10 @@ export function ConfigForm({
         onImageUpload={handleImageUpload}
       />
 
-      <div className="grid grid-cols-1 gap-8">
+      <div className="grid grid-cols-1 gap-6">
         <GeneralInfoSection formData={formData} onChange={handleChange} />
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           <div className="lg:col-span-7">
             <SocialLinksSection formData={formData} onChange={handleChange} />
           </div>
@@ -238,11 +224,9 @@ export function ConfigForm({
         </div>
       </div>
 
-      {/* SECCIÓN HORARIOS BRUTALISTA DE ALTA DENSIDAD */}
-      <div className="bg-white border-4 border-black p-6 space-y-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-        <h3 className="text-xl font-black uppercase italic tracking-tight border-b-4 border-black pb-3 flex items-center gap-2">
-          <Settings className="h-5 w-5 stroke-[2.5]" /> GESTIÓN DE HORARIOS
-          OPERATIVOS
+      <div className="admin-card">
+        <h3 className="text-lg font-bold text-[var(--admin-text)] flex items-center gap-2 mb-4">
+          <Settings className="h-5 w-5 text-[var(--admin-text-muted)]" /> Horarios de Atención
         </h3>
         <ScheduleEditor
           schedule={formData.horarios}
@@ -252,22 +236,21 @@ export function ConfigForm({
         />
       </div>
 
-      {/* BARRA FLOTANTE FIJA DE ACCIÓN RÍGIDA */}
       <div className="sticky bottom-6 z-50 flex justify-end">
         <button
           type="submit"
           disabled={isPending}
-          className="group bg-[#A3FF00] border-4 border-black text-black px-10 py-5 font-black uppercase tracking-wider text-xs shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:bg-white active:translate-x-[4px] active:translate-y-[4px] active:shadow-none transition-all disabled:opacity-40 flex items-center gap-2 cursor-pointer"
+          className="bg-[var(--admin-accent)] hover:bg-[var(--admin-accent)]/90 text-white px-8 py-3.5 rounded-xl font-semibold shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none"
         >
           {isPending ? (
-            <Loader2 className="animate-spin text-black" size={16} />
+            <Loader2 className="animate-spin" size={18} />
           ) : (
-            <Save size={16} strokeWidth={2.5} />
+            <Save size={18} />
           )}
           <span>
             {isPending
-              ? "SALVANDO CONFIGURACIÓN..."
-              : "GUARDAR IDENTIDAD DE MARCA"}
+              ? "Guardando cambios..."
+              : "Guardar Configuración"}
           </span>
         </button>
       </div>

@@ -1,7 +1,6 @@
 import { createClient } from "@/core/lib/supabase/server";
 import { redirect } from "next/navigation";
-import { Card } from "@/components/ui/card";
-import { ShoppingBag, Users, TrendingUp, Package } from "lucide-react";
+import { ShoppingBag, Users, TrendingUp, Package, ArrowRight } from "lucide-react";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -20,11 +19,18 @@ export default async function DashboardPage() {
   if (!negocio) redirect("/configuracion");
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-3xl font-bold">Dashboard: {negocio.nombre}</h1>
+    <div className="space-y-8 z-10 relative">
+      <div>
+        <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-[var(--admin-text)]">
+          Hola, {negocio.nombre} 👋
+        </h1>
+        <p className="text-[var(--admin-text-muted)] mt-1 font-medium">
+          Aquí tienes un resumen de tu negocio el día de hoy.
+        </p>
+      </div>
 
       {/* Grid de KPIs */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <KPIWidget title="Pedidos Hoy" value="12" icon={<ShoppingBag />} />
         <KPIWidget title="Ventas" value="$45.000" icon={<TrendingUp />} />
         <KPIWidget title="Clientes" value="142" icon={<Users />} />
@@ -32,20 +38,28 @@ export default async function DashboardPage() {
       </div>
 
       {/* Quick Actions (Navegación) */}
-      <div className="border-2 border-black p-6 bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-        <h2 className="text-xl font-bold mb-4">Acceso Rápido</h2>
-        <div className="flex gap-4">
+      <div className="admin-card p-6 md:p-8">
+        <h2 className="text-xl font-bold mb-6 text-[var(--admin-text)]">Acceso Rápido</h2>
+        <div className="flex flex-col sm:flex-row gap-4">
           <a
             href="/productos"
-            className="bg-green-500 p-4 font-bold border-2 border-black hover:translate-y-[-2px] transition-all"
+            className="flex-1 flex items-center justify-between bg-[var(--admin-accent)] text-white p-5 rounded-2xl font-semibold shadow-md shadow-[var(--admin-accent)]/20 hover:scale-[1.02] hover:shadow-lg transition-all"
           >
-            Gestionar Menú
+            <div className="flex items-center gap-3">
+              <Package size={20} />
+              Gestionar Menú
+            </div>
+            <ArrowRight size={18} />
           </a>
           <a
             href="/pedidos"
-            className="bg-yellow-400 p-4 font-bold border-2 border-black hover:translate-y-[-2px] transition-all"
+            className="flex-1 flex items-center justify-between bg-[var(--admin-surface)] border-2 border-[var(--admin-border)] text-[var(--admin-text)] p-5 rounded-2xl font-semibold hover:border-[var(--admin-accent)] hover:shadow-md transition-all"
           >
-            Ver Pedidos
+            <div className="flex items-center gap-3">
+              <ShoppingBag size={20} className="text-[var(--admin-accent)]" />
+              Ver Pedidos
+            </div>
+            <ArrowRight size={18} className="text-[var(--admin-text-muted)]" />
           </a>
         </div>
       </div>
@@ -63,12 +77,14 @@ function KPIWidget({
   icon: React.ReactNode;
 }) {
   return (
-    <Card className="p-4 border-2 border-black flex items-center justify-between">
+    <div className="admin-card p-5 flex items-center justify-between group hover:border-[var(--admin-accent)]/50 cursor-default">
       <div>
-        <p className="text-sm opacity-70">{title}</p>
-        <p className="text-2xl font-bold">{value}</p>
+        <p className="text-sm font-medium text-[var(--admin-text-muted)] mb-1">{title}</p>
+        <p className="text-2xl font-bold text-[var(--admin-text)]">{value}</p>
       </div>
-      <div className="p-2 bg-gray-100 rounded-full">{icon}</div>
-    </Card>
+      <div className="p-3 bg-[var(--admin-surface-accent)]/30 rounded-2xl text-[var(--admin-accent)] group-hover:scale-110 group-hover:bg-[var(--admin-accent)] group-hover:text-white transition-all duration-300">
+        {icon}
+      </div>
+    </div>
   );
 }

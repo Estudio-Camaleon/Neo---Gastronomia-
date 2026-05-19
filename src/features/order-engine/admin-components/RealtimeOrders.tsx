@@ -59,7 +59,6 @@ export function RealtimeOrders({
       if (error) throw error;
 
       if (pedidoAfectado) {
-        // Inferencia dinámica del contrato de parámetros para omitir el 'any'
         enviarNotificacionWhatsApp(
           pedidoAfectado as unknown as Parameters<
             typeof enviarNotificacionWhatsApp
@@ -98,7 +97,6 @@ export function RealtimeOrders({
           table: "pedidos",
           filter: `negocio_id=eq.${negocioId}`,
         },
-        // Tipamos la payload entrante del socket de Supabase de forma estricta
         async (
           payload: RealtimePostgresChangesPayload<{
             id: string;
@@ -121,8 +119,8 @@ export function RealtimeOrders({
               const audio = new Audio("/sounds/new-order.mp3");
               audio.play().catch(() => {});
 
-              toast.info("¡NUEVO PEDIDO RECIBIDO!", {
-                icon: <BellDot className="text-black" />,
+              toast.info("¡Nuevo pedido recibido!", {
+                icon: <BellDot className="text-blue-500 animate-pulse" />,
               });
             }
           } else if (payload.eventType === "UPDATE" && payload.new) {
@@ -152,15 +150,15 @@ export function RealtimeOrders({
 
   if (initializing) {
     return (
-      <div className="py-20 flex flex-col justify-center items-center font-mono text-xs text-gray-400 gap-2">
-        <Loader2 className="animate-spin text-black" size={24} />
+      <div className="py-20 flex flex-col justify-center items-center text-sm text-gray-500 gap-3">
+        <Loader2 className="animate-spin text-[var(--admin-accent)]" size={32} />
         <span>Sincronizando monitor en tiempo real...</span>
       </div>
     );
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 font-sans text-black w-full">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
       {pedidos.map((p) => (
         <PedidoCard
           key={p.id}
@@ -171,10 +169,15 @@ export function RealtimeOrders({
       ))}
 
       {pedidos.length === 0 && (
-        <div className="col-span-full py-20 text-center border-4 border-black border-dashed bg-white select-none">
-          <ShoppingBag className="mx-auto text-gray-200 mb-2" size={32} />
-          <p className="font-black font-mono text-xs uppercase text-gray-400 tracking-wider">
-            Esperando nuevos pedidos en pasarela...
+        <div className="col-span-full py-20 admin-card flex flex-col items-center justify-center bg-gray-50/50 border-dashed border-gray-200">
+          <div className="p-4 bg-gray-100 rounded-full mb-4 text-gray-400">
+             <ShoppingBag size={48} strokeWidth={1.5} />
+          </div>
+          <p className="text-lg font-semibold text-gray-700 mb-1">
+            Monitor a la espera
+          </p>
+          <p className="text-sm text-gray-500">
+             No hay nuevos pedidos en la pasarela.
           </p>
         </div>
       )}

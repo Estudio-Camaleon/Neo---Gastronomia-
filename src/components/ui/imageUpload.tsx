@@ -20,18 +20,16 @@ export function ImageUpload({ value, onChange }: ImageUploadProps) {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Validación de tipo de archivo (Seguridad)
     if (!file.type.startsWith("image/")) {
-      toast.error("FORMATO INVÁLIDO", {
+      toast.error("Formato inválido", {
         description: "Por favor subí solo imágenes.",
       });
       if (fileInputRef.current) fileInputRef.current.value = "";
       return;
     }
 
-    // Validación de tamaño (2MB)
     if (file.size > 2 * 1024 * 1024) {
-      toast.error("ARCHIVO MUY PESADO", { description: "Límite máximo: 2MB." });
+      toast.error("Archivo muy pesado", { description: "Límite máximo: 2MB." });
       if (fileInputRef.current) fileInputRef.current.value = "";
       return;
     }
@@ -57,17 +55,15 @@ export function ImageUpload({ value, onChange }: ImageUploadProps) {
       } = supabase.storage.from("media").getPublicUrl(filePath);
 
       onChange(publicUrl);
-      toast.success("IMAGEN CARGADA");
+      toast.success("Imagen cargada");
     } catch (error: unknown) {
-      // Tipado estricto para el linter
       const errorMessage =
         error instanceof Error
           ? error.message
           : "Error desconocido al subir la imagen";
-      toast.error("ERROR DE CARGA", { description: errorMessage });
+      toast.error("Error de carga", { description: errorMessage });
     } finally {
       setIsUploading(false);
-      // Limpiamos el input para permitir subir el mismo archivo si se borra
       if (fileInputRef.current) fileInputRef.current.value = "";
     }
   };
@@ -76,7 +72,6 @@ export function ImageUpload({ value, onChange }: ImageUploadProps) {
     if (!value) return;
 
     try {
-      // Hacemos el parseo más robusto buscando el nombre del bucket "media/"
       if (value.includes("/media/")) {
         const path = value.split("/media/")[1];
         if (path) {
@@ -85,74 +80,73 @@ export function ImageUpload({ value, onChange }: ImageUploadProps) {
       }
 
       onChange("");
-      toast.info("IMAGEN ELIMINADA", {
+      toast.info("Imagen eliminada", {
         description: "El archivo fue removido del servidor.",
       });
     } catch (error: unknown) {
       console.error("Error al borrar:", error);
-      // Ante cualquier fallo en el servidor, igual limpiamos el estado local
       onChange("");
     }
   };
 
   return (
-    <div className="space-y-3 font-sans h-full flex flex-col">
-      <label className="text-[10px] font-black uppercase tracking-[0.2em] text-text-muted italic flex items-center gap-2 ml-1 select-none">
+    <div className="space-y-2 h-full flex flex-col">
+      <label className="text-sm font-medium text-gray-700 dark:text-gray-300 ml-1">
         Fotografía del Producto
       </label>
 
       <div className="relative group flex-1 min-h-[250px]">
         {value ? (
-          <div className="relative h-full w-full rounded-neo overflow-hidden border-2 border-black group-hover:border-primary transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] bg-bg-main dark:bg-bg-dark">
+          <div className="relative h-full w-full rounded-xl overflow-hidden border border-gray-200 dark:border-gray-800 bg-white dark:bg-zinc-950 shadow-sm transition-all hover:border-[var(--admin-accent,#34a35f)]">
             <Image
               src={value}
               alt="Preview"
               fill
               sizes="(max-width: 768px) 100vw, 33vw"
-              className="object-cover animate-in fade-in zoom-in-95 duration-500"
+              className="object-cover animate-in fade-in zoom-in-95 duration-300"
             />
 
             <button
               type="button"
               onClick={removeImage}
-              className="absolute top-3 right-3 p-2 bg-error text-white rounded-full border-2 border-black shadow-lg hover:scale-110 active:scale-90 transition-transform z-10"
+              className="absolute top-2 right-2 p-1.5 bg-white text-gray-700 hover:text-red-600 rounded-full border border-gray-200 shadow-sm hover:scale-105 active:scale-95 transition-all z-10 dark:bg-zinc-900 dark:border-gray-800 dark:text-gray-300 dark:hover:text-red-500"
             >
-              <X size={14} strokeWidth={3} />
+              <X size={16} />
             </button>
           </div>
         ) : (
           <label
             className={`
               flex flex-col items-center justify-center h-full w-full 
-              rounded-neo border-2 border-dashed transition-all cursor-pointer select-none
+              rounded-xl border-2 border-dashed transition-all cursor-pointer select-none
               ${
                 isUploading
-                  ? "bg-bg-main dark:bg-bg-dark/40 border-primary/40"
-                  : "bg-bg-main dark:bg-bg-dark border-black hover:bg-primary/5 hover:border-primary"
+                  ? "bg-gray-50 border-gray-300 dark:bg-zinc-900 dark:border-gray-700"
+                  : "bg-gray-50 border-gray-300 hover:bg-gray-100 hover:border-gray-400 dark:bg-zinc-900 dark:border-gray-700 dark:hover:bg-zinc-800 dark:hover:border-gray-600"
               }
             `}
           >
             {isUploading ? (
-              <div className="flex flex-col items-center gap-3">
-                <Loader2 className="animate-spin text-primary" size={28} />
-                <span className="text-[9px] font-black uppercase tracking-widest text-primary animate-pulse font-mono">
-                  Sincronizando...
+              <div className="flex flex-col items-center gap-2">
+                <Loader2 className="animate-spin text-gray-500" size={24} />
+                <span className="text-sm font-medium text-gray-500">
+                  Subiendo...
                 </span>
               </div>
             ) : (
               <div className="flex flex-col items-center gap-3 p-6 text-center">
-                <div className="p-4 bg-white dark:bg-bg-darker rounded-full border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+                <div className="p-3 bg-white dark:bg-zinc-950 rounded-full border border-gray-200 dark:border-gray-800 shadow-sm">
                   <UploadCloud
-                    className="text-text-muted group-hover:text-primary transition-colors"
+                    className="text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300 transition-colors"
                     size={24}
                   />
                 </div>
                 <div className="space-y-1">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-text-primary dark:text-text-inverse block">
-                    Cargar Imagen
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300 block">
+                    Haga clic para subir una imagen
                   </span>
-                  <span className="text-[8px] font-bold uppercase text-text-muted block opacity-60 font-mono">
-                    MAX 2MB (JPG/PNG)
+                  <span className="text-xs text-gray-500 dark:text-gray-400 block">
+                    MAX 2MB (JPG/PNG/WEBP)
                   </span>
                 </div>
               </div>

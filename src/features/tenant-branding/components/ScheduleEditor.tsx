@@ -1,7 +1,8 @@
 "use client";
 
-import { Trash2, Copy, ShieldCheck } from "lucide-react";
+import { Trash2, Copy, Clock, Plus } from "lucide-react";
 import { toast } from "sonner";
+import { Switch } from "@/components/ui/switch";
 
 export interface FranjaHoraria {
   inicio: string;
@@ -43,7 +44,7 @@ export function ScheduleEditor({
   const addFranja = (day: string) => {
     const turnos = getTurnos(day);
     if (turnos.length >= 2)
-      return toast.error("LÍMITE MÁXIMO DE 2 TURNOS POR DÍA ALCANZADO");
+      return toast.error("Máximo 2 turnos por día permitidos.");
     const updated = {
       ...schedule,
       [day]: { turnos: [...turnos, { inicio: "20:00", fin: "00:00" }] },
@@ -73,28 +74,25 @@ export function ScheduleEditor({
   const cloneToAll = (dayId: string) => {
     const source = getTurnos(dayId);
     if (!source.length)
-      return toast.error("DEBE DEFINIR AL MENOS UN TURNO PARA CLONAR");
+      return toast.error("Define al menos un turno para poder replicarlo.");
     const newSchedule: ScheduleData = {};
     DIAS.forEach((d) => {
       newSchedule[d.id] = { turnos: source.map((t) => ({ ...t })) };
     });
     onChange(newSchedule);
-    toast.success("CRONOGRAMA SEMANAL COPIADO EN CADENA");
+    toast.success("Horario replicado a todos los días.");
   };
 
   return (
-    <div className="bg-white border-4 border-black shadow-[4px_4px_0px_0px_#000000] overflow-hidden text-black font-sans">
-      <div className="bg-black text-white px-4 py-3 border-b-2 border-black flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div className="w-2 h-2 bg-[#A3FF00] rounded-full animate-pulse" />
-          <span className="text-[10px] font-mono font-black uppercase tracking-widest">
-            Protocolo de Apertura Digital // Sincronización Realtime
-          </span>
+    <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
+      <div className="bg-gray-50 border-b border-gray-200 px-5 py-3.5 flex items-center justify-between">
+        <div className="flex items-center gap-2 text-sm font-semibold text-gray-700">
+          <Clock size={16} className="text-[var(--admin-accent)]" />
+          <span>Configuración de Turnos Operativos</span>
         </div>
-        <ShieldCheck size={14} className="text-[#A3FF00] stroke-[2.5]" />
       </div>
 
-      <div className="divide-y-2 divide-black/10">
+      <div className="divide-y divide-gray-100">
         {DIAS.map((dia) => {
           const turnos = getTurnos(dia.id);
           const isOpen = turnos.length > 0;
@@ -102,36 +100,34 @@ export function ScheduleEditor({
           return (
             <div
               key={dia.id}
-              className={`flex flex-col md:flex-row items-stretch md:items-center ${isOpen ? "bg-[#A3FF00]/5" : "bg-transparent opacity-60"}`}
+              className={`flex flex-col md:flex-row items-stretch md:items-center transition-colors ${isOpen ? "bg-white" : "bg-gray-50/50"}`}
             >
-              {/* CHECKBOX DÍA */}
-              <div className="w-full md:w-40 px-4 py-3 flex items-center gap-3 border-b md:border-b-0 md:border-r-2 border-black/10 shrink-0">
-                <input
-                  type="checkbox"
-                  checked={isOpen}
-                  onChange={(e) => updateDay(dia.id, e.target.checked)}
-                  className="w-4 h-4 accent-black cursor-pointer border-2 border-black"
-                />
-                <span className="text-xs font-black uppercase tracking-wider">
+              {/* TOGGLE DÍA */}
+              <div className="w-full md:w-44 px-5 py-4 flex items-center justify-between md:justify-start gap-4 border-b md:border-b-0 md:border-r border-gray-100 shrink-0">
+                <span className={`text-sm font-semibold ${isOpen ? "text-gray-900" : "text-gray-400"}`}>
                   {dia.label}
                 </span>
+                <Switch
+                  checked={isOpen}
+                  onCheckedChange={(checked) => updateDay(dia.id, checked)}
+                />
               </div>
 
               {/* FRANJAS OPERATIVAS */}
-              <div className="flex-1 px-4 py-2 flex flex-wrap items-center gap-4 min-h-[56px]">
+              <div className="flex-1 px-5 py-3 flex flex-col sm:flex-row flex-wrap items-start sm:items-center gap-4 min-h-[72px]">
                 {isOpen ? (
                   turnos.map((t, idx) => (
-                    <div key={idx} className="flex items-center gap-2">
-                      <div className="flex items-center bg-white border-2 border-black px-2 py-1 shadow-[2px_2px_0px_0px_#000000]">
+                    <div key={idx} className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-lg p-1.5 animate-in fade-in zoom-in-95">
+                      <div className="flex items-center px-1">
                         <input
                           type="time"
                           value={t.inicio}
                           onChange={(e) =>
                             updateTime(dia.id, idx, "inicio", e.target.value)
                           }
-                          className="bg-transparent font-mono text-xs font-black outline-none"
+                          className="bg-transparent text-sm font-medium outline-none cursor-pointer"
                         />
-                        <span className="mx-1 text-[10px] font-bold opacity-30">
+                        <span className="mx-2 text-xs font-semibold text-gray-400">
                           A
                         </span>
                         <input
@@ -140,44 +136,47 @@ export function ScheduleEditor({
                           onChange={(e) =>
                             updateTime(dia.id, idx, "fin", e.target.value)
                           }
-                          className="bg-transparent font-mono text-xs font-black outline-none"
+                          className="bg-transparent text-sm font-medium outline-none cursor-pointer"
                         />
                       </div>
                       <button
                         type="button"
                         onClick={() => removeFranja(dia.id, idx)}
-                        className="text-gray-400 hover:text-red-600 transition-colors p-1"
+                        className="text-gray-400 hover:text-red-600 hover:bg-red-50 p-1.5 rounded-md transition-colors"
+                        title="Eliminar turno"
                       >
-                        <Trash2 size={13} />
+                        <Trash2 size={14} />
                       </button>
                     </div>
                   ))
                 ) : (
-                  <span className="text-[9px] font-mono font-black uppercase text-gray-300 tracking-widest italic">
-                    Cerrado / Fuera de servicio
+                  <span className="text-xs font-medium text-gray-400 italic">
+                    Cerrado
                   </span>
                 )}
               </div>
 
               {/* ACCIONES DE LÍNEA */}
-              <div className="px-4 py-2 flex items-center justify-end gap-2 border-t md:border-t-0 border-black/5 shrink-0">
+              <div className="px-5 py-3 flex items-center justify-end gap-2 shrink-0 md:w-[220px]">
                 {isOpen && (
                   <>
                     {turnos.length < 2 && (
                       <button
                         type="button"
                         onClick={() => addFranja(dia.id)}
-                        className="p-1.5 border border-black bg-white shadow-[1px_1px_0px_0px_#000000] text-black hover:bg-[#A3FF00] text-[10px] font-black"
+                        className="p-2 text-gray-600 hover:text-[var(--admin-accent)] hover:bg-[var(--admin-accent)]/10 rounded-lg transition-colors flex items-center gap-1 text-xs font-semibold border border-transparent hover:border-[var(--admin-accent)]/20"
+                        title="Agregar turno de tarde"
                       >
-                        + TURNO
+                        <Plus size={14} /> <span className="hidden sm:inline">Turno</span>
                       </button>
                     )}
                     <button
                       type="button"
                       onClick={() => cloneToAll(dia.id)}
-                      className="p-1.5 border border-black bg-white shadow-[1px_1px_0px_0px_#000000] text-black hover:bg-black hover:text-white text-[10px] font-black flex items-center gap-1"
+                      className="p-2 text-gray-600 hover:text-[var(--admin-accent)] hover:bg-[var(--admin-accent)]/10 rounded-lg transition-colors flex items-center gap-1.5 text-xs font-semibold border border-transparent hover:border-[var(--admin-accent)]/20"
+                      title="Copiar este horario a todos los días"
                     >
-                      <Copy size={10} /> REPLICAR SEMANA
+                      <Copy size={14} /> <span className="hidden sm:inline">Copiar a todos</span>
                     </button>
                   </>
                 )}

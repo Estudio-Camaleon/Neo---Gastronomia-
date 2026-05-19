@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { createClient } from "@/core/lib/supabase/client";
 import { z } from "zod";
-import { ShieldAlert, Terminal, ArrowRight } from "lucide-react";
+import { ShieldAlert, CheckCircle2, ArrowRight, Loader2 } from "lucide-react";
+import { Input } from "@/components/ui/input";
 
 const registerSchema = z.object({
   nombreNegocio: z
@@ -59,7 +60,7 @@ export function RegisterForm() {
       setErrorMsg(
         error instanceof Error
           ? error.message
-          : "Error fatal en el onboarding.",
+          : "Error fatal al crear la cuenta.",
       );
     } finally {
       setLoading(false);
@@ -68,24 +69,25 @@ export function RegisterForm() {
 
   if (isSent) {
     return (
-      <div className="bg-white p-8 border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] text-center space-y-6 transform -rotate-1 animate-in fade-in duration-300">
-        <div className="w-16 h-16 bg-[#A3FF00] border-4 border-black flex items-center justify-center mx-auto shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-          <Terminal className="h-8 w-8 text-black stroke-[3]" />
+      <div className="bg-[var(--admin-surface)] p-8 rounded-2xl border border-[var(--admin-border)] shadow-lg text-center space-y-6 animate-in zoom-in-95 duration-300">
+        <div className="w-16 h-16 bg-[var(--admin-surface-accent)]/50 text-[var(--admin-accent)] rounded-full flex items-center justify-center mx-auto shadow-sm">
+          <CheckCircle2 className="h-8 w-8" />
         </div>
-        <h2 className="text-3xl font-black text-black uppercase tracking-tighter">
-          ¡CASI EN ÓRBITA!
-        </h2>
-        <p className="text-sm font-bold text-gray-800 leading-relaxed uppercase tracking-wide">
-          Hemos enviado un comando de activación para <br />
-          <span className="bg-black text-[#A3FF00] px-2 py-0.5 inline-block my-1 font-black">
-            {nombreNegocio}
-          </span>{" "}
-          <br />
-          al correo: <span className="underline">{email}</span>
-        </p>
-        <div className="p-4 bg-gray-100 border-2 border-black text-[11px] font-black uppercase tracking-wider text-gray-700 italic">
-          Verificá tu casilla de correo o spam para inicializar la terminal de
-          administración.
+        <div>
+          <h2 className="text-2xl font-bold text-[var(--admin-text)] tracking-tight mb-2">
+            ¡Casi listo!
+          </h2>
+          <p className="text-[var(--admin-text-muted)] text-sm leading-relaxed">
+            Hemos enviado un enlace de confirmación para tu negocio <br />
+            <span className="font-semibold text-[var(--admin-text)] bg-[var(--admin-bg)] px-2 py-0.5 rounded-md mt-1 inline-block">
+              {nombreNegocio}
+            </span>{" "}
+            <br />
+            al correo: <span className="font-medium text-[var(--admin-text)]">{email}</span>
+          </p>
+        </div>
+        <div className="p-4 bg-[var(--admin-accent)]/10 border border-[var(--admin-accent)]/20 rounded-xl text-xs font-medium text-[var(--admin-text)]">
+          Por favor, revisa tu bandeja de entrada o la carpeta de spam para verificar tu cuenta y comenzar a usar NEO.
         </div>
       </div>
     );
@@ -93,55 +95,55 @@ export function RegisterForm() {
 
   return (
     <form onSubmit={handleRegister} className="w-full space-y-5">
-      <div className="space-y-2">
-        <label className="block text-xs font-black uppercase tracking-wider text-black">
+      <div className="space-y-1.5">
+        <label className="block text-sm font-semibold text-[var(--admin-text)]">
           Nombre de tu Negocio
         </label>
-        <input
+        <Input
           required
           type="text"
           disabled={loading}
           value={nombreNegocio}
           onChange={(e) => setNombreNegocio(e.target.value)}
-          className="w-full p-4 bg-white border-4 border-black text-black font-black outline-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] focus:translate-x-[1px] focus:translate-y-[1px] focus:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] uppercase transition-all placeholder:text-gray-400 text-sm"
-          placeholder="Ej: BURGER KING"
+          placeholder="Ej: Burger King"
+          className="h-12 uppercase border-[var(--admin-border)]"
         />
       </div>
 
-      <div className="space-y-2">
-        <label className="block text-xs font-black uppercase tracking-wider text-black">
+      <div className="space-y-1.5">
+        <label className="block text-sm font-semibold text-[var(--admin-text)]">
           Correo Electrónico
         </label>
-        <input
+        <Input
           required
           type="email"
           disabled={loading}
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="w-full p-4 bg-white border-4 border-black text-black font-bold outline-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] focus:translate-x-[1px] focus:translate-y-[1px] focus:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all placeholder:text-gray-400 text-sm"
           placeholder="socio@tu-negocio.com"
+          className="h-12 border-[var(--admin-border)]"
         />
       </div>
 
-      <div className="space-y-2">
-        <label className="block text-xs font-black uppercase tracking-wider text-black">
+      <div className="space-y-1.5">
+        <label className="block text-sm font-semibold text-[var(--admin-text)]">
           Contraseña
         </label>
-        <input
+        <Input
           required
           autoComplete="new-password"
           type="password"
           disabled={loading}
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="w-full p-4 bg-white border-4 border-black text-black font-bold outline-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] focus:translate-x-[1px] focus:translate-y-[1px] focus:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all placeholder:text-gray-400 text-sm"
           placeholder="••••••••"
+          className="h-12 border-[var(--admin-border)]"
         />
       </div>
 
       {errorMsg && (
-        <div className="flex items-center gap-3 text-black text-xs font-black uppercase bg-red-100 p-4 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] animate-in slide-in-from-top-2 italic">
-          <ShieldAlert className="h-5 w-5 shrink-0" />
+        <div className="flex items-center gap-2 text-[var(--admin-danger)] bg-[var(--admin-danger)]/10 p-3 rounded-xl border border-[var(--admin-danger)]/20 text-sm font-medium animate-in fade-in duration-200">
+          <ShieldAlert className="h-4 w-4 shrink-0" />
           <span>{errorMsg}</span>
         </div>
       )}
@@ -149,14 +151,16 @@ export function RegisterForm() {
       <button
         disabled={loading}
         type="submit"
-        className="w-full bg-[#A3FF00] text-black font-black uppercase text-sm tracking-wider p-5 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:bg-white active:translate-x-[4px] active:translate-y-[4px] active:shadow-none disabled:opacity-50 transition-all flex items-center justify-center gap-2"
+        className="w-full bg-[var(--admin-text)] hover:opacity-90 text-[var(--admin-surface)] font-bold text-sm py-4 rounded-xl shadow-md hover:shadow-lg hover:-translate-y-0.5 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none transition-all flex items-center justify-center gap-2 mt-2 border border-[var(--admin-border)]"
       >
         {loading ? (
-          <span className="w-5 h-5 border-4 border-black border-t-transparent rounded-full animate-spin" />
+          <>
+            <Loader2 className="w-5 h-5 animate-spin" /> Creando cuenta...
+          </>
         ) : (
           <>
-            Crear mi Imperio Gastronómico
-            <ArrowRight className="h-4 w-4 stroke-[3]" />
+            Crear cuenta ahora
+            <ArrowRight className="h-4 w-4" />
           </>
         )}
       </button>

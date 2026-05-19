@@ -24,18 +24,18 @@ export default async function ConfiguracionPage() {
     .single();
 
   return (
-    <div className="space-y-8 max-w-5xl mx-auto pb-16 font-sans text-black">
+    <div className="space-y-8 max-w-5xl mx-auto pb-16 relative z-10">
       {/* HEADER DE AUDITORÍA */}
-      <header className="space-y-2 border-b-4 border-black pb-4">
-        <div className="flex items-center gap-2 text-gray-400">
-          <Settings size={14} />
-          <span className="text-[10px] font-mono font-black uppercase tracking-widest">
-            TERMINAL // BRANDING IDENTITY CONTROL
+      <header className="space-y-3 border-b border-[var(--admin-border)]/50 pb-6">
+        <div className="flex items-center gap-2 text-[var(--admin-text-muted)]">
+          <Settings size={16} />
+          <span className="text-xs font-semibold uppercase tracking-wider">
+            Identidad y Configuración
           </span>
         </div>
-        <h1 className="text-4xl md:text-6xl font-black text-black uppercase tracking-tighter italic leading-none">
-          Panel de{" "}
-          <span className="bg-black text-[#A3FF00] px-3 py-0.5 inline-block transform rotate-1 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+        <h1 className="text-3xl md:text-5xl font-bold tracking-tight text-[var(--admin-text)] flex items-center gap-3">
+          Panel de
+          <span className="bg-[var(--admin-accent)] text-white px-3 py-1 rounded-xl text-3xl md:text-5xl shadow-md shadow-[var(--admin-accent)]/20">
             Control
           </span>
         </h1>
@@ -48,18 +48,18 @@ export default async function ConfiguracionPage() {
       />
 
       {/* FOOTER OPERATIVO INDUSTRIAL */}
-      <footer className="pt-8 border-t-2 border-dashed border-black/10 flex flex-col sm:flex-row justify-between items-center gap-4 opacity-40 select-none">
-        <div className="font-mono text-[9px] font-black uppercase tracking-widest">
-          NEO CORE SYSTEM ENGINE v3.0 // STABLE BUILD
+      <footer className="pt-8 border-t border-[var(--admin-border)]/30 flex flex-col sm:flex-row justify-between items-center gap-4 text-[var(--admin-text-muted)] select-none">
+        <div className="text-xs font-medium tracking-wide">
+          NEO CORE SYSTEM ENGINE v3.0
         </div>
-        <div className="flex gap-6 font-mono text-[9px] font-black uppercase">
-          <div className="flex items-center gap-1.5">
-            <Activity size={10} className="text-emerald-500 animate-pulse" />
-            <span>SOCKETS: LIVE</span>
+        <div className="flex gap-6 text-xs font-semibold">
+          <div className="flex items-center gap-2">
+            <Activity size={14} className="text-[var(--admin-accent)] animate-pulse" />
+            <span>EN LÍNEA</span>
           </div>
-          <div className="flex items-center gap-1.5">
-            <ShieldCheck size={10} className="text-black" />
-            <span>RLS: ENFORCED</span>
+          <div className="flex items-center gap-2">
+            <ShieldCheck size={14} className="text-[var(--admin-text)]" />
+            <span>PROTEGIDO</span>
           </div>
         </div>
       </footer>

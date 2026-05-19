@@ -18,48 +18,48 @@ export function SidebarFooter({
   onSignOutTrigger,
 }: SidebarFooterProps) {
   return (
-    <div className="space-y-6">
-      {/* SWITCHER DE TEMA (ESTILO HARDWARE) */}
-      <div className="grid grid-cols-2 bg-[var(--admin-bg)] border border-[var(--admin-border)] p-1 shadow-[2px_2px_0px_0px_var(--admin-border)]">
+    <div className="space-y-4">
+      {/* SWITCHER DE TEMA */}
+      <div className="flex bg-[var(--admin-bg)] rounded-xl p-1 shadow-inner border border-[var(--admin-border)]/50">
         <button
           onClick={() => setTheme("light")}
-          className={`flex items-center justify-center gap-2 py-2 text-[9px] font-black uppercase transition-all ${
+          className={`flex-1 flex items-center justify-center gap-2 py-2 text-xs font-semibold rounded-lg transition-all ${
             theme === "light"
-              ? "bg-[var(--admin-accent)] text-[var(--admin-bg)]"
-              : "text-[var(--admin-text-muted)] hover:text-[var(--admin-text)]"
+              ? "bg-[var(--admin-surface)] text-[var(--admin-text)] shadow-sm"
+              : "text-[var(--admin-text-muted)] hover:text-[var(--admin-text)] hover:bg-[var(--admin-surface)]/50"
           }`}
         >
-          <Sun size={12} strokeWidth={3} /> Light
+          <Sun size={14} /> Claro
         </button>
         <button
           onClick={() => setTheme("dark")}
-          className={`flex items-center justify-center gap-2 py-2 text-[9px] font-black uppercase transition-all ${
+          className={`flex-1 flex items-center justify-center gap-2 py-2 text-xs font-semibold rounded-lg transition-all ${
             theme === "dark"
-              ? "bg-[var(--admin-accent)] text-[var(--admin-bg)]"
-              : "text-[var(--admin-text-muted)] hover:text-[var(--admin-text)]"
+              ? "bg-[var(--admin-surface)] text-[var(--admin-text)] shadow-sm"
+              : "text-[var(--admin-text-muted)] hover:text-[var(--admin-text)] hover:bg-[var(--admin-surface)]/50"
           }`}
         >
-          <Moon size={12} strokeWidth={3} /> Dark
+          <Moon size={14} /> Oscuro
         </button>
       </div>
 
       {/* MODULO DE ACCESO RÁPIDO */}
       {slug && (
-        <div className="bg-[var(--admin-surface-accent)]/30 border-l-2 border-[var(--admin-accent)] p-3 group transition-all">
+        <div className="bg-[var(--admin-surface-accent)]/20 rounded-xl p-3 group transition-all border border-[var(--admin-border)]/30">
           <div className="flex items-center justify-between mb-1">
-            <span className="text-[8px] font-black uppercase tracking-[0.2em] text-[var(--admin-accent)] opacity-70">
-              Live Gateway
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-[var(--admin-accent)]">
+              Tu Tienda
             </span>
             <ExternalLink
-              size={10}
-              className="opacity-30 group-hover:opacity-100 transition-all"
+              size={12}
+              className="text-[var(--admin-accent)] opacity-50 group-hover:opacity-100 transition-all"
             />
           </div>
           <a
             href={`/${slug}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-[11px] font-mono font-bold text-[var(--admin-text)] truncate block hover:text-[var(--admin-accent)] transition-colors"
+            className="text-xs font-medium text-[var(--admin-text)] truncate block hover:text-[var(--admin-accent)] transition-colors"
           >
             neo.app/{slug}
           </a>
@@ -70,17 +70,17 @@ export function SidebarFooter({
       <button
         type="button"
         onClick={onSignOutTrigger}
-        className="w-full flex items-center gap-3 p-3 group transition-all"
+        className="w-full flex items-center gap-3 p-3 rounded-xl group transition-all hover:bg-red-50 border border-transparent hover:border-red-100"
       >
-        <div className="p-2 bg-[var(--admin-surface-accent)] text-[var(--admin-text-muted)] group-hover:bg-[var(--admin-danger)] group-hover:text-white transition-colors border border-[var(--admin-border)]/10">
-          <LogOut size={14} strokeWidth={3} />
+        <div className="p-2 rounded-lg bg-[var(--admin-surface-accent)]/50 text-[var(--admin-text-muted)] group-hover:bg-red-100 group-hover:text-red-500 transition-colors">
+          <LogOut size={16} />
         </div>
         <div className="flex flex-col items-start overflow-hidden">
-          <span className="text-[9px] font-black uppercase tracking-tighter text-[var(--admin-text-muted)] group-hover:text-[var(--admin-danger)] transition-colors">
-            End Session
+          <span className="text-[10px] font-semibold uppercase tracking-wider text-[var(--admin-text-muted)] group-hover:text-red-500 transition-colors">
+            Cerrar Sesión
           </span>
-          <span className="text-[10px] font-bold text-[var(--admin-text)] truncate w-full text-left opacity-60">
-            {negocioNombre || "Node_01"}
+          <span className="text-xs font-medium text-[var(--admin-text)] truncate w-full text-left opacity-70">
+            {negocioNombre || "Administrador"}
           </span>
         </div>
       </button>
