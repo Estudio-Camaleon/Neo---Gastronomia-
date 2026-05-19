@@ -9,6 +9,7 @@ import { createClient } from "@/core/lib/supabase/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { Menu } from "lucide-react";
+import "./style/admin-panel.css";
 
 export default async function AdminPanelLayout({
   children,

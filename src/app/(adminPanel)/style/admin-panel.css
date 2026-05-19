@@ -1,0 +1,19 @@
+/* 1. Importación moderna de Tailwind v4 */
+@import "tailwindcss";
+
+/* 2. Definición de variables CSS (Theme) */
+@theme {
+  --color-admin-surface: #ffffff;
+  --color-admin-bg: #f8fafc;
+  --color-admin-border: #e2e8f0;
+  --color-admin-text: #0f172a;
+  --color-admin-text-muted: #64748b;
+  --color-admin-accent: #2563eb;
+}
+
+/* 3. Tus clases utilitarias */
+@layer components {
+  .admin-card {
+    @apply bg-[var(--color-admin-surface)] border border-[var(--color-admin-border)] rounded-xl shadow-sm transition-all duration-200;
+  }
+}

@@ -21,9 +21,14 @@ export function SidebarNavigation() {
   const pathname = usePathname();
 
   return (
-    <div className="space-y-2">
+    <nav className="flex-1 mt-8 space-y-2 overflow-y-auto custom-scrollbar">
+      <span className="text-[9px] font-black uppercase tracking-[0.3em] text-[var(--admin-text-muted)] ml-2 mb-4 block opacity-50">
+        Main Terminal
+      </span>
       {LINKS.map((link) => {
-        const isActive = pathname.includes(link.href);
+        const isActive =
+          pathname === link.href ||
+          (link.href !== "/dashboard" && pathname.startsWith(link.href));
         const Icon = link.icon;
 
         return (
@@ -31,27 +36,32 @@ export function SidebarNavigation() {
             key={link.name}
             href={link.href}
             className={`
-              flex items-center gap-4 px-4 py-3 border-2 transition-all duration-200 group
+              flex items-center gap-4 px-4 py-3 border-2 transition-all duration-200 group relative
               ${
                 isActive
-                  ? "bg-[var(--admin-accent)] border-[var(--admin-border)] text-[var(--admin-bg)] shadow-[4px_4px_0px_0px_var(--admin-border)]"
-                  : "bg-transparent border-transparent text-[var(--admin-text-muted)] hover:border-[var(--admin-border)]/20 hover:text-[var(--admin-text)]"
+                  ? "bg-[var(--admin-accent)] text-white shadow-md"
+                  : "text-[var(--admin-text-muted)] hover:bg-[var(--admin-border)]/20 hover:text-[var(--admin-text)]"
               }
             `}
           >
             <Icon
               size={18}
-              className={`${isActive ? "text-[var(--admin-bg)]" : "text-[var(--admin-accent)] opacity-60 group-hover:opacity-100"}`}
+              strokeWidth={isActive ? 3 : 2}
+              className={
+                isActive
+                  ? "text-[var(--admin-bg)]"
+                  : "text-[var(--admin-accent)] opacity-60 group-hover:opacity-100"
+              }
             />
             <span className="text-xs font-black uppercase tracking-widest italic">
               {link.name}
             </span>
             {isActive && (
-              <div className="ml-auto w-1.5 h-1.5 bg-[var(--admin-bg)] rounded-full animate-pulse" />
+              <div className="absolute right-2 w-1.5 h-1.5 bg-[var(--admin-bg)] rounded-full animate-pulse" />
             )}
           </Link>
         );
       })}
-    </div>
+    </nav>
   );
 }
