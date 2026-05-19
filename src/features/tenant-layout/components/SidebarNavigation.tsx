@@ -1,5 +1,4 @@
 "use client";
-import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
@@ -8,6 +7,7 @@ import {
   Users,
   Settings,
 } from "lucide-react";
+import { TransitionLink } from "@/components/ui/transition-link";
 
 const LINKS = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
@@ -27,7 +27,7 @@ export function SidebarNavigation() {
         const Icon = link.icon;
 
         return (
-          <Link
+          <TransitionLink
             key={link.name}
             href={link.href}
             className={`
@@ -49,7 +49,7 @@ export function SidebarNavigation() {
             {isActive && (
               <div className="ml-auto w-1.5 h-1.5 bg-[var(--admin-bg)] rounded-full animate-pulse" />
             )}
-          </Link>
+          </TransitionLink>
         );
       })}
     </div>

@@ -7,8 +7,8 @@ import { ErrorModal } from "@/components/ui/errorModal";
 import { ThemeProvider } from "@/core/providers/ThemeProvider";
 import { createClient } from "@/core/lib/supabase/server";
 import { redirect } from "next/navigation";
-import Link from "next/link";
 import { Menu } from "lucide-react";
+import { TransitionLink } from "@/components/ui/transition-link";
 
 export default async function AdminPanelLayout({
   children,
@@ -41,12 +41,12 @@ export default async function AdminPanelLayout({
           title="Terminal Incompleta"
           message="Necesitás inicializar la infraestructura operativa de tu local antes de acceder a las herramientas de control maestro."
           action={
-            <Link
+            <TransitionLink
               href="/configuracion"
               className="block w-full py-4 bg-[#A3FF00] text-black font-black uppercase tracking-widest text-xs border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:bg-white active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all text-center"
             >
               Inicializar Mi Negocio 🍔
-            </Link>
+            </TransitionLink>
           }
         />
       </div>

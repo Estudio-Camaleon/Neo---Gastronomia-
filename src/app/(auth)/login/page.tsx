@@ -6,7 +6,7 @@ import {
   ShoppingBasket,
   Library,
 } from "lucide-react";
-import Link from "next/link";
+import { TransitionLink } from "@/components/ui/transition-link";
 import Image from "next/image";
 
 export default function LoginPage() {
@@ -27,7 +27,7 @@ export default function LoginPage() {
           </div>
 
           <div className="w-full text-left z-10">
-            <Link
+            <TransitionLink
               href="/"
               className="inline-block transition-transform hover:scale-105"
             >
@@ -39,7 +39,7 @@ export default function LoginPage() {
                   className="object-contain brightness-110 drop-shadow-[0_0_10px_rgba(52,211,153,0.4)]"
                 />
               </div>
-            </Link>
+            </TransitionLink>
           </div>
 
           <div className="flex-1 flex flex-col items-center justify-center space-y-12 max-w-xl z-10">
@@ -120,12 +120,12 @@ export default function LoginPage() {
             <div className="text-center">
               <p className="text-[#8ea195] text-sm">
                 ¿No tenés una cuenta?{" "}
-                <Link
+                <TransitionLink
                   href="/registro"
                   className="text-[#22c55e] font-bold hover:underline ml-1"
                 >
                   Creá una cuenta
-                </Link>
+                </TransitionLink>
               </p>
             </div>
           </div>
