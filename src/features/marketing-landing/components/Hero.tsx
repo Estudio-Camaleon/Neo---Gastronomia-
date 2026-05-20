@@ -1,7 +1,7 @@
 "use client";
 
-import Link from "next/link";
-import { ArrowRight, Sparkles,CheckCircle } from "lucide-react";
+import { TransitionLink } from "@/components/ui/transition-link";
+import { ArrowRight, Sparkles, CheckCircle } from "lucide-react";
 
 export function Hero() {
   return (
@@ -27,13 +27,13 @@ export function Hero() {
 
         {/* Acciones de Conversión */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
-          <Link
+          <TransitionLink
             href="/registro"
             className="group w-full sm:w-auto flex items-center justify-center gap-2 bg-[var(--theme-primary)] text-black font-black uppercase tracking-tight text-sm px-8 py-4 rounded-md shadow-[0_4px_30px_rgba(157,183,28,0.25)] hover:bg-white transition-all transform active:scale-95"
           >
             Desplegar mi tienda gratis
             <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-          </Link>
+          </TransitionLink>
           <a
             href="#features"
             className="w-full sm:w-auto text-sm font-bold border border-[var(--theme-border)] bg-[var(--theme-surface)]/40 px-8 py-4 rounded-md hover:border-white transition-colors text-white"

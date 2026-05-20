@@ -5,8 +5,9 @@ import {
   Handbag,
   ShoppingBasket,
   Library,
+  Link,
 } from "lucide-react";
-import Link from "next/link";
+import { TransitionLink } from "@/components/ui/transition-link";
 import Image from "next/image";
 
 export default function LoginPage() {
@@ -30,7 +31,7 @@ export default function LoginPage() {
           <div className="absolute top-[20%] right-[-10%] w-[500px] h-[500px] bg-[#34a35f] rounded-full mix-blend-multiply filter blur-[120px] opacity-20 z-0" />
 
           <div className="w-full text-left z-10">
-            <Link
+            <TransitionLink
               href="/"
               className="inline-block transition-transform hover:scale-105"
             >
@@ -42,7 +43,7 @@ export default function LoginPage() {
                   className="object-contain"
                 />
               </div>
-            </Link>
+            </TransitionLink>
           </div>
 
           <div className="flex-1 flex flex-col items-center justify-center space-y-12 max-w-xl z-10 text-gray-900">
@@ -54,7 +55,8 @@ export default function LoginPage() {
                 </span>
               </h1>
               <p className="text-gray-500 text-xl leading-relaxed max-w-md mx-auto">
-                Gestión digital de vanguardia diseñada para la eficiencia absoluta de tu flujo operativo.
+                Gestión digital de vanguardia diseñada para la eficiencia
+                absoluta de tu flujo operativo.
               </p>
             </div>
 
@@ -121,7 +123,7 @@ export default function LoginPage() {
 
             <div className="text-center">
               <p className="text-gray-500 text-sm">
-                ¿No tienes una cuenta?{" "}
+                ¿No tienes una cuenta?
                 <Link
                   href="/registro"
                   className="text-[#34a35f] font-semibold hover:underline ml-1"

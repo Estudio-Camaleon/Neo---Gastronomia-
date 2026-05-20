@@ -1,6 +1,6 @@
 import { RegisterForm } from "@/features/auth-portal/components/RegisterForm";
 import { Sparkles, Smartphone, LayoutDashboard } from "lucide-react";
-import Link from "next/link";
+import { TransitionLink } from "@/components/ui/transition-link";
 import Image from "next/image";
 // IMPORTAMOS EL CSS DEL ADMIN PANEL
 import "@/app/(adminPanel)/style/admin-panel.css";
@@ -18,7 +18,7 @@ export default function RegisterPage() {
 
           {/* Logo Superior */}
           <div className="w-full text-left z-10">
-            <Link
+            <TransitionLink
               href="/"
               className="inline-block transition-transform hover:scale-105 active:scale-95"
             >
@@ -32,7 +32,7 @@ export default function RegisterPage() {
                   className="object-contain"
                 />
               </div>
-            </Link>
+            </TransitionLink>
           </div>
 
           {/* Contenido Central */}
@@ -99,12 +99,12 @@ export default function RegisterPage() {
             <div className="text-center lg:text-left pt-2">
               <p className="text-[var(--admin-text-muted)] text-sm font-medium">
                 ¿Ya tienes una cuenta?{" "}
-                <Link
+                <TransitionLink
                   href="/login"
                   className="text-[var(--admin-accent)] font-semibold hover:underline transition-colors ml-1 inline-block"
                 >
                   Inicia sesión
-                </Link>
+                </TransitionLink>
               </p>
             </div>
           </div>
