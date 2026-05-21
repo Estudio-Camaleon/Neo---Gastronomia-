@@ -109,7 +109,8 @@ function extractStoragePath(
  */
 export async function deleteTenantBrandingAction(id: string) {
   const supabase = await createClient();
-  const BUCKET_NAME = "imagenes-negocios";
+  const BRANDING_BUCKET = "imagenes-negocios";
+  const MEDIA_BUCKET = "media";
 
   // 1. Reaseguro estricto de identidad en sesión activa
   const {
@@ -134,29 +135,60 @@ export async function deleteTenantBrandingAction(id: string) {
     );
   }
 
-  // 3. Analizar y preparar el array de archivos físicos a remover
-  const pathsToPurge: string[] = [];
-  const logoPath = extractStoragePath(negocio.logo_url, BUCKET_NAME);
-  const bannerPath = extractStoragePath(negocio.banner_url, BUCKET_NAME);
+  // 3. Obtener productos para borrar sus imágenes en Storage
+  const { data: productos } = await supabase
+    .from("productos")
+    .select("imagen_url")
+    .eq("negocio_id", id);
 
-  if (logoPath) pathsToPurge.push(logoPath);
-  if (bannerPath) pathsToPurge.push(bannerPath);
-
-  // 4. Si existen archivos en Cloud Storage, disparar la purga en bloque
-  if (pathsToPurge.length > 0) {
-    const { error: storageError } = await supabase.storage
-      .from(BUCKET_NAME)
-      .remove(pathsToPurge);
-
-    // Hacemos un log defensivo en consola, pero no bloqueamos la baja de la base de datos si falla el storage
-    if (storageError) {
-      console.error(
-        `[NEO RECOVERY WARN]: No se pudieron purgar ciertos archivos en storage: ${storageError.message}`,
-      );
+  const mediaPathsToPurge: string[] = [];
+  if (productos) {
+    for (const prod of productos) {
+      const path = extractStoragePath(prod.imagen_url, MEDIA_BUCKET);
+      if (path) mediaPathsToPurge.push(path);
     }
   }
 
-  // 5. Operación destructiva final acotada al binomio id + user_id para blindar aislamiento total
+  // 4. Analizar y preparar el array de archivos de identidad a remover
+  const brandingPathsToPurge: string[] = [];
+  const logoPath = extractStoragePath(negocio.logo_url, BRANDING_BUCKET);
+  const bannerPath = extractStoragePath(negocio.banner_url, BRANDING_BUCKET);
+
+  if (logoPath) brandingPathsToPurge.push(logoPath);
+  if (bannerPath) brandingPathsToPurge.push(bannerPath);
+
+  // 5. Purga en bloque de Cloud Storage (Productos + Identidad)
+  if (mediaPathsToPurge.length > 0) {
+    const { error: mediaStorageError } = await supabase.storage
+      .from(MEDIA_BUCKET)
+      .remove(mediaPathsToPurge);
+    if (mediaStorageError) {
+      console.error(`[NEO RECOVERY WARN]: Error purga media: ${mediaStorageError.message}`);
+    }
+  }
+
+  if (brandingPathsToPurge.length > 0) {
+    const { error: brandingStorageError } = await supabase.storage
+      .from(BRANDING_BUCKET)
+      .remove(brandingPathsToPurge);
+    if (brandingStorageError) {
+      console.error(`[NEO RECOVERY WARN]: Error purga branding: ${brandingStorageError.message}`);
+    }
+  }
+
+  // 6. Purga Manual en Cascada de Base de Datos para asegurar borrado absoluto sin depender de FK constraints
+  const { data: pedidos } = await supabase.from("pedidos").select("id").eq("negocio_id", id);
+  if (pedidos && pedidos.length > 0) {
+    const pedidoIds = pedidos.map((p) => p.id);
+    await supabase.from("pedido_items").delete().in("pedido_id", pedidoIds);
+  }
+  
+  await supabase.from("pedidos").delete().eq("negocio_id", id);
+  await supabase.from("clientes").delete().eq("negocio_id", id);
+  await supabase.from("productos").delete().eq("negocio_id", id);
+  await supabase.from("categorias").delete().eq("negocio_id", id);
+
+  // 7. Operación destructiva final acotada al binomio id + user_id para blindar aislamiento total
   const { error: deleteError } = await supabase
     .from("negocios")
     .delete()
@@ -169,7 +201,18 @@ export async function deleteTenantBrandingAction(id: string) {
     );
   }
 
-  // 6. Invalidar las rutas del frontend para evitar visualización de datos fantasmas cacheados
+  // 8. Eliminar la cuenta de usuario de auth de forma definitiva para evitar residuos y bloqueos de nuevo registro
+  try {
+    const { supabaseAdmin } = await import("@/core/lib/supabase/admin");
+    const { error: deleteUserError } = await supabaseAdmin.auth.admin.deleteUser(user.id);
+    if (deleteUserError) {
+      console.error(`[NEO RECOVERY WARN]: Error purga user Auth: ${deleteUserError.message}`);
+    }
+  } catch (adminErr) {
+    console.error(`[NEO RECOVERY WARN]: No se pudo instanciar supabaseAdmin para purgar usuario:`, adminErr);
+  }
+
+  // 9. Invalidar las rutas del frontend
   revalidatePath("/configuracion");
   revalidatePath(`/${negocio.slug}`);
 

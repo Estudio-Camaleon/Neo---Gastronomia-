@@ -50,7 +50,7 @@ export function RegisterForm() {
       return {
         score: 1,
         label: "Insegura",
-        color: "bg-red-500",
+        color: "bg-red-400",
         width: "w-1/3",
       };
     }
@@ -58,14 +58,14 @@ export function RegisterForm() {
       return {
         score: 2,
         label: "Moderada",
-        color: "bg-amber-500",
+        color: "bg-amber-400",
         width: "w-2/3",
       };
     }
     return {
       score: 3,
       label: "Fuerte",
-      color: "bg-zinc-900 dark:bg-zinc-100",
+      color: "bg-[var(--auth-primary)]",
       width: "w-full",
     };
   };
@@ -97,7 +97,7 @@ export function RegisterForm() {
         email: validation.data.email,
         password: validation.data.password,
         options: {
-          emailRedirectTo: `${window.location.origin}/dashboard`,
+          emailRedirectTo: `${window.location.origin}/pedidos`,
           data: {
             nombre_negocio: validation.data.nombreNegocio,
           },
@@ -119,23 +119,23 @@ export function RegisterForm() {
 
   if (isSent) {
     return (
-      <div className="bg-white dark:bg-zinc-900 p-6 rounded-xl border border-zinc-200 dark:border-zinc-800 text-center space-y-4 animate-in zoom-in-95 duration-200 select-none">
-        <div className="w-12 h-12 bg-zinc-50 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 rounded-full flex items-center justify-center mx-auto shadow-3xs">
+      <div className="bg-[var(--auth-surface-form)] p-6 rounded-xl border border-[var(--auth-border)] text-center space-y-4 animate-in zoom-in-95 duration-200 select-none shadow-sm">
+        <div className="w-12 h-12 bg-[var(--auth-primary-soft)] text-[var(--auth-primary)] rounded-full flex items-center justify-center mx-auto shadow-sm">
           <CheckCircle2 className="h-6 w-6" />
         </div>
         <div className="space-y-1">
-          <h2 className="text-base font-bold text-zinc-900 dark:text-white tracking-tight">
+          <h2 className="text-base font-bold text-[var(--auth-accent)] tracking-tight">
             Enlace de Activación Despachado
           </h2>
-          <p className="text-zinc-500 dark:text-zinc-400 text-xs leading-relaxed">
+          <p className="text-[var(--auth-text-muted)] text-sm leading-relaxed">
             Hemos enviado una firma de verificación para consolidar el local:{" "}
             <br />
-            <span className="font-mono font-semibold text-zinc-900 dark:text-zinc-200 bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-[11px] mt-1 inline-block">
+            <span className="font-mono font-semibold text-[var(--auth-accent)] bg-[var(--auth-bg)] px-2 py-0.5 rounded text-xs mt-2 inline-block border border-[var(--auth-border)]">
               {nombreNegocio}
             </span>
           </p>
         </div>
-        <div className="p-3 bg-zinc-50 dark:bg-zinc-950 border border-zinc-100 dark:border-zinc-900/60 rounded-lg text-[10px] text-zinc-400 dark:text-zinc-500 leading-normal">
+        <div className="p-3 bg-[var(--auth-bg)] border border-[var(--auth-border)] rounded-lg text-xs text-[var(--auth-text-muted)] leading-normal">
           Por favor, valida tu bandeja de entrada o buzón de spam para habilitar
           tu infraestructura multi-tenant en NEO.
         </div>
@@ -144,9 +144,9 @@ export function RegisterForm() {
   }
 
   return (
-    <form onSubmit={handleRegister} className="w-full space-y-4 text-xs">
-      <div className="space-y-1.5">
-        <label className="font-semibold text-zinc-700 dark:text-zinc-300">
+    <form onSubmit={handleRegister} className="w-full space-y-5">
+      <div className="space-y-2">
+        <label className="auth-label">
           Nombre de tu Negocio
         </label>
         <Input
@@ -156,12 +156,12 @@ export function RegisterForm() {
           value={nombreNegocio}
           onChange={(e) => setNombreNegocio(e.target.value)}
           placeholder="Ej: Burger Station"
-          className="h-11 bg-zinc-50/50 dark:bg-zinc-950/30 border-zinc-200 dark:border-zinc-800 text-sm rounded-lg focus:ring-1 focus:ring-zinc-900 dark:focus:ring-zinc-300 focus:bg-white text-zinc-900 dark:text-zinc-50"
+          className="auth-input"
         />
       </div>
 
-      <div className="space-y-1.5">
-        <label className="font-semibold text-zinc-700 dark:text-zinc-300">
+      <div className="space-y-2">
+        <label className="auth-label">
           Correo Electrónico
         </label>
         <Input
@@ -171,18 +171,18 @@ export function RegisterForm() {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="socio@tu-negocio.com"
-          className="h-11 bg-zinc-50/50 dark:bg-zinc-950/30 border-zinc-200 dark:border-zinc-800 text-sm rounded-lg focus:ring-1 focus:ring-zinc-900 dark:focus:ring-zinc-300 focus:bg-white text-zinc-900 dark:text-zinc-50"
+          className="auth-input"
         />
       </div>
 
       {/* INPUT DE CONTRASEÑA CON ENTROPÍA PREMIUM INTEGRADA */}
-      <div className="space-y-1.5">
+      <div className="space-y-2">
         <div className="flex justify-between items-center">
-          <label className="font-semibold text-zinc-700 dark:text-zinc-300">
+          <label className="auth-label">
             Contraseña Administrador
           </label>
           {password.length > 0 && (
-            <span className="text-[10px] font-mono font-medium text-zinc-400 dark:text-zinc-500 animate-in fade-in duration-200">
+            <span className="text-[10px] font-mono font-medium text-[var(--auth-text-muted)] animate-in fade-in duration-200">
               Fortaleza: {strength.label}
             </span>
           )}
@@ -195,11 +195,11 @@ export function RegisterForm() {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           placeholder="Mínimo 6 caracteres"
-          className="h-11 bg-zinc-50/50 dark:bg-zinc-950/30 border-zinc-200 dark:border-zinc-800 text-sm rounded-lg focus:ring-1 focus:ring-zinc-900 dark:focus:ring-zinc-300 focus:bg-white text-zinc-900 dark:text-zinc-50 mb-1"
+          className="auth-input mb-1.5"
         />
 
         {/* TRACKING VISUAL ADAPTATIVO */}
-        <div className="h-1 w-full bg-zinc-100 dark:bg-zinc-800/80 rounded-full overflow-hidden transition-all duration-300">
+        <div className="h-1.5 w-full bg-[#f3efe6] rounded-full overflow-hidden transition-all duration-300">
           <div
             className={`h-full ${strength.color} ${strength.width} transition-all duration-500 ease-out`}
           />
@@ -207,8 +207,8 @@ export function RegisterForm() {
       </div>
 
       {errorMsg && (
-        <div className="flex items-start gap-2.5 text-red-700 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900/40 p-3 rounded-lg text-[11px] leading-relaxed animate-in fade-in duration-150">
-          <ShieldAlert className="h-4 w-4 shrink-0 text-red-600 dark:text-red-400 mt-0.5" />
+        <div className="auth-error-box">
+          <ShieldAlert className="h-4 w-4 shrink-0 mt-0.5" />
           <span>{errorMsg}</span>
         </div>
       )}
@@ -216,7 +216,7 @@ export function RegisterForm() {
       <button
         disabled={loading}
         type="submit"
-        className="w-full bg-zinc-900 dark:bg-zinc-50 text-zinc-50 dark:text-zinc-900 font-medium text-xs h-11 rounded-lg shadow-sm hover:opacity-90 active:scale-[0.99] disabled:opacity-40 disabled:pointer-events-none transition-all flex items-center justify-center gap-2 mt-2"
+        className="auth-btn-primary mt-2"
       >
         {loading ? (
           <>
@@ -226,7 +226,7 @@ export function RegisterForm() {
         ) : (
           <>
             <span>Inicializar Mi Cuenta Comercial</span>
-            <ArrowRight size={13} />
+            <ArrowRight size={16} />
           </>
         )}
       </button>

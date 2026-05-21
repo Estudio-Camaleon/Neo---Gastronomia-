@@ -9,24 +9,34 @@ import {
 } from "lucide-react";
 import { TransitionLink } from "@/components/ui/transition-link";
 import Image from "next/image";
+import "../style/auth.css";
+
+const CATEGORIES = [
+  { icon: <ChefHat size={14} />, label: "Restaurantes" },
+  { icon: <Coffee size={14} />, label: "Cafeterías" },
+  { icon: <Handbag size={14} />, label: "Tiendas" },
+  { icon: <ShoppingBasket size={14} />, label: "Markets" },
+  { icon: <Library size={14} />, label: "Gourmet" },
+];
 
 export default function LoginPage() {
   return (
-    <div className="flex flex-col min-h-screen bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-50 antialiased font-sans">
+    <div className="auth-layout-container flex flex-col min-h-screen text-[var(--auth-text)] antialiased font-sans">
       <div className="flex-1 grid lg:grid-cols-12 overflow-hidden">
         {/* === SECCIÓN IZQUIERDA: HERO MINIMALISTA === */}
-        <section className="hidden lg:flex lg:col-span-7 relative p-16 flex-col justify-between items-center overflow-hidden bg-white dark:bg-zinc-900 border-r border-zinc-200 dark:border-zinc-800">
-          <div className="absolute inset-0 z-0 opacity-[0.02] dark:opacity-[0.01]">
+        <section className="hidden lg:flex lg:col-span-7 relative p-16 flex-col justify-between items-center overflow-hidden bg-[var(--auth-surface-hero)] border-r border-[var(--auth-border)]">
+          <div className="absolute inset-0 z-0 opacity-[0.03] pointer-events-none">
             <Image
               src="/Neo_portada.webp"
               alt="Fondo Portada"
               fill
+              sizes="(max-width: 1024px) 100vw, 60vw"
               className="object-cover mix-blend-overlay"
               priority
             />
           </div>
 
-          <div className="absolute top-[-10%] left-[-5%] w-96 h-96 bg-zinc-100 dark:bg-zinc-800 rounded-full mix-blend-multiply filter blur-3xl opacity-60 z-0" />
+          <div className="absolute top-[-10%] left-[-5%] w-96 h-96 bg-zinc-100/40 rounded-full mix-blend-multiply filter blur-3xl opacity-60 z-0 pointer-events-none" />
 
           <div className="w-full text-left z-10">
             <TransitionLink
@@ -38,7 +48,9 @@ export default function LoginPage() {
                   src="/icons/neo_logo_negro.svg"
                   alt="NEO Logo"
                   fill
-                  className="object-contain dark:invert"
+                  sizes="96px"
+                  className="object-contain"
+                  priority
                 />
               </div>
             </TransitionLink>
@@ -46,35 +58,26 @@ export default function LoginPage() {
 
           <div className="flex-1 flex flex-col items-center justify-center space-y-10 max-w-xl z-10">
             <div className="space-y-4 text-center">
-              <h1 className="text-4xl xl:text-5xl font-bold tracking-tight text-zinc-900 dark:text-white leading-tight">
+              <h1 className="text-4xl xl:text-5xl font-bold tracking-tight text-[var(--auth-accent)] leading-tight">
                 Orquestación digital <br />
-                <span className="font-light italic text-zinc-400">
+                <span className="font-light italic text-[var(--auth-accent-muted)]">
                   de tu ecosistema gastronómico
                 </span>
               </h1>
-              <p className="text-zinc-400 dark:text-zinc-500 text-sm leading-relaxed max-w-sm mx-auto font-medium">
+              <p className="text-[var(--auth-text-muted)] text-sm leading-relaxed max-w-sm mx-auto font-medium">
                 Arquitectura SaaS multi-tenant diseñada para mitigar tiempos
                 muertos y maximizar tickets de facturación.
               </p>
             </div>
 
             <div className="flex flex-wrap justify-center gap-2 max-w-md">
-              {[
-                { i: <ChefHat size={14} />, n: "Restaurantes" },
-                { i: <Coffee size={14} />, n: "Cafeterías" },
-                { i: <Handbag size={14} />, n: "Tiendas" },
-                { i: <ShoppingBasket size={14} />, n: "Markets" },
-                { i: <Library size={14} />, n: "Gourmet" },
-              ].map((item, idx) => (
-                <div
-                  key={idx}
-                  className="flex items-center gap-2 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200/60 dark:border-zinc-700/60 px-3.5 py-1.5 rounded-lg text-zinc-800 dark:text-zinc-200 shadow-2xs"
-                >
-                  <span className="text-zinc-400 dark:text-zinc-500">
-                    {item.i}
+              {CATEGORIES.map((item, idx) => (
+                <div key={idx} className="auth-badge">
+                  <span className="text-[var(--auth-primary)]">
+                    {item.icon}
                   </span>
                   <span className="text-xs font-medium tracking-wide">
-                    {item.n}
+                    {item.label}
                   </span>
                 </div>
               ))}
@@ -83,14 +86,32 @@ export default function LoginPage() {
         </section>
 
         {/* === SECCIÓN DERECHA: PASARELA LOGIN === */}
-        <section className="col-span-12 lg:col-span-5 flex flex-col justify-center items-center p-6 md:p-12 bg-white dark:bg-zinc-950 relative">
+        <section className="col-span-12 lg:col-span-5 flex flex-col justify-center items-center p-6 md:p-12 bg-[var(--auth-surface-form)] relative">
           <div className="w-full max-w-md space-y-8 relative z-10">
+            {/* Logo Mobile */}
+            <div className="flex lg:hidden justify-center mb-4">
+              <TransitionLink href="/">
+                <div className="relative h-8 w-24">
+                  <Image
+                    src="/icons/neo_logo_negro.svg"
+                    alt="NEO Logo"
+                    fill
+                    sizes="96px"
+                    className="object-contain"
+                    priority
+                  />
+                </div>
+              </TransitionLink>
+            </div>
+
             <div className="text-center lg:text-left space-y-2">
-              <h2 className="text-2xl font-bold text-zinc-900 dark:text-white tracking-tight">
+              <h2 className="text-2xl font-bold text-[var(--auth-accent)] tracking-tight">
                 Consola Maestro /{" "}
-                <span className="font-light text-zinc-400">NEO</span>
+                <span className="font-light text-[var(--auth-accent-muted)]">
+                  NEO
+                </span>
               </h2>
-              <p className="text-zinc-400 dark:text-zinc-500 text-xs font-medium">
+              <p className="text-[var(--auth-text-muted)] text-xs font-medium">
                 Introduce tus credenciales de inquilino para inicializar el
                 dashboard.
               </p>
@@ -99,31 +120,32 @@ export default function LoginPage() {
             <LoginForm />
 
             <div className="flex items-center gap-4 py-1">
-              <div className="h-px flex-1 bg-zinc-100 dark:bg-zinc-800/80" />
-              <span className="text-zinc-400 dark:text-zinc-500 text-[10px] font-semibold uppercase tracking-wider">
+              <div className="h-px flex-1 bg-[var(--auth-border)]" />
+              <span className="text-[var(--auth-text-muted)] text-[10px] font-semibold uppercase tracking-wider">
                 O
               </span>
-              <div className="h-px flex-1 bg-zinc-100 dark:bg-zinc-800/80" />
+              <div className="h-px flex-1 bg-[var(--auth-border)]" />
             </div>
 
             <TransitionLink
               href="/registro"
-              className="w-full flex items-center justify-center gap-2 py-2.5 px-4 border border-zinc-200 dark:border-zinc-800 rounded-lg bg-zinc-50 dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800/60 text-zinc-700 dark:text-zinc-300 text-xs font-medium transition-all shadow-2xs active:scale-[0.99]"
+              className="w-full flex items-center justify-center gap-2 py-2.5 px-4 border border-[var(--auth-border)] rounded-lg bg-[#f7f4ec] hover:bg-[#eef5e9] text-[var(--auth-text)] text-xs font-medium transition-all shadow-sm active:scale-[0.99]"
             >
-              <UserPlus size={13} className="text-zinc-400" />
+              <UserPlus size={14} className="text-[var(--auth-primary)]" />
               <span>Crear una Nueva Cuenta Comercial</span>
             </TransitionLink>
 
             <button
               type="button"
-              className="w-full flex items-center justify-center gap-2.5 py-2.5 px-4 border border-zinc-100 dark:border-zinc-800/40 rounded-lg text-zinc-500 dark:text-zinc-400 text-xs font-medium hover:bg-zinc-50 dark:hover:bg-zinc-900/40 transition-all"
+              className="w-full flex items-center justify-center gap-2.5 py-2.5 px-4 border border-[var(--auth-border)] rounded-lg text-[var(--auth-text)] bg-white text-xs font-medium hover:bg-[#f7f4ec] transition-all cursor-pointer shadow-sm active:scale-[0.99]"
             >
               <div className="relative h-4 w-4">
                 <Image
                   src="/icons/google.svg"
                   alt="Google OAuth"
                   fill
-                  className="object-contain opacity-80"
+                  sizes="16px"
+                  className="object-contain opacity-90"
                 />
               </div>
               <span>Ingresar con Cuenta Google</span>
