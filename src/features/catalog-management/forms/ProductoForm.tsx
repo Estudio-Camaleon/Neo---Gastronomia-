@@ -188,19 +188,19 @@ export function ProductoForm({
   return (
     <form
       onSubmit={handleSubmit}
-      className="bg-white dark:bg-zinc-900 rounded-xl font-sans w-full max-w-5xl flex flex-col h-full"
+      className="bg-[var(--admin-surface)] rounded-xl font-sans w-full max-w-5xl flex flex-col h-full"
     >
       {/* HEADER */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 border-b border-gray-100 dark:border-zinc-800 shrink-0 bg-gray-50/50 dark:bg-zinc-800/40 rounded-t-xl">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 border-b border-[var(--admin-border)] shrink-0 bg-[var(--admin-bg)]/50 rounded-t-xl pr-14">
         <div className="flex items-center gap-3">
-          <div className="p-2.5 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-lg shadow-sm text-gray-500 dark:text-zinc-400">
+          <div className="p-2.5 bg-[var(--admin-surface)] border border-[var(--admin-border)] rounded-lg shadow-sm text-[var(--admin-text-muted)]">
             <Package className="w-5 h-5" />
           </div>
           <div>
-            <h2 className="text-xl font-bold text-gray-900 dark:text-zinc-100 leading-tight">
+            <h2 className="text-xl font-bold text-[var(--admin-text)] leading-tight">
               {initialData ? "Editar Producto" : "Nuevo Producto"}
             </h2>
-            <p className="text-xs font-medium text-gray-500 dark:text-zinc-400 mt-1">
+            <p className="text-xs font-medium text-[var(--admin-text-muted)] mt-1">
               Completa los detalles para tu catálogo.
             </p>
           </div>
@@ -209,7 +209,7 @@ export function ProductoForm({
         <button
           type="submit"
           disabled={isPending}
-          className="md:hidden flex items-center justify-center gap-2 bg-[var(--admin-accent)] hover:bg-[var(--admin-accent)]/90 text-white px-4 py-2.5 rounded-lg text-sm font-semibold transition-all disabled:opacity-50 shadow-sm"
+          className="md:hidden flex items-center justify-center gap-2 bg-[var(--admin-accent)] hover:opacity-90 text-white px-4 py-2.5 rounded-lg text-sm font-semibold transition-all disabled:opacity-50 shadow-sm"
         >
           {isPending ? (
             <Loader2 className="animate-spin" size={16} />
@@ -222,11 +222,11 @@ export function ProductoForm({
 
       {/* CUERPO INTERNO CON SCROLL */}
       <div className="p-6 overflow-y-auto flex-1 custom-scrollbar">
-        <div className="grid grid-cols-1 grid-cols-1 lg:grid-cols-12 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           {/* COLUMNA IZQUIERDA */}
           <div className="lg:col-span-5 space-y-5">
             <div className="space-y-1.5">
-              <label className="text-sm font-semibold text-gray-700 dark:text-zinc-300">
+              <label className="text-sm font-semibold text-[var(--admin-text)] block">
                 Nombre Comercial
               </label>
               <input
@@ -236,13 +236,13 @@ export function ProductoForm({
                 onChange={(e) =>
                   setFormData({ ...formData, nombre: e.target.value })
                 }
-                className="w-full p-2.5 bg-white dark:bg-zinc-900 border border-gray-300 dark:border-zinc-700 rounded-lg text-sm text-gray-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-[var(--admin-accent)] transition-all"
+                className="w-full p-2.5 bg-[var(--admin-bg)] border border-[var(--admin-border)] rounded-lg text-sm text-[var(--admin-text)] focus:outline-none focus:border-[var(--admin-accent)] focus:ring-1 focus:ring-[var(--admin-accent)] transition-all"
                 placeholder="Ej: Triple Bacon Burger"
               />
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-sm font-semibold text-gray-700 dark:text-zinc-300">
+              <label className="text-sm font-semibold text-[var(--admin-text)] block">
                 Descripción Corta
               </label>
               <textarea
@@ -250,14 +250,14 @@ export function ProductoForm({
                 onChange={(e) =>
                   setFormData({ ...formData, descripcion: e.target.value })
                 }
-                className="w-full p-2.5 bg-white dark:bg-zinc-900 border border-gray-300 dark:border-zinc-700 rounded-lg text-sm text-gray-900 dark:text-zinc-100 resize-none h-24 focus:outline-none focus:ring-2 focus:ring-[var(--admin-accent)] transition-all"
+                className="w-full p-2.5 bg-[var(--admin-bg)] border border-[var(--admin-border)] rounded-lg text-sm text-[var(--admin-text)] resize-none h-24 focus:outline-none focus:border-[var(--admin-accent)] focus:ring-1 focus:ring-[var(--admin-accent)] transition-all"
                 placeholder="Detalla los ingredientes del plato..."
               />
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <label className="text-sm font-semibold text-gray-700 dark:text-zinc-300">
+                <label className="text-sm font-semibold text-[var(--admin-text)] block">
                   Precio Base ($)
                 </label>
                 <input
@@ -268,7 +268,7 @@ export function ProductoForm({
                   onChange={(e) =>
                     setFormData({ ...formData, precio: e.target.value })
                   }
-                  className="w-full p-2.5 bg-white dark:bg-zinc-900 border border-gray-300 dark:border-zinc-700 font-medium text-sm text-gray-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-[var(--admin-accent)] transition-all"
+                  className="w-full p-2.5 bg-[var(--admin-bg)] border border-[var(--admin-border)] font-medium text-sm text-[var(--admin-text)] focus:outline-none focus:border-[var(--admin-accent)] focus:ring-1 focus:ring-[var(--admin-accent)] transition-all rounded-lg"
                   placeholder="0.00"
                 />
               </div>
@@ -278,19 +278,18 @@ export function ProductoForm({
                   negocioId={negocioId}
                   selectedId={formData.categoria_id || ""}
                   onChange={(id) =>
-                    // CORREGIDO: Se cambió 'category_id' por 'categoria_id' para coincidir con tu useState
                     setFormData({ ...formData, categoria_id: id })
                   }
                 />
               </div>
             </div>
 
-            <div className="flex flex-row items-center justify-between gap-4 bg-gray-50 dark:bg-zinc-800/50 border border-gray-100 dark:border-zinc-800 rounded-xl p-4 mt-2">
+            <div className="flex flex-row items-center justify-between gap-4 bg-[var(--admin-bg)]/50 border border-[var(--admin-border)] rounded-xl p-4 mt-2">
               <div className="space-y-0.5">
-                <label className="text-sm font-semibold text-gray-900 dark:text-zinc-100 block">
+                <label className="text-sm font-semibold text-[var(--admin-text)] block">
                   Estado de Venta
                 </label>
-                <p className="text-xs text-gray-500 dark:text-zinc-400">
+                <p className="text-xs text-[var(--admin-text-muted)]">
                   ¿Mostrar en el catálogo público?
                 </p>
               </div>
@@ -304,11 +303,11 @@ export function ProductoForm({
           </div>
 
           {/* COLUMNA DERECHA */}
-          <div className="lg:col-span-7 space-y-8 border-t lg:border-t-0 lg:border-l border-gray-200 dark:border-zinc-800 pt-8 lg:pt-0 lg:pl-8">
+          <div className="lg:col-span-7 space-y-8 border-t lg:border-t-0 lg:border-l border-[var(--admin-border)] pt-8 lg:pt-0 lg:pl-8">
             {/* SECCIÓN VARIANTES */}
             <div className="space-y-4">
-              <div className="flex items-center justify-between pb-2 border-b border-gray-100 dark:border-zinc-800">
-                <h3 className="text-sm font-bold text-gray-800 dark:text-zinc-200">
+              <div className="flex items-center justify-between pb-2 border-b border-[var(--admin-border)]">
+                <h3 className="text-sm font-bold text-[var(--admin-text)]">
                   Tamaños / Variaciones
                 </h3>
                 <button
@@ -324,7 +323,7 @@ export function ProductoForm({
                 {variantes.map((v, idx) => (
                   <div
                     key={idx}
-                    className="flex gap-2 items-center bg-white dark:bg-zinc-900 p-2 border border-gray-200 dark:border-zinc-700 rounded-lg shadow-sm"
+                    className="flex gap-2 items-center bg-[var(--admin-surface)] p-2 border border-[var(--admin-border)] rounded-lg shadow-sm"
                   >
                     <input
                       type="text"
@@ -334,10 +333,10 @@ export function ProductoForm({
                         actualizarVariante(idx, { nombre: e.target.value })
                       }
                       placeholder="Ej: Grande"
-                      className="flex-1 p-2 bg-gray-50 dark:bg-zinc-800/50 border-transparent rounded-md text-sm font-medium text-gray-900 dark:text-zinc-100 focus:bg-white dark:focus:bg-zinc-900 focus:border-[var(--admin-accent)] focus:ring-1 focus:ring-[var(--admin-accent)] outline-none transition-all"
+                      className="flex-1 p-2 bg-[var(--admin-bg)] border-transparent rounded-md text-sm font-medium text-[var(--admin-text)] focus:border-[var(--admin-accent)] focus:ring-1 focus:ring-[var(--admin-accent)] outline-none transition-all"
                     />
                     <div className="relative">
-                      <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-500 dark:text-zinc-400 text-sm">
+                      <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[var(--admin-text-muted)] text-sm">
                         $
                       </span>
                       <input
@@ -353,20 +352,20 @@ export function ProductoForm({
                           })
                         }
                         placeholder="0.00"
-                        className="w-24 p-2 pl-6 bg-gray-50 dark:bg-zinc-800/50 border-transparent rounded-md text-sm font-medium text-gray-900 dark:text-zinc-100 focus:bg-white dark:focus:bg-zinc-900 focus:border-[var(--admin-accent)] focus:ring-1 focus:ring-[var(--admin-accent)] outline-none transition-all"
+                        className="w-24 p-2 pl-6 bg-[var(--admin-bg)] border-transparent rounded-md text-sm font-medium text-[var(--admin-text)] focus:border-[var(--admin-accent)] focus:ring-1 focus:ring-[var(--admin-accent)] outline-none transition-all"
                       />
                     </div>
                     <button
                       type="button"
                       onClick={() => eliminarVariante(idx)}
-                      className="p-2 text-gray-400 dark:text-zinc-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-md transition-colors"
+                      className="p-2 text-[var(--admin-text-muted)] hover:text-red-500 hover:bg-red-500/10 rounded-md transition-colors"
                     >
                       <Trash2 size={16} />
                     </button>
                   </div>
                 ))}
                 {variantes.length === 0 && (
-                  <p className="text-xs text-gray-400 dark:text-zinc-500 italic">
+                  <p className="text-xs text-[var(--admin-text-muted)] italic">
                     Sin variantes (usa el precio base).
                   </p>
                 )}
@@ -375,14 +374,14 @@ export function ProductoForm({
 
             {/* SECCIÓN MODIFICADORES COMPLEJOS */}
             <div className="space-y-4">
-              <div className="flex items-center justify-between pb-2 border-b border-gray-100 dark:border-zinc-800">
-                <h3 className="text-sm font-bold text-gray-800 dark:text-zinc-200">
+              <div className="flex items-center justify-between pb-2 border-b border-[var(--admin-border)]">
+                <h3 className="text-sm font-bold text-[var(--admin-text)]">
                   Grupos de Extras / Salsas
                 </h3>
                 <button
                   type="button"
                   onClick={agregarGrupoOpcion}
-                  className="text-xs font-semibold flex items-center gap-1.5 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/20 px-2.5 py-1.5 rounded-md transition-colors"
+                  className="text-xs font-semibold flex items-center gap-1.5 text-[var(--admin-accent)] hover:bg-[var(--admin-accent)]/10 px-2.5 py-1.5 rounded-md transition-colors"
                 >
                   <ListPlus size={14} /> Crear Grupo
                 </button>
@@ -392,7 +391,7 @@ export function ProductoForm({
                 {gruposOpciones.map((grupo) => (
                   <div
                     key={grupo.id}
-                    className="border border-gray-200 dark:border-zinc-800 bg-gray-50/30 dark:bg-zinc-800/20 rounded-xl p-4 space-y-4"
+                    className="border border-[var(--admin-border)] bg-[var(--admin-bg)]/30 rounded-xl p-4 space-y-4"
                   >
                     <div className="flex flex-col sm:flex-row gap-3 sm:items-center justify-between">
                       <input
@@ -403,20 +402,20 @@ export function ProductoForm({
                           actualizarGrupoOpcion(grupo.id, e.target.value)
                         }
                         placeholder="Nombre (Ej: Elige tus salsas)"
-                        className="flex-1 p-2 bg-white dark:bg-zinc-900 border border-gray-300 dark:border-zinc-700 rounded-md text-sm font-semibold text-gray-900 dark:text-zinc-100 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
+                        className="flex-1 p-2 bg-[var(--admin-surface)] border border-[var(--admin-border)] rounded-md text-sm font-semibold text-[var(--admin-text)] focus:outline-none focus:border-[var(--admin-accent)] focus:ring-1 focus:ring-[var(--admin-accent)] transition-all"
                       />
                       <div className="flex gap-2 shrink-0">
                         <button
                           type="button"
                           onClick={() => agregarItemAGrupo(grupo.id)}
-                          className="px-3 py-2 text-xs font-semibold bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-md text-gray-700 dark:text-zinc-300 hover:text-blue-600 hover:border-blue-200 dark:hover:border-blue-900/40 hover:bg-blue-50 dark:hover:bg-blue-950/30 transition-colors"
+                          className="px-3 py-2 text-xs font-semibold bg-[var(--admin-surface)] border border-[var(--admin-border)] rounded-md text-[var(--admin-text-muted)] hover:text-[var(--admin-accent)] hover:border-[var(--admin-accent)]/50 hover:bg-[var(--admin-accent)]/10 transition-colors"
                         >
                           + Ítem
                         </button>
                         <button
                           type="button"
                           onClick={() => eliminarGrupoOpcion(grupo.id)}
-                          className="px-3 py-2 text-xs font-semibold bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-md text-red-500 hover:border-red-200 dark:hover:border-red-900/40 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
+                          className="px-3 py-2 text-xs font-semibold bg-[var(--admin-surface)] border border-[var(--admin-border)] rounded-md text-red-500 hover:border-red-500/50 hover:bg-red-500/10 transition-colors"
                         >
                           Eliminar Grupo
                         </button>
@@ -424,7 +423,7 @@ export function ProductoForm({
                     </div>
 
                     {/* Sub-items del Grupo */}
-                    <div className="space-y-2 pl-2 sm:pl-4 border-l-2 border-gray-200 dark:border-zinc-700">
+                    <div className="space-y-2 pl-2 sm:pl-4 border-l-2 border-[var(--admin-border)]">
                       {grupo.items?.map((item) => (
                         <div key={item.id} className="flex gap-2 items-center">
                           <input
@@ -437,10 +436,10 @@ export function ProductoForm({
                               })
                             }
                             placeholder="Ingrediente extra"
-                            className="flex-1 p-2 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-md text-sm text-gray-900 dark:text-zinc-100 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
+                            className="flex-1 p-2 bg-[var(--admin-surface)] border border-[var(--admin-border)] rounded-md text-sm text-[var(--admin-text)] focus:outline-none focus:border-[var(--admin-accent)] focus:ring-1 focus:ring-[var(--admin-accent)] transition-all"
                           />
                           <div className="relative">
-                            <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 dark:text-zinc-500 text-sm">
+                            <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[var(--admin-text-muted)] text-sm">
                               +$
                             </span>
                             <input
@@ -456,7 +455,7 @@ export function ProductoForm({
                                 })
                               }
                               placeholder="0.00"
-                              className="w-20 p-2 pl-7 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-md text-sm text-gray-900 dark:text-zinc-100 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
+                              className="w-20 p-2 pl-7 bg-[var(--admin-surface)] border border-[var(--admin-border)] rounded-md text-sm text-[var(--admin-text)] focus:outline-none focus:border-[var(--admin-accent)] focus:ring-1 focus:ring-[var(--admin-accent)] transition-all"
                             />
                           </div>
                           <button
@@ -464,14 +463,14 @@ export function ProductoForm({
                             onClick={() =>
                               eliminarItemDeGrupo(grupo.id, item.id)
                             }
-                            className="p-2 text-gray-400 dark:text-zinc-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-md transition-colors"
+                            className="p-2 text-[var(--admin-text-muted)] hover:text-red-500 hover:bg-red-500/10 rounded-md transition-colors"
                           >
                             <Trash2 size={16} />
                           </button>
                         </div>
                       ))}
                       {grupo.items.length === 0 && (
-                        <p className="text-xs text-gray-400 dark:text-zinc-500 italic mt-2">
+                        <p className="text-xs text-[var(--admin-text-muted)] italic mt-2">
                           Añade opciones a este grupo.
                         </p>
                       )}
@@ -479,7 +478,7 @@ export function ProductoForm({
                   </div>
                 ))}
                 {gruposOpciones.length === 0 && (
-                  <div className="border border-dashed border-gray-300 dark:border-zinc-700 rounded-xl p-6 flex flex-col items-center justify-center text-center text-gray-500 dark:text-zinc-400">
+                  <div className="border border-dashed border-[var(--admin-border)] rounded-xl p-6 flex flex-col items-center justify-center text-center text-[var(--admin-text-muted)]">
                     <ListPlus className="mb-2 opacity-50" size={24} />
                     <span className="text-sm font-medium">
                       Sin grupos adicionales
@@ -493,14 +492,14 @@ export function ProductoForm({
       </div>
 
       {/* FOOTER ACCIONES */}
-      <div className="p-6 border-t border-gray-100 dark:border-zinc-800 bg-white dark:bg-zinc-900 rounded-b-xl flex flex-col sm:flex-row items-center justify-between gap-4 shrink-0 mt-auto">
-        <p className="text-xs font-medium text-gray-500 dark:text-zinc-400">
+      <div className="p-6 border-t border-[var(--admin-border)] bg-[var(--admin-surface)] rounded-b-xl flex flex-col sm:flex-row items-center justify-between gap-4 shrink-0 mt-auto">
+        <p className="text-xs font-medium text-[var(--admin-text-muted)]">
           Los cambios impactarán en el catálogo público al instante.
         </p>
         <button
           type="submit"
           disabled={isPending}
-          className="w-full sm:w-auto bg-[var(--admin-text)] hover:bg-gray-800 text-white dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200 rounded-lg font-semibold text-sm px-8 py-3 transition-all flex items-center justify-center gap-2 shadow-md disabled:opacity-70 disabled:cursor-not-allowed"
+          className="w-full sm:w-auto bg-[var(--admin-accent)] hover:opacity-90 text-white rounded-lg font-semibold text-sm px-8 py-3 transition-all flex items-center justify-center gap-2 shadow-md disabled:opacity-70 disabled:cursor-not-allowed"
         >
           {isPending ? (
             <>

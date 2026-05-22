@@ -214,7 +214,7 @@ export function ConfigForm({
 
       setFormData((prev) => ({ ...prev, slug: res.slugSaneado }));
       toast.success("Ajustes consolidados con éxito", {
-        icon: <CheckCircle2 className="text-zinc-950 dark:text-zinc-50" />,
+        icon: <CheckCircle2 className="text-[var(--admin-accent)]" />,
       });
 
       router.refresh();
@@ -253,18 +253,18 @@ export function ConfigForm({
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* ALERTA CRÍTICA: MUTACIÓN DE URL */}
         {hasSlugChanged && (
-          <div className="bg-amber-50/60 dark:bg-amber-950/20 text-amber-900 dark:text-amber-200 border border-amber-200/80 dark:border-amber-900/40 p-4 rounded-xl flex items-start gap-3 shadow-2xs animate-in fade-in slide-in-from-top-2 duration-200">
-            <AlertTriangle className="h-5 w-5 shrink-0 text-amber-600 dark:text-amber-400 mt-0.5" />
+          <div className="bg-amber-500/10 text-amber-500 border border-amber-500/20 p-4 rounded-xl flex items-start gap-3 shadow-sm animate-in fade-in slide-in-from-top-2 duration-200">
+            <AlertTriangle className="h-5 w-5 shrink-0 text-amber-500 mt-0.5" />
             <div className="text-xs leading-relaxed">
-              <span className="font-semibold block mb-0.5 text-sm text-amber-950 dark:text-amber-100">
+              <span className="font-semibold block mb-0.5 text-sm text-amber-600 dark:text-amber-400">
                 Advertencia: Modificación de la ruta estática (Slug)
               </span>
               La URL histórica{" "}
-              <span className="font-mono bg-amber-100 dark:bg-amber-900/50 px-1 py-0.5 rounded">
+              <span className="font-mono bg-[var(--admin-bg)] px-1 py-0.5 rounded border border-[var(--admin-border)]">
                 /{initialData?.slug}
               </span>{" "}
               dejará de operar de inmediato. Tu catálogo web se relocalizará en:{" "}
-              <span className="font-mono bg-zinc-900 text-zinc-100 px-1 py-0.5 rounded">
+              <span className="font-mono bg-[var(--admin-bg)] px-1 py-0.5 rounded border border-[var(--admin-border)]">
                 /{formData.slug}
               </span>
               .
@@ -299,16 +299,16 @@ export function ConfigForm({
         </div>
 
         {/* BLOQUE CORE: CONTROL HORARIO */}
-        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-5 shadow-2xs space-y-5">
-          <div className="flex items-center gap-3 border-b border-zinc-100 dark:border-zinc-800 pb-4">
-            <div className="p-2 bg-zinc-50 dark:bg-zinc-800 rounded-lg text-zinc-600 dark:text-zinc-400">
+        <div className="bg-[var(--admin-surface)] border border-[var(--admin-border)] rounded-xl p-5 shadow-sm space-y-5">
+          <div className="flex items-center gap-3 border-b border-[var(--admin-border)] pb-4">
+            <div className="p-2 bg-[var(--admin-bg)] border border-[var(--admin-border)] rounded-lg text-[var(--admin-text-muted)]">
               <Clock size={16} />
             </div>
             <div>
-              <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">
+              <h3 className="text-sm font-semibold text-[var(--admin-text)]">
                 Cronograma Operativo Semanal
               </h3>
-              <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5">
+              <p className="text-[11px] text-[var(--admin-text-muted)] mt-0.5">
                 Campamento e itinerario granular de persianas digitales.
               </p>
             </div>
@@ -326,7 +326,7 @@ export function ConfigForm({
           <button
             type="submit"
             disabled={isPending || isDeleting}
-            className="bg-zinc-900 dark:bg-zinc-50 text-zinc-50 dark:text-zinc-900 px-6 py-2.5 rounded-lg text-xs font-medium shadow-sm hover:bg-zinc-800 dark:hover:bg-zinc-200 active:scale-[0.98] transition-all flex items-center gap-2 disabled:opacity-40 disabled:pointer-events-none"
+            className="bg-[var(--admin-accent)] text-white px-6 py-2.5 rounded-lg text-xs font-medium shadow-md hover:opacity-90 active:scale-[0.98] transition-all flex items-center gap-2 disabled:opacity-40 disabled:pointer-events-none"
           >
             {isPending ? (
               <Loader2 className="animate-spin" size={14} />
@@ -342,14 +342,14 @@ export function ConfigForm({
 
       {/* ZONA DE PELIGRO (DANGER ZONE) */}
       {initialData && (
-        <div className="bg-white dark:bg-zinc-900 border border-red-200 dark:border-red-950/60 rounded-xl overflow-hidden shadow-2xs mt-12 animate-in fade-in duration-300">
-          <div className="px-5 py-3.5 border-b border-red-100 dark:border-red-950/40 bg-red-50/30 dark:bg-red-950/10 flex items-center gap-2.5">
-            <Trash2 size={16} className="text-red-600 dark:text-red-400" />
+        <div className="bg-[var(--admin-surface)] border border-red-500/30 rounded-xl overflow-hidden shadow-sm mt-12 animate-in fade-in duration-300">
+          <div className="px-5 py-3.5 border-b border-red-500/20 bg-red-500/5 flex items-center gap-2.5">
+            <Trash2 size={16} className="text-red-500" />
             <div>
-              <h2 className="font-semibold text-xs text-red-700 dark:text-red-400">
+              <h2 className="font-semibold text-xs text-red-500">
                 Zona de Peligro Comercial
               </h2>
-              <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+              <p className="text-[10px] text-[var(--admin-text-muted)]">
                 Acciones irreversibles de desinstalación de infraestructura
                 SaaS.
               </p>
@@ -357,12 +357,12 @@ export function ConfigForm({
           </div>
 
           <div className="p-5 space-y-4">
-            <div className="flex gap-3 text-xs items-start bg-red-50/50 dark:bg-red-950/10 p-3 rounded-lg border border-red-100/50 dark:border-red-950/30">
-              <AlertTriangle className="text-red-600 dark:text-red-400 shrink-0 w-4 h-4 mt-0.5" />
-              <p className="text-zinc-600 dark:text-zinc-400 text-[11px] leading-relaxed">
+            <div className="flex gap-3 text-xs items-start bg-red-500/10 p-3 rounded-lg border border-red-500/20">
+              <AlertTriangle className="text-red-500 shrink-0 w-4 h-4 mt-0.5" />
+              <p className="text-[var(--admin-text)] text-[11px] leading-relaxed">
                 Al confirmar la baja, tu catálogo público se cerrará de
                 inmediato. Se purgarán de forma definitiva todos tus{" "}
-                <strong>
+                <strong className="text-red-500">
                   productos, menús, categorías, historiales de comandas y
                   accesos de administración
                 </strong>
@@ -371,9 +371,9 @@ export function ConfigForm({
             </div>
 
             <div className="space-y-2 max-w-md">
-              <label className="text-[11px] font-medium text-zinc-600 dark:text-zinc-400 block">
+              <label className="text-[11px] font-medium text-[var(--admin-text-muted)] block">
                 Para confirmar, escribe{" "}
-                <span className="font-semibold select-all font-mono text-zinc-900 dark:text-zinc-100 bg-zinc-100 dark:bg-zinc-800 px-1 py-0.5 rounded text-xs">
+                <span className="font-semibold select-all font-mono text-[var(--admin-text)] bg-[var(--admin-bg)] border border-[var(--admin-border)] px-1 py-0.5 rounded text-xs">
                   {initialData.nombre}
                 </span>{" "}
                 abajo:
@@ -385,7 +385,7 @@ export function ConfigForm({
                   onChange={(e) => setConfirmName(e.target.value)}
                   disabled={isPending || isDeleting}
                   placeholder="Nombre del negocio exacto"
-                  className="flex-1 p-2 bg-zinc-50/50 dark:bg-zinc-950/30 border border-zinc-200 dark:border-zinc-800 rounded-lg text-zinc-900 dark:text-zinc-50 focus:outline-none focus:ring-1 focus:ring-red-600 focus:bg-white text-xs"
+                  className="flex-1 p-2 bg-[var(--admin-bg)] border border-[var(--admin-border)] rounded-lg text-[var(--admin-text)] focus:outline-none focus:ring-1 focus:ring-red-500 focus:border-red-500 transition-all text-xs"
                 />
                 <button
                   type="button"
@@ -395,7 +395,7 @@ export function ConfigForm({
                     isPending ||
                     isDeleting
                   }
-                  className="bg-red-600 hover:bg-red-700 text-white font-medium text-xs px-4 py-2 rounded-lg shadow-2xs transition-all disabled:opacity-30 disabled:pointer-events-none flex items-center justify-center gap-1.5 shrink-0"
+                  className="bg-red-500 hover:bg-red-600 text-white font-medium text-xs px-4 py-2 rounded-lg shadow-sm transition-all disabled:opacity-30 disabled:pointer-events-none flex items-center justify-center gap-1.5 shrink-0"
                 >
                   {isDeleting ? (
                     <Loader2 className="animate-spin" size={13} />
@@ -428,26 +428,26 @@ function BrandingBlock({
   ) => void;
 }) {
   return (
-    <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl overflow-hidden shadow-2xs">
-      <div className="px-5 py-3.5 border-b border-zinc-100 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-800/20 flex items-center gap-2.5">
-        <Camera size={16} className="text-zinc-400 dark:text-zinc-500" />
+    <div className="bg-[var(--admin-surface)] border border-[var(--admin-border)] rounded-xl overflow-hidden shadow-sm">
+      <div className="px-5 py-3.5 border-b border-[var(--admin-border)] bg-[var(--admin-bg)]/50 flex items-center gap-2.5">
+        <Camera size={16} className="text-[var(--admin-text-muted)]" />
         <div>
-          <h2 className="font-semibold text-xs text-zinc-900 dark:text-zinc-100">
+          <h2 className="font-semibold text-xs text-[var(--admin-text)]">
             Lienzo e Identidad Visual
           </h2>
-          <p className="text-[10px] text-zinc-500">
+          <p className="text-[10px] text-[var(--admin-text-muted)]">
             Sincronización geométrica de activos multimedia de marca.
           </p>
         </div>
       </div>
 
       <div className="p-5 grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
-        <div className="md:col-span-4 flex flex-col items-center border-b md:border-b-0 md:border-r border-zinc-100 dark:border-zinc-800 pb-5 md:pb-0 md:pr-6">
-          <span className="text-[9px] font-semibold text-zinc-400 uppercase tracking-wider mb-3">
+        <div className="md:col-span-4 flex flex-col items-center border-b md:border-b-0 md:border-r border-[var(--admin-border)] pb-5 md:pb-0 md:pr-6">
+          <span className="text-[9px] font-semibold text-[var(--admin-text-muted)] uppercase tracking-wider mb-3">
             Isotipo Comercial
           </span>
           <div className="relative group">
-            <div className="w-28 h-28 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 overflow-hidden relative transition-all group-hover:border-zinc-400 dark:group-hover:border-zinc-600 shadow-2xs">
+            <div className="w-28 h-28 rounded-xl border border-[var(--admin-border)] bg-[var(--admin-bg)] overflow-hidden relative transition-all group-hover:border-[var(--admin-accent)] shadow-sm">
               {logoUrl ? (
                 <Image
                   src={logoUrl}
@@ -458,20 +458,20 @@ function BrandingBlock({
                   priority
                 />
               ) : (
-                <div className="w-full h-full flex items-center justify-center text-zinc-300 dark:text-zinc-700">
+                <div className="w-full h-full flex items-center justify-center text-[var(--admin-text-muted)]">
                   <ImageIcon size={24} />
                 </div>
               )}
               {uploading === "logo_url" && (
-                <div className="absolute inset-0 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xs flex items-center justify-center">
+                <div className="absolute inset-0 bg-[var(--admin-surface)]/80 backdrop-blur-sm flex items-center justify-center">
                   <Loader2
-                    className="animate-spin text-zinc-600 dark:text-zinc-400"
+                    className="animate-spin text-[var(--admin-accent)]"
                     size={16}
                   />
                 </div>
               )}
             </div>
-            <label className="absolute -bottom-1.5 -right-1.5 bg-white dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 p-2 rounded-lg border border-zinc-200 dark:border-zinc-700 shadow-xs cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-all">
+            <label className="absolute -bottom-1.5 -right-1.5 bg-[var(--admin-surface)] text-[var(--admin-text)] p-2 rounded-lg border border-[var(--admin-border)] shadow-sm cursor-pointer hover:border-[var(--admin-accent)] transition-all">
               <Upload size={12} />
               <input
                 type="file"
@@ -482,7 +482,7 @@ function BrandingBlock({
               />
             </label>
           </div>
-          <p className="text-[9px] text-zinc-400 dark:text-zinc-500 mt-3 text-center leading-normal">
+          <p className="text-[9px] text-[var(--admin-text-muted)] mt-3 text-center leading-normal">
             Cuadrante estricto 1:1.
             <br />
             Máx 2MB (PNG, WEBP).
@@ -491,10 +491,10 @@ function BrandingBlock({
 
         <div className="md:col-span-8 flex flex-col justify-between h-full space-y-3">
           <div className="flex justify-between items-center">
-            <span className="text-[9px] font-semibold text-zinc-400 uppercase tracking-wider">
+            <span className="text-[9px] font-semibold text-[var(--admin-text-muted)] uppercase tracking-wider">
               Banner de Cabecera
             </span>
-            <label className="text-[11px] font-medium text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 px-2 py-1 rounded-lg cursor-pointer transition-all flex items-center gap-1.5 shadow-2xs">
+            <label className="text-[11px] font-medium text-[var(--admin-text)] hover:bg-[var(--admin-bg)] border border-[var(--admin-border)] px-2 py-1 rounded-lg cursor-pointer transition-all flex items-center gap-1.5 shadow-sm">
               <Upload size={11} /> Cargar lienzo
               <input
                 type="file"
@@ -505,7 +505,7 @@ function BrandingBlock({
               />
             </label>
           </div>
-          <div className="relative w-full aspect-[21/8] rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 overflow-hidden shadow-2xs">
+          <div className="relative w-full aspect-[21/8] rounded-xl border border-[var(--admin-border)] bg-[var(--admin-bg)] overflow-hidden shadow-sm">
             {bannerUrl ? (
               <Image
                 src={bannerUrl}
@@ -515,20 +515,20 @@ function BrandingBlock({
                 sizes="(max-width: 768px) 100vw, 650px"
               />
             ) : (
-              <div className="w-full h-full flex items-center justify-center text-zinc-300 dark:text-zinc-700">
-                <ImageIcon size={28} className="opacity-50" />
+              <div className="w-full h-full flex items-center justify-center text-[var(--admin-text-muted)] opacity-50">
+                <ImageIcon size={28} />
               </div>
             )}
             {uploading === "banner_url" && (
-              <div className="absolute inset-0 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xs flex items-center justify-center">
+              <div className="absolute inset-0 bg-[var(--admin-surface)]/80 backdrop-blur-sm flex items-center justify-center">
                 <Loader2
-                  className="animate-spin text-zinc-600 dark:text-zinc-400"
+                  className="animate-spin text-[var(--admin-accent)]"
                   size={20}
                 />
               </div>
             )}
           </div>
-          <p className="text-[9px] text-zinc-400 dark:text-zinc-500 leading-none">
+          <p className="text-[9px] text-[var(--admin-text-muted)] leading-none">
             Ratio panorámico optimizado para LCP: 1200x450px.
           </p>
         </div>
@@ -547,108 +547,106 @@ function GeneralInfoBlock({
   ) => void;
 }) {
   return (
-    <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-5 shadow-2xs space-y-4">
-      <div className="flex items-center gap-2 border-b border-zinc-100 dark:border-zinc-800 pb-2.5">
-        <Globe size={14} className="text-zinc-400" />
-        <h2 className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">
+    <div className="bg-[var(--admin-surface)] border border-[var(--admin-border)] rounded-xl p-5 shadow-sm space-y-4">
+      <div className="flex items-center gap-2 border-b border-[var(--admin-border)] pb-2.5">
+        <Globe size={14} className="text-[var(--admin-text-muted)]" />
+        <h2 className="text-xs font-semibold text-[var(--admin-text)]">
           Atributos Operacionales Nucleares
         </h2>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
         <div className="space-y-1">
-          <label className="font-medium text-zinc-500 dark:text-zinc-400">
+          <label className="font-medium text-[var(--admin-text-muted)]">
             Nombre Comercial
           </label>
           <input
             name="nombre"
             value={formData.nombre}
             onChange={onChange}
-            className="w-full p-2 bg-zinc-50/50 dark:bg-zinc-950/30 border border-zinc-200 dark:border-zinc-800 rounded-lg text-zinc-900 dark:text-zinc-50 focus:outline-none focus:ring-1 focus:ring-zinc-950 dark:focus:ring-zinc-300 focus:bg-white dark:focus:bg-zinc-900 transition-all font-medium text-xs"
+            className="w-full p-2 bg-[var(--admin-bg)] border border-[var(--admin-border)] rounded-lg text-[var(--admin-text)] focus:outline-none focus:ring-1 focus:ring-[var(--admin-accent)] focus:border-[var(--admin-accent)] transition-all font-medium text-xs"
             placeholder="Ej: Burger Station"
             required
           />
         </div>
 
         <div className="space-y-1">
-          <label className="font-medium text-zinc-500 dark:text-zinc-400">
+          <label className="font-medium text-[var(--admin-text-muted)]">
             Dirección Web Estática (Slug URL)
           </label>
           <div className="relative">
-            <Hash className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-zinc-400" />
+            <Hash className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[var(--admin-text-muted)]" />
             <input
               name="slug"
               value={formData.slug}
               onChange={onChange}
-              className="w-full p-2 pl-8 bg-zinc-50/50 dark:bg-zinc-950/30 border border-zinc-200 dark:border-zinc-800 rounded-lg text-zinc-800 dark:text-zinc-200 focus:outline-none focus:ring-1 focus:ring-zinc-950 dark:focus:ring-zinc-300 font-mono text-xs focus:bg-white dark:focus:bg-zinc-900 transition-all"
+              className="w-full p-2 pl-8 bg-[var(--admin-bg)] border border-[var(--admin-border)] rounded-lg text-[var(--admin-text)] focus:outline-none focus:ring-1 focus:ring-[var(--admin-accent)] focus:border-[var(--admin-accent)] font-mono text-xs transition-all"
               placeholder="burger-station"
               required
             />
           </div>
-          <p className="text-[9px] text-zinc-400 dark:text-zinc-500 mt-1 leading-normal">
+          <p className="text-[9px] text-[var(--admin-text-muted)] mt-1 leading-normal">
             Enlace público directo:{" "}
-            <span className="font-mono text-zinc-500 dark:text-zinc-400">
+            <span className="font-mono">
               neo.app/<b>{formData.slug || "comercio"}</b>
             </span>
           </p>
         </div>
 
         <div className="space-y-1">
-          <label className="font-medium text-zinc-500 dark:text-zinc-400 flex items-center gap-1">
-            <Phone size={12} className="text-zinc-400" /> WhatsApp Receptor de
-            Comandas
+          <label className="font-medium text-[var(--admin-text-muted)] flex items-center gap-1">
+            <Phone size={12} /> WhatsApp Receptor de Comandas
           </label>
           <input
             name="whatsapp"
             value={formData.whatsapp}
             onChange={onChange}
             type="tel"
-            className="w-full p-2 bg-zinc-50/50 dark:bg-zinc-950/30 border border-zinc-200 dark:border-zinc-800 rounded-lg text-zinc-900 dark:text-zinc-50 focus:outline-none focus:ring-1 focus:ring-zinc-950 dark:focus:ring-zinc-300 focus:bg-white dark:focus:bg-zinc-900 transition-all font-medium text-xs"
+            className="w-full p-2 bg-[var(--admin-bg)] border border-[var(--admin-border)] rounded-lg text-[var(--admin-text)] focus:outline-none focus:ring-1 focus:ring-[var(--admin-accent)] focus:border-[var(--admin-accent)] transition-all font-medium text-xs"
             placeholder="5491123456789"
             required
           />
-          <p className="text-[9px] text-zinc-400 dark:text-zinc-500 leading-tight">
+          <p className="text-[9px] text-[var(--admin-text-muted)] leading-tight">
             Prefijo de país completo, sin espacios ni símbolos intermedios.
           </p>
         </div>
 
         <div className="space-y-1">
-          <label className="font-medium text-zinc-500 dark:text-zinc-400">
+          <label className="font-medium text-[var(--admin-text-muted)]">
             Localidad / Zona Administrativa
           </label>
           <input
             name="localidad"
             value={formData.localidad}
             onChange={onChange}
-            className="w-full p-2 bg-zinc-50/50 dark:bg-zinc-950/30 border border-zinc-200 dark:border-zinc-800 rounded-lg text-zinc-900 dark:text-zinc-50 focus:outline-none focus:ring-1 focus:ring-zinc-950 dark:focus:ring-zinc-300 focus:bg-white dark:focus:bg-zinc-900 transition-all font-medium text-xs"
+            className="w-full p-2 bg-[var(--admin-bg)] border border-[var(--admin-border)] rounded-lg text-[var(--admin-text)] focus:outline-none focus:ring-1 focus:ring-[var(--admin-accent)] focus:border-[var(--admin-accent)] transition-all font-medium text-xs"
             placeholder="Ej: San Miguel de Tucumán"
           />
         </div>
 
         <div className="space-y-1 sm:col-span-2">
-          <label className="font-medium text-zinc-500 dark:text-zinc-400 flex items-center gap-1">
-            <MapPin size={12} className="text-zinc-400" /> Eje Principal /
-            Dirección Física
+          <label className="font-medium text-[var(--admin-text-muted)] flex items-center gap-1">
+            <MapPin size={12} /> Eje Principal / Dirección Física
           </label>
           <input
             name="direccion"
             value={formData.direccion}
             onChange={onChange}
-            className="w-full p-2 bg-zinc-50/50 dark:bg-zinc-950/30 border border-zinc-200 dark:border-zinc-800 rounded-lg text-zinc-900 dark:text-zinc-50 focus:outline-none focus:ring-1 focus:ring-zinc-950 dark:focus:ring-zinc-300 focus:bg-white dark:focus:bg-zinc-900 transition-all font-medium text-xs"
+            className="w-full p-2 bg-[var(--admin-bg)] border border-[var(--admin-border)] rounded-lg text-[var(--admin-text)] focus:outline-none focus:ring-1 focus:ring-[var(--admin-accent)] focus:border-[var(--admin-accent)] transition-all font-medium text-xs"
             placeholder="Ej: Av. Mate de Luna 1234"
             required
           />
         </div>
 
         <div className="space-y-1 sm:col-span-2">
-          <label className="font-medium text-zinc-500 dark:text-zinc-400">
+          <label className="font-medium text-[var(--admin-text-muted)]">
             Aclaraciones de Despacho u Ubicación (Opcional)
           </label>
           <textarea
             name="direccion_notes"
             value={formData.direccion_notas}
             onChange={onChange}
-            className="w-full p-2 bg-zinc-50/50 dark:bg-zinc-950/30 border border-zinc-200 dark:border-zinc-800 rounded-lg text-zinc-900 dark:text-zinc-50 focus:outline-none focus:ring-1 focus:ring-zinc-950 dark:focus:ring-zinc-300 resize-none h-14 focus:bg-white dark:focus:bg-zinc-900 transition-all text-xs"
+            className="w-full p-2 bg-[var(--admin-bg)] border border-[var(--admin-border)] rounded-lg text-[var(--admin-text)] focus:outline-none focus:ring-1 focus:ring-[var(--admin-accent)] focus:border-[var(--admin-accent)] resize-none h-14 transition-all text-xs"
             placeholder="Ej: Portón gris oscuro de doble hoja, timbre superior..."
           />
         </div>
@@ -665,18 +663,18 @@ function SocialLinksBlock({
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }) {
   return (
-    <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-5 shadow-2xs h-full flex flex-col justify-between">
+    <div className="bg-[var(--admin-surface)] border border-[var(--admin-border)] rounded-xl p-5 shadow-sm h-full flex flex-col justify-between">
       <div className="space-y-3.5">
-        <div className="flex items-center gap-2 border-b border-zinc-100 dark:border-zinc-800 pb-2.5">
-          <Share2 size={14} className="text-zinc-400" />
-          <h2 className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">
+        <div className="flex items-center gap-2 border-b border-[var(--admin-border)] pb-2.5">
+          <Share2 size={14} className="text-[var(--admin-text-muted)]" />
+          <h2 className="text-xs font-semibold text-[var(--admin-text)]">
             Enlaces Digitales del Menú Público
           </h2>
         </div>
 
         <div className="space-y-3 text-xs">
           <div className="space-y-1">
-            <label className="font-medium text-zinc-500 dark:text-zinc-400 block">
+            <label className="font-medium text-[var(--admin-text-muted)] block">
               Instagram Link
             </label>
             <input
@@ -685,12 +683,12 @@ function SocialLinksBlock({
               value={formData.instagram_url}
               onChange={onChange}
               placeholder="https://instagram.com/tu_marca"
-              className="w-full p-2 bg-zinc-50/50 dark:bg-zinc-950/30 border border-zinc-200 dark:border-zinc-800 rounded-lg text-zinc-900 dark:text-zinc-50 text-xs focus:outline-none focus:ring-1 focus:ring-zinc-950 dark:focus:ring-zinc-300 focus:bg-white dark:focus:bg-zinc-900 transition-all"
+              className="w-full p-2 bg-[var(--admin-bg)] border border-[var(--admin-border)] rounded-lg text-[var(--admin-text)] text-xs focus:outline-none focus:ring-1 focus:ring-[var(--admin-accent)] focus:border-[var(--admin-accent)] transition-all"
             />
           </div>
 
           <div className="space-y-1">
-            <label className="font-medium text-zinc-500 dark:text-zinc-400 block">
+            <label className="font-medium text-[var(--admin-text-muted)] block">
               Facebook Perfil
             </label>
             <input
@@ -699,12 +697,12 @@ function SocialLinksBlock({
               value={formData.facebook_url}
               onChange={onChange}
               placeholder="https://facebook.com/tu_marca"
-              className="w-full p-2 bg-zinc-50/50 dark:bg-zinc-950/30 border border-zinc-200 dark:border-zinc-800 rounded-lg text-zinc-900 dark:text-zinc-50 text-xs focus:outline-none focus:ring-1 focus:ring-zinc-950 dark:focus:ring-zinc-300 focus:bg-white dark:focus:bg-zinc-900 transition-all"
+              className="w-full p-2 bg-[var(--admin-bg)] border border-[var(--admin-border)] rounded-lg text-[var(--admin-text)] text-xs focus:outline-none focus:ring-1 focus:ring-[var(--admin-accent)] focus:border-[var(--admin-accent)] transition-all"
             />
           </div>
 
           <div className="space-y-1">
-            <label className="font-medium text-zinc-500 dark:text-zinc-400 block">
+            <label className="font-medium text-[var(--admin-text-muted)] block">
               TikTok Canal
             </label>
             <input
@@ -713,15 +711,18 @@ function SocialLinksBlock({
               value={formData.tiktok_url}
               onChange={onChange}
               placeholder="https://tiktok.com/@tu_marca"
-              className="w-full p-2 bg-zinc-50/50 dark:bg-zinc-950/30 border border-zinc-200 dark:border-zinc-800 rounded-lg text-zinc-900 dark:text-zinc-50 text-xs focus:outline-none focus:ring-1 focus:ring-zinc-950 dark:focus:ring-zinc-300 focus:bg-white dark:focus:bg-zinc-900 transition-all"
+              className="w-full p-2 bg-[var(--admin-bg)] border border-[var(--admin-border)] rounded-lg text-[var(--admin-text)] text-xs focus:outline-none focus:ring-1 focus:ring-[var(--admin-accent)] focus:border-[var(--admin-accent)] transition-all"
             />
           </div>
         </div>
       </div>
 
-      <div className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-100 dark:border-zinc-800/60 rounded-lg p-2.5 flex gap-2 mt-4 items-start">
-        <Info size={12} className="shrink-0 text-zinc-400 mt-0.5" />
-        <p className="text-[10px] text-zinc-500 dark:text-zinc-400 leading-normal">
+      <div className="bg-[var(--admin-bg)] border border-[var(--admin-border)] rounded-lg p-2.5 flex gap-2 mt-4 items-start">
+        <Info
+          size={12}
+          className="shrink-0 text-[var(--admin-text-muted)] mt-0.5"
+        />
+        <p className="text-[10px] text-[var(--admin-text-muted)] leading-normal">
           Es obligatorio el uso de <code>https://</code> para asegurar el
           redireccionamiento nativo correcto.
         </p>
@@ -738,11 +739,11 @@ function CatalogDesignBlock({
   onChange: (val: string) => void;
 }) {
   return (
-    <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-5 shadow-2xs h-full flex flex-col justify-between">
+    <div className="bg-[var(--admin-surface)] border border-[var(--admin-border)] rounded-xl p-5 shadow-sm h-full flex flex-col justify-between">
       <div className="space-y-4">
-        <div className="flex items-center gap-2 border-b border-zinc-100 dark:border-zinc-800 pb-2.5">
-          <Palette size={14} className="text-zinc-400" />
-          <h2 className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">
+        <div className="flex items-center gap-2 border-b border-[var(--admin-border)] pb-2.5">
+          <Palette size={14} className="text-[var(--admin-text-muted)]" />
+          <h2 className="text-xs font-semibold text-[var(--admin-text)]">
             Color de Acento del Catálogo
           </h2>
         </div>
@@ -750,7 +751,7 @@ function CatalogDesignBlock({
         <div className="space-y-3.5 text-xs">
           <div className="flex items-center gap-3">
             <div
-              className="w-9 h-9 rounded-lg border border-zinc-200 dark:border-zinc-700 overflow-hidden relative cursor-pointer shadow-3xs"
+              className="w-9 h-9 rounded-lg border border-[var(--admin-border)] overflow-hidden relative cursor-pointer shadow-sm"
               style={{ backgroundColor: colorPrimary }}
             >
               <input
@@ -761,21 +762,21 @@ function CatalogDesignBlock({
               />
             </div>
             <div className="flex-1 space-y-0.5">
-              <span className="text-[9px] font-semibold text-zinc-400 uppercase tracking-wider block">
+              <span className="text-[9px] font-semibold text-[var(--admin-text-muted)] uppercase tracking-wider block">
                 Hexadecimal
               </span>
               <input
                 type="text"
                 value={colorPrimary}
                 onChange={(e) => onChange(e.target.value)}
-                className="w-20 p-1 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-md font-mono text-[11px] uppercase text-zinc-800 dark:text-zinc-200 focus:outline-none focus:border-zinc-400"
+                className="w-20 p-1 bg-[var(--admin-bg)] border border-[var(--admin-border)] rounded-md font-mono text-[11px] uppercase text-[var(--admin-text)] focus:outline-none focus:border-[var(--admin-accent)] focus:ring-1 focus:ring-[var(--admin-accent)]"
                 maxLength={7}
               />
             </div>
           </div>
 
           <div className="space-y-1.5">
-            <span className="text-[9px] font-semibold text-zinc-400 uppercase tracking-wider block">
+            <span className="text-[9px] font-semibold text-[var(--admin-text-muted)] uppercase tracking-wider block">
               Acentos Homologados
             </span>
             <div className="flex flex-wrap gap-1.5">
@@ -784,7 +785,11 @@ function CatalogDesignBlock({
                   key={color}
                   type="button"
                   onClick={() => onChange(color)}
-                  className={`w-5 h-5 rounded-md border transition-all ${colorPrimary.toLowerCase() === color.toLowerCase() ? "border-zinc-950 dark:border-white scale-110 ring-2 ring-zinc-100 dark:ring-zinc-800 shadow-2xs" : "border-transparent hover:scale-105"}`}
+                  className={`w-5 h-5 rounded-md border transition-all ${
+                    colorPrimary.toLowerCase() === color.toLowerCase()
+                      ? "border-[var(--admin-text)] scale-110 ring-2 ring-[var(--admin-border)] shadow-sm"
+                      : "border-transparent hover:scale-105"
+                  }`}
                   style={{ backgroundColor: color }}
                   title={color}
                 />
@@ -794,9 +799,12 @@ function CatalogDesignBlock({
         </div>
       </div>
 
-      <div className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-100 dark:border-zinc-800/60 rounded-lg p-2.5 flex gap-2 mt-4 items-start">
-        <Info size={12} className="shrink-0 text-zinc-400 mt-0.5" />
-        <p className="text-[10px] text-zinc-500 dark:text-zinc-400 leading-normal">
+      <div className="bg-[var(--admin-bg)] border border-[var(--admin-border)] rounded-lg p-2.5 flex gap-2 mt-4 items-start">
+        <Info
+          size={12}
+          className="shrink-0 text-[var(--admin-text-muted)] mt-0.5"
+        />
+        <p className="text-[10px] text-[var(--admin-text-muted)] leading-normal">
           Inyección directa a la variable CSS reactiva{" "}
           <code>--color-custom</code> del catálogo del cliente.
         </p>
@@ -866,8 +874,8 @@ function ScheduleBlock({
   };
 
   return (
-    <div className="border border-zinc-200 dark:border-zinc-800 rounded-lg overflow-hidden text-xs">
-      <div className="divide-y divide-zinc-100 dark:divide-zinc-800/80">
+    <div className="border border-[var(--admin-border)] rounded-lg overflow-hidden text-xs">
+      <div className="divide-y divide-[var(--admin-border)]">
         {DIAS.map((dia) => {
           const turnos = getTurnos(dia.id);
           const isOpen = turnos.length > 0;
@@ -875,21 +883,33 @@ function ScheduleBlock({
           return (
             <div
               key={dia.id}
-              className={`flex flex-col md:flex-row md:items-center transition-colors ${isOpen ? "bg-white dark:bg-zinc-900" : "bg-zinc-50/40 dark:bg-zinc-950/20"}`}
+              className={`flex flex-col md:flex-row md:items-center transition-colors ${
+                isOpen ? "bg-[var(--admin-surface)]" : "bg-[var(--admin-bg)]/50"
+              }`}
             >
-              <div className="w-full md:w-36 px-4 py-2.5 flex items-center justify-between md:justify-start gap-4 border-b md:border-b-0 md:border-r border-zinc-100 dark:border-zinc-800 shrink-0">
+              <div className="w-full md:w-36 px-4 py-2.5 flex items-center justify-between md:justify-start gap-4 border-b md:border-b-0 md:border-r border-[var(--admin-border)] shrink-0">
                 <span
-                  className={`font-medium ${isOpen ? "text-zinc-900 dark:text-zinc-50" : "text-zinc-400"}`}
+                  className={`font-medium ${
+                    isOpen
+                      ? "text-[var(--admin-text)]"
+                      : "text-[var(--admin-text-muted)] opacity-70"
+                  }`}
                 >
                   {dia.label}
                 </span>
                 <button
                   type="button"
                   onClick={() => updateDay(dia.id, !isOpen)}
-                  className={`relative inline-flex h-4 w-7 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-150 outline-none ${isOpen ? "bg-zinc-900 dark:bg-zinc-100" : "bg-zinc-200 dark:bg-zinc-800"}`}
+                  className={`relative inline-flex h-4 w-7 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-150 outline-none ${
+                    isOpen
+                      ? "bg-[var(--admin-accent)]"
+                      : "bg-[var(--admin-border)]"
+                  }`}
                 >
                   <span
-                    className={`pointer-events-none inline-block h-3 w-3 transform rounded-full bg-white dark:bg-zinc-950 shadow-3xs transition duration-150 ${isOpen ? "translate-x-3" : "translate-x-0"}`}
+                    className={`pointer-events-none inline-block h-3 w-3 transform rounded-full bg-white shadow-sm transition duration-150 ${
+                      isOpen ? "translate-x-3" : "translate-x-0"
+                    }`}
                   />
                 </button>
               </div>
@@ -900,7 +920,7 @@ function ScheduleBlock({
                     {turnos.map((t, idx) => (
                       <div
                         key={idx}
-                        className="flex items-center gap-1.5 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800/60 rounded-md p-1 animate-in zoom-in-95 duration-100"
+                        className="flex items-center gap-1.5 bg-[var(--admin-bg)] border border-[var(--admin-border)] rounded-md p-1 animate-in zoom-in-95 duration-100"
                       >
                         <input
                           type="time"
@@ -908,9 +928,9 @@ function ScheduleBlock({
                           onChange={(e) =>
                             updateTime(dia.id, idx, "inicio", e.target.value)
                           }
-                          className="bg-transparent text-xs font-medium outline-none text-zinc-800 dark:text-zinc-200 p-0.5 cursor-pointer"
+                          className="bg-transparent text-xs font-medium outline-none text-[var(--admin-text)] p-0.5 cursor-pointer"
                         />
-                        <span className="text-[9px] font-bold text-zinc-400">
+                        <span className="text-[9px] font-bold text-[var(--admin-text-muted)]">
                           A
                         </span>
                         <input
@@ -919,12 +939,12 @@ function ScheduleBlock({
                           onChange={(e) =>
                             updateTime(dia.id, idx, "fin", e.target.value)
                           }
-                          className="bg-transparent text-xs font-medium outline-none text-zinc-800 dark:text-zinc-200 p-0.5 cursor-pointer"
+                          className="bg-transparent text-xs font-medium outline-none text-[var(--admin-text)] p-0.5 cursor-pointer"
                         />
                         <button
                           type="button"
                           onClick={() => removeFranja(dia.id, idx)}
-                          className="text-zinc-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 p-1 rounded-md transition-colors"
+                          className="text-[var(--admin-text-muted)] hover:text-red-500 hover:bg-red-500/10 p-1 rounded-md transition-colors"
                           title="Remover franja"
                         >
                           <Trash2 size={11} />
@@ -933,20 +953,20 @@ function ScheduleBlock({
                     ))}
                   </div>
                 ) : (
-                  <span className="text-[10px] font-normal text-zinc-400 dark:text-zinc-500 italic">
+                  <span className="text-[10px] font-normal text-[var(--admin-text-muted)] opacity-70 italic">
                     Cerrado (Sin operaciones)
                   </span>
                 )}
               </div>
 
-              <div className="px-4 py-1.5 flex items-center justify-end gap-1.5 shrink-0 md:w-[150px] border-t md:border-t-0 border-zinc-50 dark:border-zinc-800/40">
+              <div className="px-4 py-1.5 flex items-center justify-end gap-1.5 shrink-0 md:w-[150px] border-t md:border-t-0 md:border-l border-[var(--admin-border)]">
                 {isOpen && (
                   <>
                     {turnos.length < 2 && (
                       <button
                         type="button"
                         onClick={() => addFranja(dia.id)}
-                        className="p-1 text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-md transition-colors flex items-center gap-0.5 font-medium text-[10px]"
+                        className="p-1 text-[var(--admin-text-muted)] hover:text-[var(--admin-text)] hover:bg-[var(--admin-bg)] rounded-md transition-colors flex items-center gap-0.5 font-medium text-[10px]"
                       >
                         <Plus size={11} /> Turno
                       </button>
@@ -954,7 +974,7 @@ function ScheduleBlock({
                     <button
                       type="button"
                       onClick={() => cloneToAll(dia.id)}
-                      className="p-1 text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-md transition-colors flex items-center gap-1 font-medium text-[10px]"
+                      className="p-1 text-[var(--admin-text-muted)] hover:text-[var(--admin-text)] hover:bg-[var(--admin-bg)] rounded-md transition-colors flex items-center gap-1 font-medium text-[10px]"
                       title="Propagar este esquema semanalmente"
                     >
                       <Copy size={10} /> Semanal

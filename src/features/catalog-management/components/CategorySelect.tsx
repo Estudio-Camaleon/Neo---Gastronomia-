@@ -60,7 +60,7 @@ export function CategorySelect({
           value={selectedId}
           onChange={(e) => onChange(e.target.value)}
           disabled={loading}
-          className="w-full bg-white dark:bg-zinc-900 border border-gray-300 dark:border-zinc-700 p-2.5 pr-10 rounded-md text-sm text-gray-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-[var(--admin-accent)] transition-all appearance-none"
+          className="w-full bg-[var(--admin-bg)] border border-[var(--admin-border)] p-2.5 pr-10 rounded-lg text-sm text-[var(--admin-text)] focus:outline-none focus:border-[var(--admin-accent)] focus:ring-1 focus:ring-[var(--admin-accent)] transition-all appearance-none disabled:opacity-50 disabled:cursor-not-allowed"
           style={{
             backgroundImage:
               'url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23a1a1aa%27 stroke-width=%272%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3e%3cpolyline points=%276 9 12 15 18 9%27%3e%3c/polyline%3e%3c/svg%3e")',
@@ -69,15 +69,17 @@ export function CategorySelect({
             backgroundSize: "1rem",
           }}
         >
-          <option value="" className="text-gray-500 dark:bg-zinc-900">
+          <option
+            value=""
+            className="text-[var(--admin-text-muted)] bg-[var(--admin-bg)]"
+          >
             {loading ? "Cargando secciones..." : "Seleccionar sección..."}
           </option>
-          {/* CORREGIDO: Cambiamos la variable del ciclo de 'category_id' a 'cat' */}
           {categorias.map((cat) => (
             <option
               key={cat.id}
               value={cat.id}
-              className="text-gray-900 dark:text-zinc-100 dark:bg-zinc-900"
+              className="text-[var(--admin-text)] bg-[var(--admin-surface)]"
             >
               {cat.nombre}
             </option>
