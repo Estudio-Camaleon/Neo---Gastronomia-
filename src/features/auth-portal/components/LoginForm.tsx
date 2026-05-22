@@ -1,10 +1,11 @@
+// src/features/auth-portal/components/LoginForm.tsx
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { z } from "zod";
 import { LogIn, AlertTriangle, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { loginAction } from "../actions";
 
 const loginSchema = z.object({
   email: z
@@ -24,8 +25,6 @@ export function LoginForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const router = useRouter();
-
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (loading) return;
@@ -40,28 +39,12 @@ export function LoginForm() {
     }
 
     setLoading(true);
-    try {
-      const { createClient } = await import("@/core/lib/supabase/client");
-      const supabase = createClient();
 
-      const { error: signInError } = await supabase.auth.signInWithPassword({
-        email: result.data.email,
-        password: result.data.password,
-      });
+    // Llamada a la Server Action en lugar del cliente local
+    const response = await loginAction(result.data);
 
-      if (signInError) {
-        setError(
-          signInError.message === "Invalid login credentials"
-            ? "El correo electrónico o la contraseña son incorrectos."
-            : signInError.message,
-        );
-      } else {
-        router.refresh();
-        router.push("/pedidos");
-      }
-    } catch {
-      setError("Fallo crítico de comunicación con el nodo de base de datos.");
-    } finally {
+    if (response?.error) {
+      setError(response.error);
       setLoading(false);
     }
   };
@@ -69,9 +52,7 @@ export function LoginForm() {
   return (
     <form onSubmit={handleLogin} className="w-full space-y-5">
       <div className="space-y-2">
-        <label className="auth-label">
-          Correo Electrónico
-        </label>
+        <label className="auth-label">Correo Electrónico</label>
         <Input
           type="email"
           disabled={loading}
@@ -85,9 +66,7 @@ export function LoginForm() {
 
       <div className="space-y-2">
         <div className="flex justify-between items-center">
-          <label className="auth-label">
-            Contraseña
-          </label>
+          <label className="auth-label">Contraseña</label>
           <button
             type="button"
             className="text-xs font-medium text-[var(--auth-text-muted)] hover:text-[var(--auth-primary)] underline transition-colors"

@@ -1,21 +1,21 @@
+// src/features/auth-portal/components/RegisterForm.tsx
 "use client";
 
 import { useState } from "react";
 import { z } from "zod";
-import { ShieldAlert, CheckCircle2, ArrowRight, Loader2 } from "lucide-react";
+import {
+  ShieldAlert,
+  CheckCircle2,
+  ArrowRight,
+  ArrowLeft,
+  Loader2,
+} from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { StepIndicator } from "./StepIndicator";
+import { registerAction } from "../actions";
 
-// Esquema de registro con Regex quirúrgico para fulminar inyecciones XSS
-const registerSchema = z.object({
-  nombreNegocio: z
-    .string()
-    .min(2, "El nombre comercial debe poseer al menos 2 caracteres.")
-    .transform((val) => {
-      return val
-        .trim()
-        .replace(/<\/?[^>]+(>|$)/g, "")
-        .replace(/[<>]/g, "");
-    }),
+// Esquema de registro validado por pasos
+const step1Schema = z.object({
   email: z
     .string()
     .min(1, "El correo electrónico es mandatorio.")
@@ -28,14 +28,16 @@ const registerSchema = z.object({
 });
 
 export function RegisterForm() {
+  const [step, setStep] = useState(1);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [nombreNegocio, setNombreNegocio] = useState("");
+
   const [loading, setLoading] = useState(false);
   const [isSent, setIsSent] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
-  // --- HEURÍSTICA DE ENTROPÍA ULTRA-LIGHT ---
+  // --- HEURÍSTICA DE ENTROPÍA ULTRA-LIGHT ORIGINAL RESTAURADA ---
   const getPasswordStrength = (pass: string) => {
     if (pass.length === 0) {
       return { score: 0, label: "", color: "bg-transparent", width: "w-0" };
@@ -72,51 +74,48 @@ export function RegisterForm() {
 
   const strength = getPasswordStrength(password);
 
+  const handleNextStep = () => {
+    setErrorMsg("");
+    const result = step1Schema.safeParse({ email, password });
+    if (!result.success) {
+      setErrorMsg(result.error.issues[0]?.message || "Datos inválidos.");
+      return;
+    }
+    setStep(2);
+  };
+
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     if (loading) return;
     setErrorMsg("");
 
-    const validation = registerSchema.safeParse({
-      nombreNegocio,
-      email,
-      password,
-    });
-
-    if (!validation.success) {
-      setErrorMsg(validation.error.issues[0]?.message || "Esquema inválido.");
+    // Regex quirúrgico original aplicado manualmente antes de enviar
+    const negocioLimpio = nombreNegocio
+      .trim()
+      .replace(/<\/?[^>]+(>|$)/g, "")
+      .replace(/[<>]/g, "");
+    if (negocioLimpio.length < 2) {
+      setErrorMsg("El nombre comercial debe poseer al menos 2 caracteres.");
       return;
     }
 
     setLoading(true);
-    try {
-      const { createClient } = await import("@/core/lib/supabase/client");
-      const supabase = createClient();
+    const response = await registerAction({
+      email,
+      password,
+      nombreNegocio: negocioLimpio,
+    });
 
-      const { error } = await supabase.auth.signUp({
-        email: validation.data.email,
-        password: validation.data.password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/pedidos`,
-          data: {
-            nombre_negocio: validation.data.nombreNegocio,
-          },
-        },
-      });
-
-      if (error) throw error;
+    if (response?.error) {
+      setErrorMsg(response.error);
+      setLoading(false);
+    } else {
       setIsSent(true);
-    } catch (err: unknown) {
-      setErrorMsg(
-        err instanceof Error
-          ? err.message
-          : "Fallo crítico de persistencia en la creación de credenciales.",
-      );
-    } finally {
       setLoading(false);
     }
   };
 
+  // --- MENSAJE DE ÉXITO ORIGINAL RESTAURADO ---
   if (isSent) {
     return (
       <div className="bg-[var(--auth-surface-form)] p-6 rounded-xl border border-[var(--auth-border)] text-center space-y-4 animate-in zoom-in-95 duration-200 select-none shadow-sm">
@@ -144,92 +143,126 @@ export function RegisterForm() {
   }
 
   return (
-    <form onSubmit={handleRegister} className="w-full space-y-5">
-      <div className="space-y-2">
-        <label className="auth-label">
-          Nombre de tu Negocio
-        </label>
-        <Input
-          required
-          type="text"
-          disabled={loading}
-          value={nombreNegocio}
-          onChange={(e) => setNombreNegocio(e.target.value)}
-          placeholder="Ej: Burger Station"
-          className="auth-input"
-        />
-      </div>
+    <div className="w-full">
+      <StepIndicator currentStep={step} />
 
-      <div className="space-y-2">
-        <label className="auth-label">
-          Correo Electrónico
-        </label>
-        <Input
-          required
-          type="email"
-          disabled={loading}
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="socio@tu-negocio.com"
-          className="auth-input"
-        />
-      </div>
-
-      {/* INPUT DE CONTRASEÑA CON ENTROPÍA PREMIUM INTEGRADA */}
-      <div className="space-y-2">
-        <div className="flex justify-between items-center">
-          <label className="auth-label">
-            Contraseña Administrador
-          </label>
-          {password.length > 0 && (
-            <span className="text-[10px] font-mono font-medium text-[var(--auth-text-muted)] animate-in fade-in duration-200">
-              Fortaleza: {strength.label}
-            </span>
-          )}
-        </div>
-        <Input
-          required
-          autoComplete="new-password"
-          type="password"
-          disabled={loading}
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          placeholder="Mínimo 6 caracteres"
-          className="auth-input mb-1.5"
-        />
-
-        {/* TRACKING VISUAL ADAPTATIVO */}
-        <div className="h-1.5 w-full bg-[#f3efe6] rounded-full overflow-hidden transition-all duration-300">
-          <div
-            className={`h-full ${strength.color} ${strength.width} transition-all duration-500 ease-out`}
-          />
-        </div>
-      </div>
-
-      {errorMsg && (
-        <div className="auth-error-box">
-          <ShieldAlert className="h-4 w-4 shrink-0 mt-0.5" />
-          <span>{errorMsg}</span>
-        </div>
-      )}
-
-      <button
-        disabled={loading}
-        type="submit"
-        className="auth-btn-primary mt-2"
+      <form
+        onSubmit={handleRegister}
+        className="w-full space-y-5 animate-in fade-in slide-in-from-bottom-2 duration-300"
       >
-        {loading ? (
-          <>
-            <Loader2 className="w-4 h-4 animate-spin" /> Provisionando
-            entorno...
-          </>
-        ) : (
-          <>
-            <span>Inicializar Mi Cuenta Comercial</span>
-            <ArrowRight size={16} />
-          </>
+        {/* === PASO 1: CUENTA (CON ENTROPÍA PREMIUM INTEGRADA) === */}
+        {step === 1 && (
+          <div className="space-y-5">
+            <div className="space-y-2">
+              <label className="auth-label">Correo Electrónico</label>
+              <Input
+                required
+                type="email"
+                disabled={loading}
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="socio@tu-negocio.com"
+                className="auth-input"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <div className="flex justify-between items-center">
+                <label className="auth-label">Contraseña Administrador</label>
+                {password.length > 0 && (
+                  <span className="text-[10px] font-mono font-medium text-[var(--auth-text-muted)] animate-in fade-in duration-200">
+                    Fortaleza: {strength.label}
+                  </span>
+                )}
+              </div>
+              <Input
+                required
+                autoComplete="new-password"
+                type="password"
+                disabled={loading}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Mínimo 6 caracteres"
+                className="auth-input mb-1.5"
+              />
+              {/* TRACKING VISUAL ADAPTATIVO */}
+              <div className="h-1.5 w-full bg-[#f3efe6] rounded-full overflow-hidden transition-all duration-300">
+                <div
+                  className={`h-full ${strength.color} ${strength.width} transition-all duration-500 ease-out`}
+                />
+              </div>
+            </div>
+
+            {errorMsg && (
+              <div className="auth-error-box">
+                <ShieldAlert className="h-4 w-4 shrink-0 mt-0.5" />
+                <span>{errorMsg}</span>
+              </div>
+            )}
+
+            <button
+              type="button"
+              onClick={handleNextStep}
+              className="auth-btn-primary mt-2 w-full"
+            >
+              Continuar <ArrowRight size={16} />
+            </button>
+          </div>
         )}
-      </button>
-    </form>
+
+        {/* === PASO 2: NEGOCIO === */}
+        {step === 2 && (
+          <div className="space-y-5">
+            <div className="space-y-2">
+              <label className="auth-label">Nombre de tu Negocio</label>
+              <Input
+                required
+                type="text"
+                disabled={loading}
+                value={nombreNegocio}
+                onChange={(e) => setNombreNegocio(e.target.value)}
+                placeholder="Ej: Burger Station"
+                className="auth-input"
+              />
+            </div>
+
+            {errorMsg && (
+              <div className="auth-error-box">
+                <ShieldAlert className="h-4 w-4 shrink-0 mt-0.5" />
+                <span>{errorMsg}</span>
+              </div>
+            )}
+
+            <div className="flex gap-3 mt-4">
+              <button
+                type="button"
+                onClick={() => setStep(1)}
+                disabled={loading}
+                className="px-4 py-2 border border-[var(--auth-border)] rounded-lg text-sm text-[var(--auth-text-muted)] hover:bg-[#f7f4ec] transition-colors flex items-center justify-center disabled:opacity-50"
+              >
+                <ArrowLeft size={16} />
+              </button>
+              <button
+                disabled={loading}
+                type="submit"
+                className="auth-btn-primary flex-1"
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" /> Provisionando
+                    entorno...
+                  </>
+                ) : (
+                  <>
+                    <span>Inicializar Mi Cuenta Comercial</span>
+                    <CheckCircle2 size={16} />
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        )}
+      </form>
+    </div>
   );
 }

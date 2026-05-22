@@ -1,3 +1,4 @@
+// process-env.d.ts
 /* eslint-disable no-unused-vars */
 declare global {
   namespace NodeJS {
@@ -5,6 +6,9 @@ declare global {
       // Runtime e Infraestructura de Next.js
       NEXT_RUNTIME?: "nodejs" | "edge";
       NODE_ENV: "development" | "production" | "test";
+
+      // Enrutamiento / Dominio Base
+      NEXT_PUBLIC_SITE_URL: string; // <-- APLICADO AQUÍ
 
       // Conectores Públicos de Supabase
       NEXT_PUBLIC_SUPABASE_URL: string;
