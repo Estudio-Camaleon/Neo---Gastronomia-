@@ -1,0 +1,50 @@
+@import "tailwindcss";
+
+@theme {
+  --color-admin-surface: var(--admin-surface);
+  --color-admin-surface-secondary: var(--admin-surface-secondary);
+  --color-admin-bg: var(--admin-bg);
+  --color-admin-border: var(--admin-border);
+  --color-admin-text: var(--admin-text);
+  --color-admin-text-muted: var(--admin-text-muted);
+  --color-admin-accent: var(--admin-accent);
+  --color-admin-danger: var(--admin-danger);
+}
+
+/* El entorno administrativo se encapsula bajo su propia clase contenedora */
+.admin-theme-wrapper {
+  --admin-surface: #ffffff;
+  --admin-surface-secondary: #f9f9f9;
+  --admin-bg: #f4f4f4;
+  --admin-border: #e5e7eb;
+  --admin-text: #0f172a;
+  --admin-text-muted: #64748b;
+  --admin-accent: #34a35f;
+  --admin-danger: #e11d48;
+}
+
+/* El modo oscuro solo opera si coexiste dentro del wrapper administrativo */
+.admin-theme-wrapper.dark {
+  --admin-surface: #0f0f11;
+  --admin-surface-secondary: #18181b;
+  --admin-bg: #000000;
+  --admin-border: #27272a;
+  --admin-text: #f4f4f5;
+  --admin-text-muted: #a1a1aa;
+  --admin-accent: #22c55e;
+  --admin-danger: #f87171;
+}
+
+@layer components {
+  .admin-card {
+    @apply bg-[var(--admin-surface)] border border-[var(--admin-border)] 
+           rounded-xl shadow-[4px_4px_0px_0px_rgba(0,0,0,0.03)] 
+           transition-colors duration-200;
+  }
+
+  .admin-sidebar {
+    @apply flex flex-col h-full bg-[var(--admin-surface)] 
+           border-r border-[var(--admin-border)] 
+           transition-colors duration-200;
+  }
+}

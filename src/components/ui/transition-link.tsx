@@ -2,11 +2,12 @@
 
 import Link, { type LinkProps } from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useMemo } from "react";
+import React, { useMemo } from "react";
 import { useLoading } from "@/core/providers/LoadingProvider";
 
+// Omitimos las propiedades HTML que ya existen en LinkProps para evitar el choque de tipos.
 type TransitionLinkProps = LinkProps &
-  React.AnchorHTMLAttributes<HTMLAnchorElement> & {
+  Omit<React.AnchorHTMLAttributes<HTMLAnchorElement>, keyof LinkProps> & {
     delayMs?: number;
     loadingMessage?: string;
   };
@@ -34,32 +35,43 @@ export function TransitionLink({
     return targetPath === pathname;
   }, [href, pathname]);
 
+  const handleTransition = (
+    e: React.MouseEvent<HTMLAnchorElement, MouseEvent>,
+  ) => {
+    onClick?.(e);
+
+    // Si el usuario abre en otra pestaña o usa atajos, no intervenimos
+    if (
+      e.defaultPrevented ||
+      e.metaKey ||
+      e.ctrlKey ||
+      e.shiftKey ||
+      e.altKey
+    ) {
+      return;
+    }
+
+    if (props.target === "_blank" || isHashLink || isSamePath) {
+      return;
+    }
+
+    e.preventDefault();
+    showLoading(loadingMessage);
+
+    // href en Next.js puede ser un UrlObject. Extraemos el string seguro.
+    const targetUrl = typeof href === "string" ? href : href.pathname || "/";
+
+    window.setTimeout(() => {
+      router.push(targetUrl);
+      hideLoading();
+    }, delayMs);
+  };
+
   return (
     <Link
       href={href}
       className={className}
-      onClick={(event) => {
-        onClick?.(event);
-        if (event.defaultPrevented || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
-          return;
-        }
-
-        if (props.target === "_blank" || isHashLink) {
-          return;
-        }
-
-        if (typeof href === "string" && isSamePath) {
-          return;
-        }
-
-        event.preventDefault();
-        showLoading(loadingMessage);
-
-        window.setTimeout(() => {
-          router.push(typeof href === "string" ? href : String(href));
-          hideLoading();
-        }, delayMs);
-      }}
+      onClick={handleTransition}
       {...props}
     >
       {children}
