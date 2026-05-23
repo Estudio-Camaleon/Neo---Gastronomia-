@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Layers, ArrowUpRight } from "lucide-react";
+import Image from "next/image";
 
 export function Footer() {
   const currentYear = new Date().getFullYear();
@@ -38,11 +39,15 @@ export function Footer() {
         <div className="md:col-span-2 flex flex-col gap-4">
           <div className="flex items-center gap-2">
             <div className="neo-chip p-2 rounded-xl">
-              <Layers className="w-5 h-5" />
+              <Image
+                src="/icons/neo_logo_negro.svg"
+                alt="NEO Brand Logo"
+                width={75}
+                height={75}
+                // ❌ Acá NO va 'priority' porque el footer está abajo (Lazy Load nativo)
+                className="object-contain"
+              />
             </div>
-            <span className="text-xl font-black tracking-tighter uppercase text-[var(--theme-text)]">
-              NEO<span className="text-[var(--theme-primary)]">.</span>
-            </span>
           </div>
           <p className="text-sm text-[var(--theme-text-muted)] max-w-sm leading-relaxed">
             Una experiencia pensada para descubrir restaurantes, promociones y

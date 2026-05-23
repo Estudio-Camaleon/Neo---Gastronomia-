@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { TransitionLink } from "@/components/ui/transition-link";
 import { Menu, X, ArrowRight, Layers } from "lucide-react";
+import Image from "next/image";
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -20,11 +21,15 @@ export function Navbar() {
         {/* Logo */}
         <TransitionLink href="/" className="flex items-center gap-2 group">
           <div className="neo-chip p-2 rounded-xl transition-transform group-hover:rotate-6 duration-300">
-            <Layers className="w-5 h-5" />
+            <Image
+              src="/icons/neo_logo_negro.svg"
+              alt="NEO Brand Logo"
+              width={75}
+              height={75}
+              priority // ⚡ Crucial: Forza la carga inmediata del LCP
+              className="object-contain"
+            />
           </div>
-          <span className="text-xl font-black tracking-tighter uppercase text-[var(--theme-text)]">
-            NEO<span className="text-[var(--theme-primary)]">.</span>
-          </span>
         </TransitionLink>
 
         {/* Desktop Links */}
