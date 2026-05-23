@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import { TransitionLink } from "@/components/ui/transition-link";
 import Image from "next/image";
-import "../style/auth.css";
+import "@/features/auth-portal/auth.css";
 
 const CATEGORIES = [
   { icon: <ChefHat size={14} />, label: "Restaurantes" },

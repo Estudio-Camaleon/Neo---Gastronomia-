@@ -10,9 +10,10 @@ interface ErrorModalProps {
 
 export function ErrorModal({ title, message, action }: ErrorModalProps) {
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-6 font-sans animate-in fade-in duration-200">
+    // Blindamos el z-index al máximo operativo para bloquear interacción de fondo
+    <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/80 backdrop-blur-md p-6 font-sans animate-in fade-in duration-200">
       <div className="max-w-md w-full bg-white dark:bg-zinc-950 border border-gray-200 dark:border-gray-800 p-8 rounded-2xl shadow-xl text-center animate-in zoom-in-95 duration-200">
-        <div className="w-14 h-14 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-5">
+        <div className="w-14 h-14 bg-red-100 dark:bg-red-950/50 text-red-600 dark:text-red-400 rounded-full flex items-center justify-center mx-auto mb-5">
           <AlertTriangle size={24} strokeWidth={2} />
         </div>
 
@@ -25,7 +26,7 @@ export function ErrorModal({ title, message, action }: ErrorModalProps) {
         </p>
 
         {action && (
-          <div className="flex justify-center items-center gap-3 animate-in fade-in delay-75">
+          <div className="w-full flex flex-col justify-center items-center gap-3 animate-in fade-in delay-75">
             {action}
           </div>
         )}
