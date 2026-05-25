@@ -50,11 +50,21 @@ export function ImageUpload({ value, onChange }: ImageUploadProps) {
 
       if (uploadError) throw uploadError;
 
-      const {
-        data: { publicUrl },
-      } = supabase.storage.from("media").getPublicUrl(filePath);
+      const { data } = supabase.storage.from("media").getPublicUrl(filePath);
+      const publicUrl = data?.publicUrl || "";
 
-      onChange(publicUrl);
+      // Fallback: construir la URL pública si la SDK no la retorna
+      const fallback =
+        publicUrl ||
+        (typeof process !== "undefined" && process.env.NEXT_PUBLIC_SUPABASE_URL
+          ? `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/media/${filePath}`
+          : "");
+
+      // Logging para depuración en cliente
+      // eslint-disable-next-line no-console
+      console.debug("ImageUpload: upload result", { uploadError: null, publicUrl, fallback });
+
+      onChange(fallback || publicUrl);
       toast.success("Imagen cargada");
     } catch (error: unknown) {
       const errorMessage =

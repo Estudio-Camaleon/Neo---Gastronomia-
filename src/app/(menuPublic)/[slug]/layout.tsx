@@ -1,4 +1,5 @@
 import { createClient } from "@/core/lib/supabase/client";
+import { buildBrandPalette } from "@/core/lib/utils/color";
 import React from "react";
 
 export const dynamic = "force-dynamic";
@@ -39,17 +40,30 @@ export default async function PublicLayout({
     }
   }
 
+  const palette = buildBrandPalette(brandColor);
   const textColor = getContrastYIQ(brandColor);
 
   return (
     <div
       style={
         {
-          "--color-custom": brandColor,
+          "--color-custom": palette.base,
+          "--color-custom-soft": palette.soft,
+          "--color-custom-soft-2": palette.softAlt,
+          "--color-custom-deep": palette.deep,
+          "--color-custom-darker": palette.darker,
+          "--color-custom-surface": palette.surface,
+          "--color-custom-surface-strong": palette.surfaceStrong,
+          "--color-custom-border": palette.border,
+          "--color-custom-text": palette.text,
+          "--color-custom-text-muted": palette.textMuted,
           "--color-text-custom": textColor,
+          "--admin-accent": palette.base,
+          "--admin-accent-soft": palette.soft,
+          "--admin-accent-strong": palette.deep,
         } as React.CSSProperties
       }
-      className="min-h-screen bg-neutral-50/60 text-neutral-900 font-sans antialiased selection:bg-neutral-900 selection:text-white"
+      className="min-h-screen bg-[var(--color-custom-surface)] text-[var(--color-custom-text)] font-sans antialiased selection:bg-[var(--color-custom-deep)] selection:text-white"
     >
       <main className="w-full h-full">{children}</main>
     </div>

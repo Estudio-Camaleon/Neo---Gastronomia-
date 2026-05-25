@@ -4,6 +4,7 @@ export interface CartItem {
   id: string; // Hash único sintáctico (productoId + extrasSlug)
   producto_id: string; // ID real de la tabla public.productos
   nombre: string;
+  imagen_url?: string | null;
   precio: number;
   cantidad: number;
   detalles: string | null;

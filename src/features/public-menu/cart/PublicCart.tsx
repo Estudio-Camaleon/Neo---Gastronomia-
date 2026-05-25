@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useCartStore } from "./useCartStore";
 import {
   Trash2,
@@ -52,57 +53,70 @@ export function PublicCart({
   };
 
   const renderCartContent = () => (
-    <div className="flex flex-col h-full justify-between flex-1">
+    <div className="flex h-full flex-col justify-between">
       {cart.length === 0 ? (
-        <div className="flex flex-col items-center justify-center text-center py-16 px-4 flex-1 select-none">
-          <div className="p-4 bg-gray-50 dark:bg-zinc-800 rounded-full mb-4 text-gray-400 dark:text-zinc-500">
+        <div className="flex flex-1 select-none flex-col items-center justify-center px-4 py-16 text-center">
+          <div className="mb-4 rounded-full bg-[rgba(31,107,61,0.08)] p-4 text-[var(--color-custom)]">
             <ShoppingBag size={40} strokeWidth={1.5} />
           </div>
-          <h4 className="text-lg font-semibold text-gray-900 dark:text-zinc-200 tracking-tight">
+          <h4 className="text-lg font-extrabold uppercase tracking-tight text-[var(--color-custom-deep)]">
             Tu carrito está vacío
           </h4>
-          <p className="text-gray-500 dark:text-zinc-400 text-sm mt-2 max-w-[220px]">
+          <p className="mt-2 max-w-[220px] text-sm text-[rgba(0,0,0,0.48)]">
             Explora nuestro menú y agrega productos para comenzar.
           </p>
         </div>
       ) : !showOrderForm ? (
-        <div className="flex flex-col flex-1 justify-between h-full">
-          <div className="divide-y divide-gray-100 dark:divide-zinc-800 overflow-y-auto max-h-[350px] lg:max-h-[500px] pr-2 custom-scrollbar">
+        <div className="flex h-full flex-col justify-between">
+          <div className="max-h-[430px] overflow-y-auto pr-2 custom-scrollbar">
             {cart.map((item) => (
               <div
                 key={item.id}
-                className="py-4 flex items-center justify-between gap-3 animate-in fade-in duration-200"
+                className="mb-3 flex items-center gap-3 rounded-[18px] border border-[rgba(0,0,0,0.08)] bg-[#f8f6f0] p-2.5 animate-in fade-in duration-200"
               >
-                <div className="space-y-1 flex-1 min-w-0">
-                  <p className="font-semibold text-sm text-gray-900 dark:text-zinc-100 truncate">
+                <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-[14px] bg-white border border-[rgba(0,0,0,0.06)]">
+                  {item.imagen_url ? (
+                    <Image
+                      src={item.imagen_url}
+                      alt={item.nombre}
+                      width={56}
+                      height={56}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <ShoppingBag size={18} className="text-[rgba(0,0,0,0.2)]" />
+                  )}
+                </div>
+
+                <div className="min-w-0 flex-1 space-y-1">
+                  <p className="truncate text-[10px] font-black uppercase italic tracking-[0.18em] text-[var(--color-custom)]">
                     {item.nombre}
                   </p>
                   {item.detalles && (
-                    <p className="text-xs text-gray-500 dark:text-zinc-400 truncate">
+                    <p className="truncate text-[11px] text-[rgba(0,0,0,0.42)]">
                       Nota: {item.detalles}
                     </p>
                   )}
-                  <p className="text-sm font-medium text-[var(--admin-accent,#34a35f)]">
-                    {config.moneda_simbolo}
-                    {(item.precio * item.cantidad).toFixed(2)}
+                  <p className="text-[11px] font-black text-[var(--color-custom)]">
+                    {config.moneda_simbolo}{(item.precio * item.cantidad).toFixed(2)}
                   </p>
                 </div>
 
-                <div className="flex items-center bg-gray-50 dark:bg-zinc-800 rounded-lg border border-gray-200 dark:border-zinc-700 p-0.5 shadow-sm shrink-0">
+                <div className="flex shrink-0 items-center overflow-hidden rounded-full bg-[var(--color-custom)] text-white shadow-[0_8px_18px_rgba(31,107,61,0.2)]">
                   <button
                     type="button"
                     onClick={() => removeItem(item.id)}
-                    className="p-1.5 text-gray-500 hover:text-gray-900 dark:text-zinc-400 dark:hover:text-zinc-200 hover:bg-gray-200 dark:hover:bg-zinc-700 rounded-md transition-colors"
+                    className="flex h-7 w-7 items-center justify-center text-white/95 transition-opacity hover:opacity-80"
                   >
                     <Minus size={14} />
                   </button>
-                  <span className="text-sm font-semibold w-6 text-center text-gray-900 dark:text-zinc-100">
+                  <span className="min-w-6 px-1 text-center text-[11px] font-black leading-7">
                     {item.cantidad}
                   </span>
                   <button
                     type="button"
                     onClick={() => addItem({ ...item, cantidad: 1 })}
-                    className="p-1.5 text-gray-500 hover:text-gray-900 dark:text-zinc-400 dark:hover:text-zinc-200 hover:bg-gray-200 dark:hover:bg-zinc-700 rounded-md transition-colors"
+                    className="flex h-7 w-7 items-center justify-center text-white/95 transition-opacity hover:opacity-80"
                   >
                     <Plus size={14} />
                   </button>
@@ -111,9 +125,9 @@ export function PublicCart({
             ))}
           </div>
 
-          <div className="pt-6 mt-auto space-y-4">
+          <div className="mt-auto space-y-4 border-t border-[rgba(31,107,61,0.18)] pt-4">
             {!esPedidoValido && (
-              <div className="flex items-start gap-3 p-3 bg-blue-50/50 dark:bg-blue-950/20 border border-blue-100 dark:border-blue-900/40 rounded-xl text-blue-700 dark:text-blue-400 text-sm">
+              <div className="flex items-start gap-3 rounded-[16px] border border-[rgba(31,107,61,0.12)] bg-[rgba(31,107,61,0.06)] p-3 text-sm text-[var(--color-custom-deep)]">
                 <AlertCircle size={16} className="mt-0.5 shrink-0" />
                 <p>
                   Agrega{" "}
@@ -126,37 +140,49 @@ export function PublicCart({
               </div>
             )}
 
-            <div className="flex items-end justify-between bg-gray-50 dark:bg-zinc-800/40 p-4 rounded-xl border border-gray-100 dark:border-zinc-800/60">
-              <div>
-                <span className="text-xs font-semibold text-gray-500 dark:text-zinc-400 uppercase tracking-wider block mb-1">
-                  Subtotal
+            <div className="space-y-3 rounded-[18px] border border-[rgba(31,107,61,0.15)] bg-[#fbfaf6] p-4">
+              <div className="flex items-center justify-between text-sm text-[rgba(0,0,0,0.52)]">
+                <span className="font-semibold italic">Subtotal</span>
+                <span className="font-black text-[var(--color-custom-deep)]">
+                  {config.moneda_simbolo}{subtotal.toFixed(2)}
                 </span>
-                <p className="text-2xl font-bold text-gray-900 dark:text-zinc-100 tracking-tight">
-                  {config.moneda_simbolo}
-                  {subtotal.toFixed(2)}
+              </div>
+              <div className="flex items-center justify-between text-sm text-[rgba(0,0,0,0.52)]">
+                <span className="font-semibold italic">Descuento</span>
+                <span className="font-black text-[var(--color-custom-deep)]">-{config.moneda_simbolo}0.00</span>
+              </div>
+              <div>
+                <span className="block text-[12px] font-black uppercase italic tracking-[0.18em] text-[var(--color-custom)]">
+                  Total
+                </span>
+                <p className="mt-1 text-3xl font-black italic tracking-tight text-[var(--color-custom)]">
+                  {config.moneda_simbolo}{subtotal.toFixed(2)}
                 </p>
               </div>
+            </div>
+
+            <div className="flex gap-3">
               <button
                 type="button"
                 onClick={handleVaciar}
-                className="flex items-center gap-1.5 text-xs font-medium text-red-500 hover:text-red-700 transition-colors bg-red-50/50 hover:bg-red-50 dark:bg-red-950/20 dark:hover:bg-red-950/40 px-3 py-1.5 rounded-lg border border-red-100/50 dark:border-red-900/40"
+                className="inline-flex flex-1 items-center justify-center gap-2 rounded-full border border-[rgba(31,107,61,0.16)] bg-white px-4 py-3 text-xs font-black uppercase tracking-[0.18em] text-[rgba(0,0,0,0.54)] transition-colors hover:bg-[rgba(31,107,61,0.04)]"
               >
                 <Trash2 size={14} /> Vaciar
               </button>
-            </div>
 
-            <button
-              type="button"
-              disabled={!esPedidoValido}
-              onClick={() => setShowOrderForm(true)}
-              className={`w-full py-4 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 transition-all duration-300 ${
-                esPedidoValido
-                  ? "bg-[var(--admin-accent,#34a35f)] hover:bg-[var(--admin-accent,#34a35f)]/90 text-white shadow-md hover:shadow-lg"
-                  : "bg-gray-100 dark:bg-zinc-800 text-gray-400 dark:text-zinc-500 cursor-not-allowed"
-              }`}
-            >
-              Continuar con el pago <ArrowRight size={16} />
-            </button>
+              <button
+                type="button"
+                disabled={!esPedidoValido}
+                onClick={() => setShowOrderForm(true)}
+                className={`inline-flex flex-[1.3] items-center justify-center gap-2 rounded-full px-4 py-3 text-xs font-black uppercase tracking-[0.18em] transition-all ${
+                  esPedidoValido
+                    ? "bg-[var(--color-custom)] text-white shadow-[0_12px_22px_rgba(31,107,61,0.2)]"
+                    : "cursor-not-allowed bg-[rgba(0,0,0,0.08)] text-[rgba(0,0,0,0.34)]"
+                }`}
+              >
+                Finalizar pedido <ArrowRight size={15} />
+              </button>
+            </div>
           </div>
         </div>
       ) : (
@@ -181,23 +207,23 @@ export function PublicCart({
     return (
       <div className="fixed inset-0 z-[99999] flex justify-end font-sans">
         <div
-          className="absolute inset-0 bg-black/40 dark:bg-black/60 backdrop-blur-sm transition-opacity"
+          className="absolute inset-0 bg-black/45 backdrop-blur-sm transition-opacity"
           onClick={onCloseDrawer}
         />
-        <div className="relative w-full max-w-md h-full bg-white dark:bg-zinc-900 shadow-2xl flex flex-col p-6 animate-in slide-in-from-right duration-300">
-          <div className="flex items-center justify-between pb-4 border-b border-gray-100 dark:border-zinc-800 mb-4">
-            <h3 className="text-lg font-bold text-gray-900 dark:text-zinc-100 flex items-center gap-2">
-              Tu Pedido
+        <div className="relative flex h-full w-full max-w-[390px] flex-col bg-white p-5 shadow-2xl animate-in slide-in-from-right duration-300 sm:max-w-md">
+          <div className="mb-4 flex items-center justify-between border-b border-[rgba(31,107,61,0.14)] pb-4">
+            <h3 className="flex items-center gap-2 text-lg font-black italic uppercase tracking-tight text-[var(--color-custom)]">
+              Tu pedido
               {totalItems > 0 && (
-                <span className="bg-[var(--admin-accent,#34a35f)]/10 text-[var(--admin-accent,#34a35f)] dark:text-green-400 text-xs font-semibold px-2.5 py-0.5 rounded-full">
-                  {totalItems} {totalItems === 1 ? "ítem" : "ítems"}
+                <span className="rounded-full bg-[rgba(31,107,61,0.1)] px-2.5 py-0.5 text-xs font-black text-[var(--color-custom)]">
+                  ({totalItems})
                 </span>
               )}
             </h3>
             <button
               type="button"
               onClick={onCloseDrawer}
-              className="p-2 text-gray-400 hover:text-gray-900 dark:text-zinc-500 dark:hover:text-zinc-300 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-full transition-colors"
+              className="rounded-full p-2 text-[rgba(0,0,0,0.4)] transition-colors hover:bg-[rgba(0,0,0,0.05)] hover:text-[rgba(0,0,0,0.75)]"
             >
               <X size={20} />
             </button>
@@ -209,7 +235,7 @@ export function PublicCart({
   }
 
   return (
-    <div className="w-full h-full flex flex-col bg-white dark:bg-zinc-900 rounded-2xl shadow-sm border border-gray-100 dark:border-zinc-800 p-6">
+    <div className="flex h-full w-full flex-col rounded-[28px] border border-[rgba(31,107,61,0.12)] bg-white p-5 shadow-[0_18px_36px_rgba(0,0,0,0.12)]">
       {renderCartContent()}
     </div>
   );

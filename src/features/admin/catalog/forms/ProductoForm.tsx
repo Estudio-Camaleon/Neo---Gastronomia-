@@ -6,6 +6,7 @@ import {
   JSONBExtraGroup,
   JSONBExtraItem,
 } from "@/features/admin/catalog/actions";
+import { ImageUpload } from "@/components/ui/image-upload";
 import { toast } from "sonner";
 import {
   Package,
@@ -252,6 +253,15 @@ export function ProductoForm({
                 }
                 className="w-full p-2.5 bg-[var(--admin-bg)] border border-[var(--admin-border)] rounded-lg text-sm text-[var(--admin-text)] resize-none h-24 focus:outline-none focus:border-[var(--admin-accent)] focus:ring-1 focus:ring-[var(--admin-accent)] transition-all"
                 placeholder="Detalla los ingredientes del plato..."
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <ImageUpload
+                value={formData.imagen_url ?? ""}
+                onChange={(url) =>
+                  setFormData({ ...formData, imagen_url: url === "" ? null : url })
+                }
               />
             </div>
 
