@@ -83,7 +83,10 @@ export function LoginForm() {
         {resetSent && (
           <div className="auth-success-box">
             <Mail className="h-4 w-4 shrink-0 mt-0.5" />
-            <span>Revisa tu bandeja de entrada. Te enviamos un enlace para restablecer tu contraseña.</span>
+            <span>
+              Revisa tu bandeja de entrada. Te enviamos un enlace para
+              restablecer tu contraseña.
+            </span>
           </div>
         )}
 
@@ -113,7 +116,11 @@ export function LoginForm() {
 
         <button
           type="button"
-          onClick={() => { setMode("login"); setResetSent(false); setError(""); }}
+          onClick={() => {
+            setMode("login");
+            setResetSent(false);
+            setError("");
+          }}
           className="w-full flex items-center justify-center gap-2 text-xs font-medium text-[var(--auth-text-muted)] hover:text-[var(--auth-primary)] transition-colors"
         >
           <ArrowLeft size={14} /> Volver al inicio de sesión

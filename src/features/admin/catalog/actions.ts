@@ -2,7 +2,9 @@
 
 import { createClient } from "@/core/lib/supabase/server";
 import { revalidatePath } from "next/cache";
-import { SupabaseClient } from "@supabase/supabase-js";
+import { getAuthenticatedTenant } from "@/core/lib/tenant";
+import { upsertProductSchema } from "@/core/lib/schemas";
+import { z } from "zod";
 
 export interface JSONBExtraItem {
   id: string;
@@ -23,49 +25,29 @@ export interface ProductoConfiguracion {
   grupos_opciones: JSONBExtraGroup[];
 }
 
-interface UpsertProductPayload {
-  nombre: string;
-  descripcion: string | null;
-  precio: number;
-  imagen_url: string | null;
-  categoria_id: string | null;
-  disponible: boolean;
-  configuracion: ProductoConfiguracion;
-}
-
-async function getAuthenticatedTenant(supabase: SupabaseClient) {
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser();
-  if (authError || !user) throw new Error("Acceso denegado. No autenticado.");
-
-  const { data: negocio, error: tenantError } = await supabase
-    .from("negocios")
-    .select("id")
-    .eq("user_id", user.id)
-    .single();
-
-  if (tenantError || !negocio)
-    throw new Error("Inconsistencia Multi-tenant: Local no asignado.");
-  return negocio.id;
-}
-
 export async function upsertProductAction(
-  payload: UpsertProductPayload,
+  payload: z.infer<typeof upsertProductSchema>,
   productId?: string,
 ) {
+  const parsed = upsertProductSchema.safeParse(payload);
+  if (!parsed.success) {
+    const firstIssue = parsed.error.issues[0];
+    throw new Error(
+      `Datos inválidos: ${firstIssue.path.join(".")} - ${firstIssue.message}`,
+    );
+  }
+
   const supabase = await createClient();
   const tenantId = await getAuthenticatedTenant(supabase);
 
   const productRow = {
-    nombre: payload.nombre,
-    descripcion: payload.descripcion,
-    precio: payload.precio,
-    imagen_url: payload.imagen_url,
-    categoria_id: payload.categoria_id,
-    disponible: payload.disponible,
-    configuracion: payload.configuracion,
+    nombre: parsed.data.nombre,
+    descripcion: parsed.data.descripcion ?? null,
+    precio: parsed.data.precio,
+    imagen_url: parsed.data.imagen_url ?? null,
+    categoria_id: parsed.data.categoria_id ?? null,
+    disponible: parsed.data.disponible,
+    configuracion: parsed.data.configuracion,
     negocio_id: tenantId,
     ...(productId ? { id: productId } : {}),
   };
@@ -78,14 +60,19 @@ export async function upsertProductAction(
   return { success: true };
 }
 
+const deleteProductSchema = z.string().min(1, "ID de producto requerido");
+
 export async function deleteProductAction(productId: string) {
+  const parsed = deleteProductSchema.safeParse(productId);
+  if (!parsed.success) throw new Error("ID de producto inválido");
+
   const supabase = await createClient();
   const tenantId = await getAuthenticatedTenant(supabase);
 
   const { error } = await supabase
     .from("productos")
     .delete()
-    .eq("id", productId)
+    .eq("id", parsed.data)
     .eq("negocio_id", tenantId);
 
   if (error) throw new Error(error.message);
@@ -94,13 +81,25 @@ export async function deleteProductAction(productId: string) {
   return { success: true };
 }
 
+const createCategorySchema = z.object({
+  nombre: z.string().min(1, "Nombre de categoría requerido"),
+  slug: z
+    .string()
+    .regex(/^[a-z0-9-]+$/, "Slug inválido: solo minúsculas, números y guiones"),
+});
+
 export async function createCategoryAction(nombre: string, slug: string) {
+  const parsed = createCategorySchema.safeParse({ nombre, slug });
+  if (!parsed.success) throw new Error("Datos de categoría inválidos");
+
   const supabase = await createClient();
   const tenantId = await getAuthenticatedTenant(supabase);
 
-  const { error } = await supabase
-    .from("categorias")
-    .insert({ nombre, slug, negocio_id: tenantId });
+  const { error } = await supabase.from("categorias").insert({
+    nombre: parsed.data.nombre,
+    slug: parsed.data.slug,
+    negocio_id: tenantId,
+  });
 
   if (error) throw new Error(error.message);
 

@@ -2,6 +2,7 @@
 
 import { createClient } from "@/core/lib/supabase/server";
 import { revalidatePath } from "next/cache";
+import { extractStoragePath } from "@/core/lib/tenant";
 
 export interface UpdateTenantBrandingPayload {
   id: string;
@@ -28,14 +29,8 @@ export async function updateTenantBrandingAction(
 ) {
   const supabase = await createClient();
 
-  // Reaseguro de Identidad: Validar que el usuario en sesión sea el propietario real
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser();
-  if (authError || !user) {
-    throw new Error("Acceso denegado. Terminal no autenticada.");
-  }
+  const user = (await supabase.auth.getUser()).data.user;
+  if (!user) throw new Error("Acceso denegado. Terminal no autenticada.");
 
   const { data: negocioActual, error: currentError } = await supabase
     .from("negocios")
@@ -137,24 +132,6 @@ export async function updateTenantBrandingAction(
   revalidatePath(`/${slugSaneado}`);
 
   return { success: true, slugSaneado };
-}
-
-/**
- * Extrae de forma quirúrgica el path relativo interno de una URL pública de Supabase Storage.
- * Ejemplo: de https://.../public/imagenes-negocios/identidad/file.png extrae identidad/file.png
- */
-function extractStoragePath(
-  url: string | null | undefined,
-  bucketName: string,
-): string | null {
-  if (!url || url.trim() === "") return null;
-  const marker = `/public/${bucketName}/`;
-  const index = url.indexOf(marker);
-  if (index === -1) return null;
-  return url
-    .substring(index + marker.length)
-    .split("?")[0]
-    .split("#")[0];
 }
 
 /**

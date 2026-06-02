@@ -7,6 +7,7 @@ import { createClient } from "@/core/lib/supabase/client";
 import Image from "next/image";
 import { IngredientBadge } from "./IngredientBadge";
 import { deleteProductAction } from "../actions";
+import { ConfirmModal } from "@/components/ui/confirm-modal";
 import type { RealtimeChannel } from "@supabase/supabase-js";
 import { Badge } from "@/components/ui/badge";
 
@@ -39,32 +40,52 @@ interface ProductTableProps {
   onEdit: (producto: UnifiedProduct) => void;
 }
 
+const PAGE_SIZE = 10;
+
 export function ProductTable({ negocioId, onEdit }: ProductTableProps) {
   const [productos, setProductos] = useState<UnifiedProduct[]>([]);
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(0);
+  const [totalCount, setTotalCount] = useState(0);
+  const [deleteConfirm, setDeleteConfirm] = useState<{
+    id: string;
+    nombre: string;
+  } | null>(null);
 
-  const cargarProductos = useCallback(async () => {
-    try {
-      const { data, error } = await supabase
-        .from("productos")
-        .select(
-          `id, nombre, descripcion, precio, imagen_url, disponible, categoria_id, configuracion, categorias(nombre)`,
-        )
-        .eq("negocio_id", negocioId)
-        .order("created_at", { ascending: false });
+  const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
 
-      if (error) throw error;
-      setProductos((data as unknown as UnifiedProduct[]) || []);
-    } catch (error) {
-      console.error("Error Sync Catálogo:", error);
-      toast.error("Error al cargar los productos");
-    } finally {
-      setLoading(false);
-    }
-  }, [supabase, negocioId]);
+  const cargarProductos = useCallback(
+    async (pageNum: number) => {
+      setLoading(true);
+      try {
+        const from = pageNum * PAGE_SIZE;
+        const to = from + PAGE_SIZE - 1;
+
+        const { data, error, count } = await supabase
+          .from("productos")
+          .select(
+            `id, nombre, descripcion, precio, imagen_url, disponible, categoria_id, configuracion, categorias(nombre)`,
+            { count: "exact" },
+          )
+          .eq("negocio_id", negocioId)
+          .order("created_at", { ascending: false })
+          .range(from, to);
+
+        if (error) throw error;
+        setProductos((data as unknown as UnifiedProduct[]) || []);
+        if (count !== null) setTotalCount(count);
+      } catch (error) {
+        console.error("Error Sync Catálogo:", error);
+        toast.error("Error al cargar los productos");
+      } finally {
+        setLoading(false);
+      }
+    },
+    [supabase, negocioId],
+  );
 
   useEffect(() => {
-    cargarProductos();
+    cargarProductos(page);
 
     const canal: RealtimeChannel = supabase
       .channel(`realtime-catalog-${negocioId}`)
@@ -77,7 +98,7 @@ export function ProductTable({ negocioId, onEdit }: ProductTableProps) {
           filter: `negocio_id=eq.${negocioId}`,
         },
         () => {
-          cargarProductos();
+          cargarProductos(page);
         },
       )
       .subscribe();
@@ -85,13 +106,12 @@ export function ProductTable({ negocioId, onEdit }: ProductTableProps) {
     return () => {
       supabase.removeChannel(canal);
     };
-    // CORREGIDO: Cambiamos 'cargarCategorias' por 'cargarProductos'
-  }, [cargarProductos, supabase, negocioId]);
+  }, [cargarProductos, supabase, negocioId, page]);
 
-  const handleEliminar = async (id: string, nombre: string) => {
-    if (!confirm(`¿Eliminar irreversiblemente "${nombre}"?`)) return;
+  const handleEliminar = async () => {
+    if (!deleteConfirm) return;
     try {
-      await deleteProductAction(id);
+      await deleteProductAction(deleteConfirm.id);
       toast.success("Producto eliminado correctamente");
     } catch {
       toast.error("Error al eliminar el producto");
@@ -125,11 +145,21 @@ export function ProductTable({ negocioId, onEdit }: ProductTableProps) {
       <table className="w-full text-left border-collapse">
         <thead>
           <tr className="text-[10px] font-black uppercase tracking-widest text-[var(--admin-text-muted)]">
-            <th className="p-4 pl-6 border-b border-[var(--admin-border)]">Producto</th>
-            <th className="p-4 hidden md:table-cell border-b border-[var(--admin-border)]">Sección</th>
-            <th className="p-4 border-b border-[var(--admin-border)]">Precio</th>
-            <th className="p-4 border-b border-[var(--admin-border)]">Estado</th>
-            <th className="p-4 pr-6 text-right border-b border-[var(--admin-border)]">Acciones</th>
+            <th className="p-4 pl-6 border-b border-[var(--admin-border)]">
+              Producto
+            </th>
+            <th className="p-4 hidden md:table-cell border-b border-[var(--admin-border)]">
+              Sección
+            </th>
+            <th className="p-4 border-b border-[var(--admin-border)]">
+              Precio
+            </th>
+            <th className="p-4 border-b border-[var(--admin-border)]">
+              Estado
+            </th>
+            <th className="p-4 pr-6 text-right border-b border-[var(--admin-border)]">
+              Acciones
+            </th>
           </tr>
         </thead>
         <tbody className="divide-y divide-[var(--admin-border)] text-sm">
@@ -201,7 +231,9 @@ export function ProductTable({ negocioId, onEdit }: ProductTableProps) {
                     <Edit3 size={16} />
                   </button>
                   <button
-                    onClick={() => handleEliminar(prod.id, prod.nombre)}
+                    onClick={() =>
+                      setDeleteConfirm({ id: prod.id, nombre: prod.nombre })
+                    }
                     className="p-2 text-[var(--admin-text-muted)] hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors border border-transparent hover:border-red-500/20"
                     title="Eliminar producto"
                   >
@@ -224,6 +256,45 @@ export function ProductTable({ negocioId, onEdit }: ProductTableProps) {
           )}
         </tbody>
       </table>
+
+      {/* Paginación */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between px-6 py-4 border-t border-[var(--admin-border)] bg-[var(--admin-bg)]/30">
+          <span className="text-xs font-medium text-[var(--admin-text-muted)]">
+            {totalCount} producto{totalCount !== 1 ? "s" : ""}
+          </span>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setPage((p) => Math.max(0, p - 1))}
+              disabled={page === 0}
+              className="px-3 py-1.5 text-xs font-bold rounded-lg border border-[var(--admin-border)] bg-[var(--admin-surface)] text-[var(--admin-text)] hover:bg-[var(--admin-accent)]/5 hover:border-[var(--admin-accent)]/30 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              Anterior
+            </button>
+            <span className="text-xs font-medium text-[var(--admin-text-muted)] px-2">
+              {page + 1} / {totalPages}
+            </span>
+            <button
+              onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
+              disabled={page >= totalPages - 1}
+              className="px-3 py-1.5 text-xs font-bold rounded-lg border border-[var(--admin-border)] bg-[var(--admin-surface)] text-[var(--admin-text)] hover:bg-[var(--admin-accent)]/5 hover:border-[var(--admin-accent)]/30 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              Siguiente
+            </button>
+          </div>
+        </div>
+      )}
+
+      {deleteConfirm && (
+        <ConfirmModal
+          title="Eliminar Producto"
+          message={`¿Eliminar irreversiblemente "${deleteConfirm.nombre}"?`}
+          confirmLabel="Eliminar"
+          variant="danger"
+          onConfirm={handleEliminar}
+          onCancel={() => setDeleteConfirm(null)}
+        />
+      )}
     </div>
   );
 }

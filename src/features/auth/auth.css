@@ -189,44 +189,80 @@
 }
 
 @keyframes authMorphBlob {
-  0%, 100% { border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; }
-  25% { border-radius: 30% 60% 70% 40% / 50% 60% 30% 60%; }
-  50% { border-radius: 50% 60% 30% 60% / 40% 50% 60% 50%; }
-  75% { border-radius: 60% 30% 60% 40% / 30% 50% 40% 70%; }
+  0%,
+  100% {
+    border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
+  }
+  25% {
+    border-radius: 30% 60% 70% 40% / 50% 60% 30% 60%;
+  }
+  50% {
+    border-radius: 50% 60% 30% 60% / 40% 50% 60% 50%;
+  }
+  75% {
+    border-radius: 60% 30% 60% 40% / 30% 50% 40% 70%;
+  }
 }
 
 @keyframes authFloat {
-  0%, 100% { transform: translateY(0) rotate(0deg); }
-  33% { transform: translateY(-10px) rotate(0.5deg); }
-  66% { transform: translateY(-5px) rotate(-0.3deg); }
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  33% {
+    transform: translateY(-10px) rotate(0.5deg);
+  }
+  66% {
+    transform: translateY(-5px) rotate(-0.3deg);
+  }
 }
 
 @keyframes authPulseGlow {
-  0%, 100% { opacity: 0.3; filter: blur(60px); }
-  50% { opacity: 0.6; filter: blur(80px); }
+  0%,
+  100% {
+    opacity: 0.3;
+    filter: blur(60px);
+  }
+  50% {
+    opacity: 0.6;
+    filter: blur(80px);
+  }
 }
 
 @keyframes authShimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
 }
 
 @layer utilities {
   .auth-blob {
-    animation: authMorphBlob 18s ease-in-out infinite, authFloat 12s ease-in-out infinite;
+    animation:
+      authMorphBlob 18s ease-in-out infinite,
+      authFloat 12s ease-in-out infinite;
   }
   .auth-blob-reverse {
-    animation: authMorphBlob 22s ease-in-out infinite reverse, authFloat 15s ease-in-out infinite reverse;
+    animation:
+      authMorphBlob 22s ease-in-out infinite reverse,
+      authFloat 15s ease-in-out infinite reverse;
   }
   .auth-blob-secondary {
-    animation: authMorphBlob 20s ease-in-out infinite, authFloat 14s ease-in-out infinite;
+    animation:
+      authMorphBlob 20s ease-in-out infinite,
+      authFloat 14s ease-in-out infinite;
     animation-delay: -5s;
   }
   .auth-pulse-glow {
     animation: authPulseGlow 6s ease-in-out infinite;
   }
   .auth-dot-grid {
-    background-image: radial-gradient(rgba(28, 72, 42, 0.12) 1px, transparent 1px);
+    background-image: radial-gradient(
+      rgba(28, 72, 42, 0.12) 1px,
+      transparent 1px
+    );
     background-size: 32px 32px;
   }
 }

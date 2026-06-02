@@ -2,27 +2,7 @@
 
 import { createClient } from "@/core/lib/supabase/server";
 import { revalidatePath } from "next/cache";
-import { SupabaseClient } from "@supabase/supabase-js";
-/**
- * Helper privado para asegurar el aislamiento Multi-tenant en el servidor.
- */
-async function getValidatedTenantId(supabase: SupabaseClient) {
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser();
-  if (authError || !user) throw new Error("Acceso denegado. Sesión inválida.");
-
-  const { data: negocio, error: tenantError } = await supabase
-    .from("negocios")
-    .select("id")
-    .eq("user_id", user.id)
-    .single();
-
-  if (tenantError || !negocio)
-    throw new Error("Inconsistencia: No se detectó un negocio asignado.");
-  return negocio.id;
-}
+import { getAuthenticatedTenant } from "@/core/lib/tenant";
 
 /**
  * Actualiza las anotaciones de auditoría o historial del cliente en la columna 'notas'.
@@ -32,7 +12,7 @@ export async function updateClientSystemNotes(
   nuevasNotas: string,
 ) {
   const supabase = await createClient();
-  const tenantId = await getValidatedTenantId(supabase);
+  const tenantId = await getAuthenticatedTenant(supabase);
 
   // Mutación protegida asegurando que el cliente pertenezca al scope del negocio
   const { error } = await supabase
@@ -52,7 +32,7 @@ export async function updateClientSystemNotes(
  */
 export async function deleteClientAction(clienteId: string) {
   const supabase = await createClient();
-  const tenantId = await getValidatedTenantId(supabase);
+  const tenantId = await getAuthenticatedTenant(supabase);
 
   const { error } = await supabase
     .from("clientes")

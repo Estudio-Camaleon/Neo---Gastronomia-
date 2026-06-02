@@ -60,14 +60,17 @@ export function PedidoCard({
               {pedido.cliente_nombre}
             </h4>
             <p className="text-xs text-[var(--admin-text-muted)] flex items-center gap-1.5">
-              <span className="capitalize">{pedido.metodo_pago}</span> •{" "}
+              <span>
+                {pedido.metodo_pago.replace(/\b\w/g, (c) => c.toUpperCase())}
+              </span>{" "}
+              •{" "}
               <span className="font-semibold text-[var(--admin-accent)] text-sm">
                 ${Number(pedido.total).toFixed(2)}
               </span>
             </p>
           </div>
           <a
-            href={`https://wa.me/${pedido.cliente_whatsapp}`}
+            href={`https://wa.me/${pedido.cliente_whatsapp?.replace(/\D/g, "")}`}
             target="_blank"
             rel="noopener noreferrer"
             className="p-2 rounded-xl bg-green-50/80 text-green-600 hover:bg-green-100 border border-green-200/60 transition-all duration-200 shrink-0 hover:shadow-sm hover:scale-105 active:scale-95"
@@ -151,7 +154,7 @@ export function PedidoCard({
           <button
             onClick={() => onUpdateStatus(pedido.id, "entregado")}
             disabled={isLoading}
-            className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-bold tracking-wide transition-all duration-200 bg-[var(--admin-text)] text-white hover:opacity-90 active:scale-97 disabled:opacity-50 shadow-md"
+            className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-bold tracking-wide transition-all duration-200 bg-[var(--admin-text)] text-white hover:opacity-90 active:scale-95 disabled:opacity-50 shadow-md"
           >
             {isLoading ? (
               <Loader2 className="animate-spin" size={18} />

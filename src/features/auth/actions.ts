@@ -8,7 +8,11 @@ import { headers } from "next/headers";
 // --- RATE LIMITER SIMPLE (en memoria) ---
 const rateLimitStore = new Map<string, { count: number; resetAt: number }>();
 
-function checkRateLimit(key: string, maxAttempts = 5, windowMs = 60000): boolean {
+function checkRateLimit(
+  key: string,
+  maxAttempts = 5,
+  windowMs = 60000,
+): boolean {
   const now = Date.now();
   const entry = rateLimitStore.get(key);
   if (!entry || now > entry.resetAt) {

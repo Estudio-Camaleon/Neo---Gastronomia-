@@ -38,7 +38,8 @@ export default function OnboardingPage() {
             </div>
           </div>
           <h1 className="text-3xl font-bold tracking-tight">
-            Bienvenido a <span className="text-[var(--auth-primary,#1f6b3d)]">NEO</span>
+            Bienvenido a{" "}
+            <span className="text-[var(--auth-primary,#1f6b3d)]">NEO</span>
           </h1>
           <p className="text-sm text-[var(--auth-text-muted,#5d6d64)]">
             En unos pocos pasos tendrás tu menú digital funcionando.
@@ -67,7 +68,8 @@ export default function OnboardingPage() {
         <div className="flex items-center gap-2 p-4 bg-[var(--auth-primary-soft,#d8e8d4)] rounded-xl border border-[var(--auth-border,rgba(28,72,42,0.12))]">
           <Sparkles className="h-5 w-5 text-[var(--auth-primary,#1f6b3d)] shrink-0" />
           <p className="text-xs font-medium text-[var(--auth-text,#163225)]">
-            Podés modificar toda esta información después desde el panel de configuración.
+            Podés modificar toda esta información después desde el panel de
+            configuración.
           </p>
         </div>
 

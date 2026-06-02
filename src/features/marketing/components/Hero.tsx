@@ -71,7 +71,10 @@ export function Hero() {
               +40% pedidos
             </span>
           </div>
-          <div className="absolute -bottom-3 -left-3 z-10 hidden animate-float sm:flex items-center gap-2 rounded-xl border border-[var(--theme-border)] bg-white/90 px-3 py-2 shadow-lg backdrop-blur-sm" style={{ animationDelay: "2s" }}>
+          <div
+            className="absolute -bottom-3 -left-3 z-10 hidden animate-float sm:flex items-center gap-2 rounded-xl border border-[var(--theme-border)] bg-white/90 px-3 py-2 shadow-lg backdrop-blur-sm"
+            style={{ animationDelay: "2s" }}
+          >
             <BellRing className="h-4 w-4 text-amber-500" />
             <span className="text-xs font-black uppercase tracking-tight text-[var(--theme-text)]">
               Notificación al instante

@@ -127,7 +127,7 @@ export function ImageUpload({
       });
     } catch (error: unknown) {
       console.error("Error al borrar:", error);
-      onChange("");
+      toast.error("No se pudo eliminar la imagen");
     }
   };
 

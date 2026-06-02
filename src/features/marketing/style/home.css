@@ -55,9 +55,6 @@
     transform: translateY(-3px);
   }
 
-
-  
-
   /* Actualiza esta parte al final de tu .neo-home dentro de @layer base */
   @media (max-width: 640px) {
     .neo-home {
@@ -162,8 +159,9 @@
   }
 
   .animate-lift {
-    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
-                box-shadow 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    transition:
+      transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+      box-shadow 0.35s cubic-bezier(0.16, 1, 0.3, 1);
   }
   .animate-lift:hover {
     transform: translateY(-3px);
@@ -182,8 +180,12 @@
   }
 
   @keyframes shimmerSlide {
-    0% { background-position: -200% 0; }
-    100% { background-position: 200% 0; }
+    0% {
+      background-position: -200% 0;
+    }
+    100% {
+      background-position: 200% 0;
+    }
   }
 
   .animate-cursor {
@@ -195,31 +197,107 @@
   }
 
   @keyframes cursorMove {
-    0%, 8% { top: 18%; left: 10%; }
-    14%, 18% { top: 18%; left: 40%; }
-    20%, 22% { top: 18%; left: 40%; }
-    28%, 32% { top: 35%; left: 22%; }
-    38%, 42% { top: 35%; left: 60%; }
-    44%, 46% { top: 35%; left: 60%; }
-    52%, 56% { top: 55%; left: 30%; }
-    62%, 66% { top: 55%; left: 68%; }
-    68%, 70% { top: 55%; left: 68%; }
-    76%, 80% { top: 75%; left: 25%; }
-    86%, 90% { top: 75%; left: 50%; }
-    92%, 94% { top: 75%; left: 50%; }
-    100% { top: 18%; left: 10%; }
+    0%,
+    8% {
+      top: 18%;
+      left: 10%;
+    }
+    14%,
+    18% {
+      top: 18%;
+      left: 40%;
+    }
+    20%,
+    22% {
+      top: 18%;
+      left: 40%;
+    }
+    28%,
+    32% {
+      top: 35%;
+      left: 22%;
+    }
+    38%,
+    42% {
+      top: 35%;
+      left: 60%;
+    }
+    44%,
+    46% {
+      top: 35%;
+      left: 60%;
+    }
+    52%,
+    56% {
+      top: 55%;
+      left: 30%;
+    }
+    62%,
+    66% {
+      top: 55%;
+      left: 68%;
+    }
+    68%,
+    70% {
+      top: 55%;
+      left: 68%;
+    }
+    76%,
+    80% {
+      top: 75%;
+      left: 25%;
+    }
+    86%,
+    90% {
+      top: 75%;
+      left: 50%;
+    }
+    92%,
+    94% {
+      top: 75%;
+      left: 50%;
+    }
+    100% {
+      top: 18%;
+      left: 10%;
+    }
   }
 
   @keyframes cursorClick {
-    0%, 19% { transform: scale(1); }
-    20%, 22% { transform: scale(0.75); }
-    23% { transform: scale(1); }
-    43%, 45% { transform: scale(0.75); }
-    46% { transform: scale(1); }
-    67%, 69% { transform: scale(0.75); }
-    70% { transform: scale(1); }
-    93%, 94% { transform: scale(0.75); }
-    95% { transform: scale(1); }
-    100% { transform: scale(1); }
+    0%,
+    19% {
+      transform: scale(1);
+    }
+    20%,
+    22% {
+      transform: scale(0.75);
+    }
+    23% {
+      transform: scale(1);
+    }
+    43%,
+    45% {
+      transform: scale(0.75);
+    }
+    46% {
+      transform: scale(1);
+    }
+    67%,
+    69% {
+      transform: scale(0.75);
+    }
+    70% {
+      transform: scale(1);
+    }
+    93%,
+    94% {
+      transform: scale(0.75);
+    }
+    95% {
+      transform: scale(1);
+    }
+    100% {
+      transform: scale(1);
+    }
   }
 }

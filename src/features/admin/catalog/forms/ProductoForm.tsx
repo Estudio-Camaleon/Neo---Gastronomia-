@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   upsertProductAction,
   JSONBExtraGroup,
@@ -36,6 +36,7 @@ interface ProductoFormProps {
   categorias: CategoriaOption[];
   initialData?: UnifiedProduct | null;
   onSuccess?: () => void;
+  onUnsavedChange?: (hasChanges: boolean) => void;
 }
 
 export function ProductoForm({
@@ -43,6 +44,7 @@ export function ProductoForm({
   categorias,
   initialData,
   onSuccess,
+  onUnsavedChange,
 }: ProductoFormProps) {
   const [isPending, setIsPending] = useState(false);
   const submitLabel = initialData ? "Guardar Cambios" : "Cargar Producto";
@@ -63,6 +65,32 @@ export function ProductoForm({
     (initialData?.configuracion
       ?.grupos_opciones as unknown as JSONBExtraGroup[]) || [],
   );
+
+  useEffect(() => {
+    if (!onUnsavedChange) return;
+    const hasChanges =
+      formData.nombre !== (initialData?.nombre || "") ||
+      formData.descripcion !== (initialData?.descripcion || "") ||
+      formData.precio !== (initialData?.precio || "") ||
+      formData.imagen_url !== (initialData?.imagen_url || null) ||
+      formData.categoria_id !== (initialData?.categoria_id || "") ||
+      formData.disponible !== (initialData?.disponible ?? true) ||
+      JSON.stringify(variantes) !==
+        JSON.stringify(initialData?.configuracion?.variantes || []) ||
+      JSON.stringify(gruposOpciones) !==
+        JSON.stringify(initialData?.configuracion?.grupos_opciones || []);
+    onUnsavedChange(hasChanges);
+  }, [formData, variantes, gruposOpciones, initialData, onUnsavedChange]);
+
+  const variantIds = useRef<string[]>([]);
+  const syncVariantIds = (len: number) => {
+    while (variantIds.current.length < len) {
+      variantIds.current.push(crypto.randomUUID());
+    }
+    if (variantIds.current.length > len) {
+      variantIds.current = variantIds.current.slice(0, len);
+    }
+  };
 
   const agregarVariante = () => {
     setVariantes([...variantes, { nombre: "", precio: 0 }]);
@@ -139,6 +167,8 @@ export function ProductoForm({
       }),
     );
   };
+
+  syncVariantIds(variantes.length);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -327,7 +357,7 @@ export function ProductoForm({
               <div className="space-y-3">
                 {variantes.map((v, idx) => (
                   <div
-                    key={idx}
+                    key={variantIds.current[idx]}
                     className="flex gap-2 items-center bg-[var(--admin-surface)] p-2 border border-[var(--admin-border)] rounded-lg shadow-sm"
                   >
                     <input
@@ -497,7 +527,7 @@ export function ProductoForm({
       </div>
 
       {/* FOOTER ACCIONES */}
-      <div className="sticky bottom-0 z-10 mt-auto flex flex-col items-center justify-between gap-4 border-t border-[var(--admin-border)] bg-[var(--admin-surface)] p-6 shadow-[0_-12px_30px_rgba(0,0,0,0.08)] rounded-b-xl sm:flex-row">
+      <div className="sticky bottom-0 z-10 mt-auto flex flex-col items-center justify-between gap-4 border-t border-[var(--admin-border)] bg-[var(--admin-surface)] p-6 shadow-[0_-12px_30px_rgba(0,0,0,0.08)] dark:shadow-[0_-12px_30px_rgba(0,0,0,0.4)] rounded-b-xl sm:flex-row">
         <p className="text-xs font-medium text-[var(--admin-text-muted)]">
           Los cambios impactarán en el catálogo público al instante.
         </p>

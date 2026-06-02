@@ -71,21 +71,21 @@ export default async function ClientesPage() {
   return (
     <div className="space-y-10 max-w-7xl mx-auto relative z-10 transition-colors duration-200">
       {/* HEADER DE COMUNIDAD */}
-      <header className="space-y-4 border-b border-[var(--admin-border)] dark:border-zinc-800 pb-6">
+      <header className="space-y-4 border-b border-[var(--admin-border)] pb-6">
         <div className="flex items-center gap-3">
           <div className="bg-[var(--admin-accent)] text-white p-2.5 rounded-xl shadow-sm shadow-[var(--admin-accent)]/20">
             <Users size={20} />
           </div>
-          <span className="text-xs font-bold uppercase tracking-wider text-[var(--admin-text-muted)] dark:text-zinc-400">
+          <span className="text-xs font-bold uppercase tracking-wider text-[var(--admin-text-muted)]">
             Métricas de Comunidad
           </span>
         </div>
 
         <div className="space-y-3">
-          <h1 className="text-3xl md:text-5xl font-bold tracking-tight text-[var(--admin-text)] dark:text-zinc-100">
+          <h1 className="text-3xl md:text-5xl font-bold tracking-tight text-[var(--admin-text)]">
             Tus Clientes
           </h1>
-          <p className="max-w-2xl text-sm font-medium text-[var(--admin-text-muted)] dark:text-zinc-400 border-l-2 border-[var(--admin-accent)] pl-4 leading-relaxed">
+          <p className="max-w-2xl text-sm font-medium text-[var(--admin-text-muted)] border-l-2 border-[var(--admin-accent)] pl-4 leading-relaxed">
             Análisis de volumen de compra, ranking de retención y seguimiento
             analítico de usuarios en tu plataforma.
           </p>

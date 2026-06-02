@@ -100,10 +100,13 @@ export function Sidebar({ slug, negocioNombre, negocioId }: SidebarProps) {
                 </span>
               </div>
             </div>
-            <div className="mt-3 flex gap-1 opacity-25 dark:opacity-45">
-              {[8, 14, 10, 16, 6, 12, 18, 11, 7, 13, 9, 15].map((height, i) => (
+            <div
+              className="mt-3 flex gap-1 opacity-25 dark:opacity-45"
+              aria-hidden="true"
+            >
+              {[8, 14, 10, 16, 6, 12, 18, 11, 7, 13, 9, 15].map((height) => (
                 <div
-                  key={i}
+                  key={height}
                   className="w-0.5 bg-[var(--admin-accent)] rounded-full"
                   style={{ height: `${height}px` }}
                 />
@@ -137,7 +140,7 @@ export function Sidebar({ slug, negocioNombre, negocioId }: SidebarProps) {
                   `}
                 >
                   {isActive && (
-                    <span className="absolute left-0 w-0.5 h-5 bg-white rounded-r-md shadow-sm" />
+                    <span className="absolute left-0 w-0.5 h-5 bg-[var(--admin-accent)] rounded-r-md shadow-sm" />
                   )}
 
                   <Icon
@@ -161,6 +164,7 @@ export function Sidebar({ slug, negocioNombre, negocioId }: SidebarProps) {
           <div className="flex bg-[var(--admin-bg)] rounded-xl p-1 border border-[var(--admin-border)]">
             <button
               onClick={() => setTheme("light")}
+              aria-label="Tema claro"
               className={`flex-1 flex items-center justify-center gap-2 py-2 text-xs font-bold rounded-lg transition-all active:scale-[0.97] ${
                 theme === "light"
                   ? "bg-[var(--admin-surface)] text-[var(--admin-text)] shadow-xs border border-[var(--admin-border)]"
@@ -171,6 +175,7 @@ export function Sidebar({ slug, negocioNombre, negocioId }: SidebarProps) {
             </button>
             <button
               onClick={() => setTheme("dark")}
+              aria-label="Tema oscuro"
               className={`flex-1 flex items-center justify-center gap-2 py-2 text-xs font-bold rounded-lg transition-all active:scale-[0.97] ${
                 theme === "dark"
                   ? "bg-[var(--admin-surface)] text-[var(--admin-text)] shadow-xs border border-[var(--admin-border)]"

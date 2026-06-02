@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import {
   Clock,
   CheckCircle2,
@@ -8,6 +8,10 @@ import {
   ShoppingBag,
   BellDot,
   ChefHat,
+  ChevronLeft,
+  ChevronRight,
+  List,
+  Filter,
 } from "lucide-react";
 import { createClient } from "@/core/lib/supabase/client";
 import { toast } from "sonner";
@@ -17,6 +21,28 @@ import { enviarNotificacionWhatsApp } from "@/core/lib/utils/whatsappActions";
 import type { RealtimePostgresChangesPayload } from "@supabase/supabase-js";
 
 const supabase = createClient();
+
+let audioBufferCache: AudioBuffer | null = null;
+
+async function playSound() {
+  try {
+    const ctx = new (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)();
+    if (ctx.state === "suspended") await ctx.resume();
+
+    if (!audioBufferCache) {
+      const res = await fetch("/sounds/new-order.mp3");
+      const buf = await res.arrayBuffer();
+      audioBufferCache = await ctx.decodeAudioData(buf);
+    }
+
+    const source = ctx.createBufferSource();
+    source.buffer = audioBufferCache;
+    source.connect(ctx.destination);
+    source.start();
+  } catch {
+    // audio no crítico
+  }
+}
 
 export interface PedidoItem {
   id: string;
@@ -51,8 +77,60 @@ export function PedidosRadar({
   negocioNombre,
 }: PedidosRadarProps) {
   const [filter, setFilter] = useState("");
+  const [debouncedFilter, setDebouncedFilter] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("todos");
+  const [showAll, setShowAll] = useState(false);
   const [pedidos, setPedidos] = useState<PedidoData[]>(initialPedidos);
   const [loadingId, setLoadingId] = useState<string | null>(null);
+  const [page, setPage] = useState(0);
+  const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    if (debounceTimer.current) clearTimeout(debounceTimer.current);
+    debounceTimer.current = setTimeout(() => {
+      setDebouncedFilter(filter);
+      setPage(0);
+    }, 300);
+    return () => {
+      if (debounceTimer.current) clearTimeout(debounceTimer.current);
+    };
+  }, [filter]);
+
+  const ORDERS_PER_PAGE = 6;
+
+  const pedidosActivos = useMemo(
+    () =>
+      pedidos.filter(
+        (p) => p.estado !== "entregado" && p.estado !== "cancelado",
+      ),
+    [pedidos],
+  );
+
+  const pedidosFiltrados = useMemo(
+    () =>
+      pedidosActivos
+        .filter((p) =>
+          statusFilter === "todos" ? true : p.estado === statusFilter,
+        )
+        .filter(
+          (p) =>
+            p.cliente_nombre
+              .toLowerCase()
+              .includes(debouncedFilter.toLowerCase()) ||
+            p.id.includes(debouncedFilter),
+        ),
+    [pedidosActivos, debouncedFilter, statusFilter],
+  );
+
+  const itemsPerPage = showAll ? pedidosFiltrados.length : ORDERS_PER_PAGE;
+  const totalPages = Math.max(
+    1,
+    Math.ceil(pedidosFiltrados.length / itemsPerPage),
+  );
+  const pedidosPagina = pedidosFiltrados.slice(
+    page * itemsPerPage,
+    (page + 1) * itemsPerPage,
+  );
 
   useEffect(() => {
     const channel = supabase
@@ -85,8 +163,7 @@ export function PedidosRadar({
                 ...prev,
               ]);
 
-              const audio = new Audio("/sounds/new-order.mp3");
-              audio.play().catch(() => {});
+              playSound();
 
               toast.info("Nuevo pedido entrante", {
                 icon: <BellDot className="text-blue-500 animate-pulse" />,
@@ -122,13 +199,17 @@ export function PedidosRadar({
       await updateOrderStatusAction(id, nuevoEstado);
 
       if (pedidoAfectado) {
-        enviarNotificacionWhatsApp(
-          pedidoAfectado as unknown as Parameters<
-            typeof enviarNotificacionWhatsApp
-          >[0],
-          nuevoEstado,
-          negocioNombre,
-        );
+        try {
+          enviarNotificacionWhatsApp(
+            pedidoAfectado as unknown as Parameters<
+              typeof enviarNotificacionWhatsApp
+            >[0],
+            nuevoEstado,
+            negocioNombre,
+          );
+        } catch {
+          // notificación no crítica
+        }
       }
 
       toast.success(`Pedido actualizado con éxito`);
@@ -193,12 +274,16 @@ export function PedidosRadar({
               <span className="text-xs font-black uppercase tracking-wider text-[var(--admin-text-muted)]">
                 {item.label}
               </span>
-              <div className={`p-2 rounded-xl ${item.bgLight} ${item.textColor} transition-all duration-200`}>
+              <div
+                className={`p-2 rounded-xl ${item.bgLight} ${item.textColor} transition-all duration-200`}
+              >
                 <item.icon size={18} />
               </div>
             </div>
             <div className="flex items-center gap-3">
-              <span className={`text-4xl font-black tracking-tight ${item.textColor}`}>
+              <span
+                className={`text-4xl font-black tracking-tight ${item.textColor}`}
+              >
                 {item.value}
               </span>
               {item.value > 0 && item.label !== "Entregados" && (
@@ -209,6 +294,47 @@ export function PedidosRadar({
             </div>
           </div>
         ))}
+      </div>
+
+      <div className="flex flex-wrap items-center gap-2 justify-between">
+        <div className="flex gap-1 bg-[var(--admin-bg)] p-1 rounded-xl border border-[var(--admin-border)]">
+          {[
+            { value: "todos", label: "Todos", icon: List },
+            { value: "pendiente", label: "Pendientes", icon: Clock },
+            { value: "en_preparacion", label: "En Cocina", icon: ChefHat },
+          ].map((opt) => (
+            <button
+              key={opt.value}
+              onClick={() => {
+                setStatusFilter(opt.value);
+                setPage(0);
+              }}
+              className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${
+                statusFilter === opt.value
+                  ? "bg-[var(--admin-surface)] text-[var(--admin-text)] shadow-xs border border-[var(--admin-border)]"
+                  : "text-[var(--admin-text-muted)] hover:text-[var(--admin-text)]"
+              }`}
+            >
+              <opt.icon size={14} />
+              {opt.label}
+            </button>
+          ))}
+        </div>
+
+        <button
+          onClick={() => {
+            setShowAll(!showAll);
+            setPage(0);
+          }}
+          className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-xl border transition-all ${
+            showAll
+              ? "bg-[var(--admin-accent)]/10 text-[var(--admin-accent)] border-[var(--admin-accent)]/30"
+              : "border-[var(--admin-border)] text-[var(--admin-text-muted)] hover:text-[var(--admin-text)]"
+          }`}
+        >
+          <Filter size={14} />
+          {showAll ? "Ver paginado" : "Ver todos"}
+        </button>
       </div>
 
       <div className="admin-card !p-1 flex items-center">
@@ -225,26 +351,40 @@ export function PedidosRadar({
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-        {pedidos
-          .filter((p) => p.estado !== "entregado" && p.estado !== "cancelado")
-          .filter(
-            (p) =>
-              p.cliente_nombre.toLowerCase().includes(filter.toLowerCase()) ||
-              p.id.includes(filter),
-          )
-          .map((p) => (
-            <PedidoCard
-              key={p.id}
-              pedido={p}
-              onUpdateStatus={handleUpdateStatus}
-              loadingId={loadingId}
-            />
-          ))}
+        {pedidosPagina.map((p) => (
+          <PedidoCard
+            key={p.id}
+            pedido={p}
+            onUpdateStatus={handleUpdateStatus}
+            loadingId={loadingId}
+          />
+        ))}
       </div>
 
-      {pedidos.filter(
-        (p) => p.estado !== "entregado" && p.estado !== "cancelado",
-      ).length === 0 && (
+      {/* Paginación */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center gap-4">
+          <button
+            onClick={() => setPage((p) => Math.max(0, p - 1))}
+            disabled={page === 0}
+            className="flex items-center gap-1 px-4 py-2 text-xs font-bold rounded-xl border border-[var(--admin-border)] bg-[var(--admin-surface)] text-[var(--admin-text)] hover:bg-[var(--admin-accent)]/5 hover:border-[var(--admin-accent)]/30 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            <ChevronLeft size={14} /> Anterior
+          </button>
+          <span className="text-xs font-medium text-[var(--admin-text-muted)]">
+            {page + 1} / {totalPages}
+          </span>
+          <button
+            onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
+            disabled={page >= totalPages - 1}
+            className="flex items-center gap-1 px-4 py-2 text-xs font-bold rounded-xl border border-[var(--admin-border)] bg-[var(--admin-surface)] text-[var(--admin-text)] hover:bg-[var(--admin-accent)]/5 hover:border-[var(--admin-accent)]/30 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            Siguiente <ChevronRight size={14} />
+          </button>
+        </div>
+      )}
+
+      {pedidosActivos.length === 0 && (
         <div className="flex flex-col items-center justify-center py-20 admin-card border-dashed">
           <div className="p-4 rounded-2xl bg-[var(--admin-accent)]/5 text-[var(--admin-text-muted)] mb-4">
             <ShoppingBag size={48} strokeWidth={1.5} />

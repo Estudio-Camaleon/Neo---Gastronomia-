@@ -21,7 +21,9 @@ const CATEGORIES = [
   { icon: <Library size={14} />, label: "Gourmet" },
 ];
 
-export default async function LoginPage(props: { searchParams?: Promise<{ message?: string }> }) {
+export default async function LoginPage(props: {
+  searchParams?: Promise<{ message?: string }>;
+}) {
   const searchParams = await props.searchParams;
   const validatedMessage = searchParams?.message === "correo_validado";
 
@@ -82,7 +84,11 @@ export default async function LoginPage(props: { searchParams?: Promise<{ messag
 
             <div className="flex flex-wrap justify-center gap-2 max-w-md">
               {CATEGORIES.map((item, idx) => (
-                <div key={idx} className="auth-badge animate-in fade-in slide-in-from-bottom-2 duration-500" style={{ animationDelay: `${idx * 80}ms` }}>
+                <div
+                  key={idx}
+                  className="auth-badge animate-in fade-in slide-in-from-bottom-2 duration-500"
+                  style={{ animationDelay: `${idx * 80}ms` }}
+                >
                   <span className="text-[var(--auth-primary)]">
                     {item.icon}
                   </span>
@@ -134,7 +140,10 @@ export default async function LoginPage(props: { searchParams?: Promise<{ messag
             {validatedMessage && (
               <div className="auth-success-box">
                 <CheckCircle2 className="h-4 w-4 shrink-0 mt-0.5" />
-                <span>Correo electrónico validado correctamente. Ya podés iniciar sesión.</span>
+                <span>
+                  Correo electrónico validado correctamente. Ya podés iniciar
+                  sesión.
+                </span>
               </div>
             )}
 

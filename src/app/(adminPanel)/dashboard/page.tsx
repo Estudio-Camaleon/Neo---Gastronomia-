@@ -15,7 +15,7 @@ export default async function DashboardPage() {
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  // Obtener contexto del negocio (asumiendo función de utilidad o query directa)
+  // Obtener contexto del negocio
   const { data: negocio } = await supabase
     .from("negocios")
     .select("id, nombre")
@@ -23,6 +23,40 @@ export default async function DashboardPage() {
     .single();
 
   if (!negocio) redirect("/configuracion");
+
+  const negocioId = negocio.id;
+
+  const todayStart = new Date();
+  todayStart.setHours(0, 0, 0, 0);
+
+  const [
+    { count: pedidosHoy },
+    { data: ventasData },
+    { count: totalClientes },
+    { count: totalProductos },
+  ] = await Promise.all([
+    supabase
+      .from("pedidos")
+      .select("*", { count: "exact", head: true })
+      .eq("negocio_id", negocioId)
+      .gte("created_at", todayStart.toISOString()),
+    supabase
+      .from("pedidos")
+      .select("total")
+      .eq("negocio_id", negocioId)
+      .gte("created_at", todayStart.toISOString()),
+    supabase
+      .from("pedidos")
+      .select("cliente_id", { count: "exact", head: true })
+      .eq("negocio_id", negocioId),
+    supabase
+      .from("productos")
+      .select("*", { count: "exact", head: true })
+      .eq("negocio_id", negocioId),
+  ]);
+
+  const ventasHoy =
+    ventasData?.reduce((sum, p) => sum + (Number(p.total) || 0), 0) ?? 0;
 
   return (
     <div className="space-y-8 z-10 relative">
@@ -37,10 +71,26 @@ export default async function DashboardPage() {
 
       {/* Grid de KPIs */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <KPIWidget title="Pedidos Hoy" value="12" icon={<ShoppingBag />} />
-        <KPIWidget title="Ventas" value="$45.000" icon={<TrendingUp />} />
-        <KPIWidget title="Clientes" value="142" icon={<Users />} />
-        <KPIWidget title="Productos" value="34" icon={<Package />} />
+        <KPIWidget
+          title="Pedidos Hoy"
+          value={String(pedidosHoy ?? 0)}
+          icon={<ShoppingBag />}
+        />
+        <KPIWidget
+          title="Ventas"
+          value={`$${ventasHoy.toLocaleString("es-AR")}`}
+          icon={<TrendingUp />}
+        />
+        <KPIWidget
+          title="Clientes"
+          value={String(totalClientes ?? 0)}
+          icon={<Users />}
+        />
+        <KPIWidget
+          title="Productos"
+          value={String(totalProductos ?? 0)}
+          icon={<Package />}
+        />
       </div>
 
       {/* Quick Actions (Navegación) */}

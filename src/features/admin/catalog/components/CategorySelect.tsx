@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/core/lib/supabase/client";
 import { Loader2 } from "lucide-react";
+import { toast } from "sonner";
 
 const supabase = createClient();
 
@@ -42,6 +43,7 @@ export function CategorySelect({
         if (error) throw error;
         setCategorias(data || []);
       } catch (err) {
+        toast.error("Error al cargar las categorías");
         console.error("Fallo de lectura en categorías del local:", err);
       } finally {
         setLoading(false);
@@ -53,7 +55,7 @@ export function CategorySelect({
 
   return (
     <div className="flex flex-col gap-1.5 w-full">
-      <label className="text-sm font-semibold text-gray-700 dark:text-zinc-300">
+      <label className="text-sm font-semibold text-[var(--admin-text)]">
         Categoría
       </label>
       <div className="relative w-full">
@@ -76,19 +78,29 @@ export function CategorySelect({
           >
             {loading ? "Cargando secciones..." : "Seleccionar sección..."}
           </option>
-          {categorias.map((cat) => (
+          {!loading && categorias.length === 0 ? (
             <option
-              key={cat.id}
-              value={cat.id}
-              className="text-[var(--admin-text)] bg-[var(--admin-surface)]"
+              value=""
+              disabled
+              className="text-[var(--admin-text-muted)] bg-[var(--admin-bg)]"
             >
-              {cat.nombre}
+              Sin categorías disponibles
             </option>
-          ))}
+          ) : (
+            categorias.map((cat) => (
+              <option
+                key={cat.id}
+                value={cat.id}
+                className="text-[var(--admin-text)] bg-[var(--admin-surface)]"
+              >
+                {cat.nombre}
+              </option>
+            ))
+          )}
         </select>
 
         {loading && (
-          <div className="absolute right-8 top-1/2 -translate-y-1/2 text-gray-400 dark:text-zinc-500">
+          <div className="absolute right-8 top-1/2 -translate-y-1/2 text-[var(--admin-text-muted)]">
             <Loader2 size={14} className="animate-spin" />
           </div>
         )}

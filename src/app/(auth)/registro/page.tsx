@@ -1,5 +1,10 @@
 import { RegisterForm } from "@/features/auth/components/RegisterForm";
-import { Sparkles, Smartphone, LayoutDashboard, CheckCircle2 } from "lucide-react";
+import {
+  Sparkles,
+  Smartphone,
+  LayoutDashboard,
+  CheckCircle2,
+} from "lucide-react";
 import { TransitionLink } from "@/components/ui/transition-link";
 import Image from "next/image";
 import "@/features/auth/auth.css";
@@ -19,11 +24,7 @@ const BENEFITS = [
   },
 ];
 
-const FEATURES_CHECK = [
-  "Menú QR en minutos",
-  "Soporte 24/7",
-  "Marca blanca",
-];
+const FEATURES_CHECK = ["Menú QR en minutos", "Soporte 24/7", "Marca blanca"];
 
 export default function RegisterPage() {
   return (
@@ -86,7 +87,11 @@ export default function RegisterPage() {
             {/* Tarjetas de Beneficios */}
             <div className="grid gap-3 w-full max-w-sm">
               {BENEFITS.map((item, i) => (
-                <div key={i} className="auth-benefit-card group cursor-default animate-in fade-in slide-in-from-bottom-2 duration-500" style={{ animationDelay: `${i * 100}ms` }}>
+                <div
+                  key={i}
+                  className="auth-benefit-card group cursor-default animate-in fade-in slide-in-from-bottom-2 duration-500"
+                  style={{ animationDelay: `${i * 100}ms` }}
+                >
                   <div className="w-10 h-10 flex items-center justify-center rounded-xl bg-[var(--auth-bg)] text-[var(--auth-primary)] border border-[var(--auth-border)] transition-all duration-300 group-hover:border-[var(--auth-primary)]/30 group-hover:shadow-sm">
                     {item.icon}
                   </div>
@@ -100,9 +105,15 @@ export default function RegisterPage() {
             {/* Chips de features */}
             <div className="flex flex-wrap justify-center gap-2">
               {FEATURES_CHECK.map((feat, idx) => (
-                <div key={idx} className="auth-badge animate-in fade-in slide-in-from-bottom-2 duration-500" style={{ animationDelay: `${300 + idx * 100}ms` }}>
+                <div
+                  key={idx}
+                  className="auth-badge animate-in fade-in slide-in-from-bottom-2 duration-500"
+                  style={{ animationDelay: `${300 + idx * 100}ms` }}
+                >
                   <CheckCircle2 size={12} />
-                  <span className="text-[10px] font-black uppercase tracking-wider">{feat}</span>
+                  <span className="text-[10px] font-black uppercase tracking-wider">
+                    {feat}
+                  </span>
                 </div>
               ))}
             </div>

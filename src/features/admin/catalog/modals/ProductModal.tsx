@@ -6,6 +6,8 @@ import { X, Loader2 } from "lucide-react";
 import { ProductoForm } from "../forms/ProductoForm";
 import type { UnifiedProduct } from "../components/ProductTable";
 
+const supabase = createClient();
+
 interface Categoria {
   id: string;
   nombre: string;
@@ -24,10 +26,10 @@ export function ProductModal({
 }: ProductModalProps) {
   const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [loadingCats, setLoadingCats] = useState(true);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
   useEffect(() => {
     const fetchCategorias = async () => {
-      const supabase = createClient();
       const { data } = await supabase
         .from("categorias")
         .select("id, nombre")
@@ -44,17 +46,32 @@ export function ProductModal({
     };
   }, [negocioId]);
 
+  const handleClose = () => {
+    if (hasUnsavedChanges) {
+      const confirmar = window.confirm(
+        "Tienes cambios sin guardar. ¿Estás seguro de que deseas cerrar?",
+      );
+      if (!confirmar) return;
+    }
+    onClose();
+  };
+
   return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6">
+    <div
+      className="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6"
+      role="dialog"
+      aria-modal="true"
+      aria-label={initialData ? "Editar Producto" : "Nuevo Producto"}
+    >
       <div
         className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
-        onClick={onClose}
+        onClick={handleClose}
       />
 
       <div className="relative flex h-full max-h-[90vh] w-full max-w-5xl min-h-0 flex-col overflow-hidden rounded-2xl border border-[var(--admin-border)] bg-[var(--admin-surface)] shadow-2xl animate-in zoom-in-95 duration-200">
         {/* BOTÓN CERRAR CORREGIDO */}
         <button
-          onClick={onClose}
+          onClick={handleClose}
           className="absolute z-50 top-5 right-5 p-2 bg-[var(--admin-surface)] text-[var(--admin-text-muted)] hover:text-[var(--admin-text)] hover:bg-[var(--admin-border)]/50 rounded-full border border-[var(--admin-border)] shadow-sm hover:scale-105 active:scale-95 transition-all flex items-center justify-center"
           aria-label="Cerrar"
         >
@@ -76,6 +93,7 @@ export function ProductModal({
               categorias={categorias}
               initialData={initialData}
               onSuccess={onClose}
+              onUnsavedChange={setHasUnsavedChanges}
             />
           )}
         </div>

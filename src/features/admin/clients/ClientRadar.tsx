@@ -1,15 +1,9 @@
 "use client";
 
-import { useState } from "react";
-import {
-  Search,
-  Users,
-  User,
-  MessageCircle,
-  Trophy,
-  StickyNote,
-} from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { Users, User, MessageCircle, Trophy, StickyNote } from "lucide-react";
 import { updateClientSystemNotes } from "./actions";
+import { NotesModal } from "@/components/ui/notes-modal";
 import { toast } from "sonner";
 
 export interface ClienteResumen {
@@ -28,29 +22,37 @@ interface ClientRadarProps {
 
 export function ClientRadar({ initialClientes }: ClientRadarProps) {
   const [busqueda, setBusqueda] = useState("");
+  const [debouncedBusqueda, setDebouncedBusqueda] = useState("");
+  const [editingCliente, setEditingCliente] = useState<{
+    id: string;
+    notas: string | null;
+  } | null>(null);
+  const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    if (debounceTimer.current) clearTimeout(debounceTimer.current);
+    debounceTimer.current = setTimeout(() => {
+      setDebouncedBusqueda(busqueda);
+    }, 300);
+    return () => {
+      if (debounceTimer.current) clearTimeout(debounceTimer.current);
+    };
+  }, [busqueda]);
+
+  const searchQuery = debouncedBusqueda;
 
   const clientesFiltrados = initialClientes.filter(
     (c) =>
-      c.nombre.toLowerCase().includes(busqueda.toLowerCase()) ||
-      (c.telefono && c.telefono.includes(busqueda)),
+      c.nombre.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (c.telefono && c.telefono.includes(searchQuery)),
   );
 
-  const handleAuditarNotas = async (
-    id: string,
-    notasActuales: string | null,
-  ) => {
-    const promptNueva = window.prompt(
-      "Editar notas técnicas del cliente:",
-      notasActuales || "",
-    );
-    if (promptNueva === null) return;
+  const noHayClientes = initialClientes.length === 0;
 
-    try {
-      await updateClientSystemNotes(id, promptNueva);
-      toast.success("Notas de cliente actualizadas");
-    } catch {
-      toast.error("Error al actualizar notas");
-    }
+  const handleSaveNotes = async (value: string) => {
+    if (!editingCliente) return;
+    await updateClientSystemNotes(editingCliente.id, value);
+    toast.success("Notas de cliente actualizadas");
   };
 
   return (
@@ -64,12 +66,12 @@ export function ClientRadar({ initialClientes }: ClientRadarProps) {
               Radar de Clientes
             </h2>
             <p className="text-sm font-medium text-[var(--admin-text-muted)]">
-              Ranking de fidelidad, volumen de transacciones y notas de auditoría.
+              Ranking de fidelidad, volumen de transacciones y notas de
+              auditoría.
             </p>
           </div>
 
           <div className="relative group w-full md:max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--admin-text-muted)]" />
             <input
               type="text"
               placeholder="Buscar por nombre o teléfono..."
@@ -97,11 +99,21 @@ export function ClientRadar({ initialClientes }: ClientRadarProps) {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="border-b border-[var(--admin-border)] bg-[var(--admin-bg)]/30 text-xs font-bold text-[var(--admin-text-muted)] uppercase tracking-wider">
-                <th className="p-4 pl-6 font-semibold">Cliente</th>
-                <th className="p-4 text-center font-semibold">Inversión</th>
-                <th className="p-4 text-center font-semibold">Pedidos</th>
-                <th className="p-4 font-semibold">Notas del Sistema</th>
-                <th className="p-4 pr-6 text-right font-semibold">Acciones</th>
+                <th scope="col" className="p-4 pl-6 font-semibold">
+                  Cliente
+                </th>
+                <th scope="col" className="p-4 text-center font-semibold">
+                  Inversión
+                </th>
+                <th scope="col" className="p-4 text-center font-semibold">
+                  Pedidos
+                </th>
+                <th scope="col" className="p-4 font-semibold">
+                  Notas del Sistema
+                </th>
+                <th scope="col" className="p-4 pr-6 text-right font-semibold">
+                  Acciones
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[var(--admin-border)] text-sm">
@@ -166,7 +178,10 @@ export function ClientRadar({ initialClientes }: ClientRadarProps) {
                       <div className="flex justify-end gap-1.5">
                         <button
                           onClick={() =>
-                            handleAuditarNotas(cliente.id, cliente.notas)
+                            setEditingCliente({
+                              id: cliente.id,
+                              notas: cliente.notas,
+                            })
                           }
                           className="p-2 text-[var(--admin-text-muted)] hover:text-[var(--admin-accent)] hover:bg-[var(--admin-accent)]/10 rounded-xl transition-all duration-200 border border-transparent hover:border-[var(--admin-accent)]/20 active:scale-90"
                           title="Auditar historial"
@@ -245,7 +260,10 @@ export function ClientRadar({ initialClientes }: ClientRadarProps) {
                 <div className="grid grid-cols-2 gap-3 pt-1 shrink-0">
                   <button
                     onClick={() =>
-                      handleAuditarNotas(cliente.id, cliente.notas)
+                      setEditingCliente({
+                        id: cliente.id,
+                        notas: cliente.notas,
+                      })
                     }
                     className="btn-secondary flex-1 text-xs"
                   >
@@ -277,11 +295,21 @@ export function ClientRadar({ initialClientes }: ClientRadarProps) {
         {/* SIN RESULTADOS */}
         {clientesFiltrados.length === 0 && (
           <div className="p-12 text-center text-[var(--admin-text-muted)] bg-[var(--admin-surface)] font-medium">
-            No se encontraron clientes activos registrados bajo ese criterio de
-            búsqueda.
+            {noHayClientes
+              ? "Aún no hay clientes registrados. Los primeros comensales aparecerán aquí automáticamente."
+              : "No hay clientes que coincidan con ese criterio de búsqueda."}
           </div>
         )}
       </div>
+
+      {editingCliente && (
+        <NotesModal
+          title="Editar Notas del Cliente"
+          initialValue={editingCliente.notas ?? ""}
+          onSave={handleSaveNotes}
+          onClose={() => setEditingCliente(null)}
+        />
+      )}
     </div>
   );
 }

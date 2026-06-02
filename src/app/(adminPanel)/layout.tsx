@@ -1,10 +1,11 @@
+import { Suspense } from "react";
 import { Sidebar } from "@/features/admin/shared/Sidebar";
+import { MobileSidebar } from "@/features/admin/shared/MobileSidebar";
 import { ErrorModal } from "@/components/ui/error-modal";
 import { ThemeProvider } from "@/core/providers/ThemeProvider";
 import { LoadingProvider } from "@/core/providers/LoadingProvider";
 import { createClient } from "@/core/lib/supabase/server";
 import { redirect } from "next/navigation";
-import { Menu } from "lucide-react";
 import "@/features/admin/shared/admin-panel.css";
 import { TransitionLink } from "@/components/ui/transition-link";
 
@@ -57,10 +58,7 @@ export default async function AdminPanelLayout({
                 }}
                 className="w-full flex justify-center"
               >
-                <button
-                  type="submit"
-                  className="btn-ghost text-xs"
-                >
+                <button type="submit" className="btn-ghost text-xs">
                   Cerrar sesión o cambiar de cuenta
                 </button>
               </form>
@@ -100,13 +98,25 @@ export default async function AdminPanelLayout({
                   </span>
                 </span>
               </div>
-              <button className="p-2 bg-[var(--admin-accent)]/5 text-[var(--admin-accent)] rounded-xl hover:bg-[var(--admin-accent)]/10 transition-all duration-200 cursor-pointer outline-none active:scale-95">
-                <Menu size={20} />
-              </button>
+              <MobileSidebar
+                slug={negocio.slug}
+                negocioNombre={negocio.nombre}
+              />
             </header>
 
             <main className="flex-1 p-4 md:p-6 lg:p-10 w-full max-w-7xl mx-auto animate-in fade-in duration-300 relative">
-              {children}
+              <Suspense
+                fallback={
+                  <div className="flex items-center justify-center h-[60vh] text-[var(--admin-text-muted)]">
+                    <div className="flex flex-col items-center gap-3">
+                      <div className="w-8 h-8 rounded-full border-2 border-[var(--admin-accent)] border-t-transparent animate-spin" />
+                      <p className="text-sm font-medium">Cargando...</p>
+                    </div>
+                  </div>
+                }
+              >
+                {children}
+              </Suspense>
             </main>
           </div>
         </div>

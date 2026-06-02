@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import { createClient } from "@/core/lib/supabase/client";
 import { Tag, Plus, Trash2, Loader2, Hash, X } from "lucide-react";
 import { toast } from "sonner";
+import { ConfirmModal } from "@/components/ui/confirm-modal";
 import type { RealtimeChannel } from "@supabase/supabase-js";
 
 const supabase = createClient();
@@ -28,6 +29,10 @@ export function CategoriaManager({
   const [nuevoNombre, setNuevoNombre] = useState("");
   const [isPending, setIsPending] = useState(false);
   const [loadingList, setLoadingList] = useState(true);
+  const [deleteConfirm, setDeleteConfirm] = useState<{
+    id: string;
+    nombre: string;
+  } | null>(null);
 
   const slugificar = (texto: string): string => {
     return texto
@@ -115,19 +120,14 @@ export function CategoriaManager({
     }
   };
 
-  const handleRemove = async (id: string, nombre: string) => {
-    if (
-      !confirm(
-        `¿Eliminar la categoría "${nombre}"?\nLos productos asociados quedarán sin sección.`,
-      )
-    )
-      return;
+  const handleRemove = async () => {
+    if (!deleteConfirm) return;
 
     try {
       const { error } = await supabase
         .from("categorias")
         .delete()
-        .eq("id", id)
+        .eq("id", deleteConfirm.id)
         .eq("negocio_id", negocioId);
 
       if (error) throw error;
@@ -138,7 +138,12 @@ export function CategoriaManager({
   };
 
   return (
-    <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4">
+    <div
+      className="fixed inset-0 z-[99999] flex items-center justify-center p-4"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="categoria-manager-title"
+    >
       <div
         className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
         onClick={onClose}
@@ -148,7 +153,10 @@ export function CategoriaManager({
         <div className="px-6 py-4 flex justify-between items-center border-b border-[var(--admin-border)] bg-[var(--admin-bg)]/50">
           <div className="flex items-center gap-2">
             <Tag size={18} className="text-[var(--admin-accent)]" />
-            <h2 className="font-bold text-[var(--admin-text)] text-lg">
+            <h2
+              id="categoria-manager-title"
+              className="font-bold text-[var(--admin-text)] text-lg"
+            >
               Secciones del Menú
             </h2>
           </div>
@@ -228,7 +236,9 @@ export function CategoriaManager({
                     </div>
                     <button
                       type="button"
-                      onClick={() => handleRemove(cat.id, cat.nombre)}
+                      onClick={() =>
+                        setDeleteConfirm({ id: cat.id, nombre: cat.nombre })
+                      }
                       className="p-2 text-[var(--admin-text-muted)] hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
                       title="Eliminar sección"
                     >
@@ -249,6 +259,17 @@ export function CategoriaManager({
           </div>
         </div>
       </div>
+
+      {deleteConfirm && (
+        <ConfirmModal
+          title="Eliminar Sección"
+          message={`¿Eliminar la categoría "${deleteConfirm.nombre}"? Los productos asociados quedarán sin sección.`}
+          confirmLabel="Eliminar"
+          variant="danger"
+          onConfirm={handleRemove}
+          onCancel={() => setDeleteConfirm(null)}
+        />
+      )}
     </div>
   );
 }

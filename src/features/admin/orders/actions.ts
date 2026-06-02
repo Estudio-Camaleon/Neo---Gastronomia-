@@ -2,24 +2,9 @@
 
 import { createClient } from "@/core/lib/supabase/server";
 import { revalidatePath } from "next/cache";
-
-export interface SubmitOrderPayload {
-  negocio_id: string;
-  cliente_nombre: string;
-  cliente_whatsapp: string;
-  es_delivery: boolean;
-  direccion_entrega: string | null;
-  metodo_pago: "efectivo" | "transferencia";
-  notas: string | null;
-  total: number;
-  items: Array<{
-    producto_id: string;
-    nombre_producto: string;
-    cantidad: number;
-    precio_unitario: number;
-    detalles: string | null;
-  }>;
-}
+import { z } from "zod";
+import { getAuthenticatedTenant } from "@/core/lib/tenant";
+import { updateOrderStatusSchema, submitOrderSchema } from "@/core/lib/schemas";
 
 /**
  * Cambia el estado de un pedido validando aislamiento mutli-tenant.
@@ -28,27 +13,20 @@ export async function updateOrderStatusAction(
   pedidoId: string,
   nuevoEstado: "pendiente" | "en_preparacion" | "entregado" | "cancelado",
 ) {
+  const parsed = updateOrderStatusSchema.safeParse({
+    pedidoId,
+    nuevoEstado,
+  });
+  if (!parsed.success) throw new Error("Estado de pedido inválido");
+
   const supabase = await createClient();
-
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser();
-  if (authError || !user) throw new Error("Terminal no autorizada.");
-
-  const { data: negocio } = await supabase
-    .from("negocios")
-    .select("id")
-    .eq("user_id", user.id)
-    .single();
-
-  if (!negocio) throw new Error("Inconsistencia crítica: Negocio ausente.");
+  const tenantId = await getAuthenticatedTenant(supabase);
 
   const { error } = await supabase
     .from("pedidos")
-    .update({ estado: nuevoEstado })
-    .eq("id", pedidoId)
-    .eq("negocio_id", negocio.id);
+    .update({ estado: parsed.data.nuevoEstado })
+    .eq("id", parsed.data.pedidoId)
+    .eq("negocio_id", tenantId);
 
   if (error) throw new Error(`Fallo de sincronización RLS: ${error.message}`);
 
@@ -59,24 +37,33 @@ export async function updateOrderStatusAction(
 /**
  * Inserción transaccional atómica ejecutada por el comensal.
  */
-export async function submitOrderPublicAction(payload: SubmitOrderPayload) {
+export async function submitOrderPublicAction(
+  payload: z.infer<typeof submitOrderSchema>,
+) {
+  const parsed = submitOrderSchema.safeParse(payload);
+  if (!parsed.success) {
+    const firstIssue = parsed.error.issues[0];
+    throw new Error(
+      `Datos de orden inválidos: ${firstIssue.path.join(".")} - ${firstIssue.message}`,
+    );
+  }
+
   const supabase = await createClient();
 
-  // 1. Persistencia de la Orden Maestra vinculada milimétricamente al esquema real
   const { data: pedido, error: pedidoError } = await supabase
     .from("pedidos")
     .insert({
-      negocio_id: payload.negocio_id,
-      cliente_nombre: payload.cliente_nombre.trim(),
-      cliente_whatsapp: payload.cliente_whatsapp.trim(),
-      es_delivery: payload.es_delivery,
-      direccion_entrega: payload.es_delivery
-        ? payload.direccion_entrega?.trim()
+      negocio_id: parsed.data.negocio_id,
+      cliente_nombre: parsed.data.cliente_nombre.trim(),
+      cliente_whatsapp: parsed.data.cliente_whatsapp.trim(),
+      es_delivery: parsed.data.es_delivery,
+      direccion_entrega: parsed.data.es_delivery
+        ? (parsed.data.direccion_entrega?.trim() ?? null)
         : null,
-      metodo_pago: payload.metodo_pago,
-      total: payload.total,
+      metodo_pago: parsed.data.metodo_pago,
+      total: parsed.data.total,
       estado: "pendiente",
-      notas: payload.notas?.trim() || null,
+      notas: parsed.data.notas?.trim() ?? null,
     })
     .select("id")
     .single();
@@ -87,14 +74,13 @@ export async function submitOrderPublicAction(payload: SubmitOrderPayload) {
     );
   }
 
-  // 2. Mapeo inmutable de los ítems de la comanda
-  const itemsPayload = payload.items.map((item) => ({
+  const itemsPayload = parsed.data.items.map((item) => ({
     pedido_id: pedido.id,
     producto_id: item.producto_id,
     nombre_producto: item.nombre_producto,
     cantidad: item.cantidad,
     precio_unitario: item.precio_unitario,
-    detalles: item.detalles,
+    detalles: item.detalles ?? null,
   }));
 
   const { error: itemsError } = await supabase

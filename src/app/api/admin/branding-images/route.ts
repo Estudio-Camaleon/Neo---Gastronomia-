@@ -1,13 +1,14 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/core/lib/supabase/server";
 import { supabaseAdmin } from "@/core/lib/supabase/admin";
+import { extractStoragePath } from "@/core/lib/tenant";
 
 const BUCKET = "imagenes-negocios";
 const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024;
 
 const ALLOWED_FIELDS = ["logo_url", "banner_url"] as const;
 
-async function getAuthenticatedTenant() {
+async function getAuthenticatedTenantWithUser() {
   const supabase = await createClient();
 
   const {
@@ -32,20 +33,9 @@ async function getAuthenticatedTenant() {
   return { userId: user.id, negocioId: negocio.id };
 }
 
-function getStoragePathFromUrl(url: string | null | undefined) {
-  if (!url) return null;
-  const marker = `/public/${BUCKET}/`;
-  const index = url.indexOf(marker);
-  if (index === -1) return null;
-  return url
-    .slice(index + marker.length)
-    .split("?")[0]
-    .split("#")[0];
-}
-
 export async function POST(request: Request) {
   try {
-    await getAuthenticatedTenant();
+    await getAuthenticatedTenantWithUser();
     const formData = await request.formData();
     const file = formData.get("file");
     const field = formData.get("field");
@@ -111,9 +101,9 @@ export async function POST(request: Request) {
 
 export async function DELETE(request: Request) {
   try {
-    await getAuthenticatedTenant();
+    await getAuthenticatedTenantWithUser();
     const body = (await request.json().catch(() => ({}))) as { url?: string };
-    const path = getStoragePathFromUrl(body.url);
+    const path = extractStoragePath(body.url, BUCKET);
 
     if (!path) {
       return NextResponse.json({ error: "URL inválida." }, { status: 400 });

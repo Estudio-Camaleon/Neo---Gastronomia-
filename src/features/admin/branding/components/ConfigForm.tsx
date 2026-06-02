@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -132,7 +132,13 @@ export function ConfigForm({
     horarios: (initialData?.horarios as unknown as ScheduleData) || {},
   });
 
+  const initialIdRef = useRef(initialData?.id);
+
   useEffect(() => {
+    const idCambio = initialData?.id && initialData.id !== initialIdRef.current;
+    if (!idCambio && initialIdRef.current) return;
+    if (initialData?.id) initialIdRef.current = initialData.id;
+
     setImagePreviews({
       logo_url: initialData?.logo_url || "",
       banner_url: initialData?.banner_url || "",
@@ -153,22 +159,7 @@ export function ConfigForm({
       tiktok_url: initialData?.tiktok_url || "",
       horarios: (initialData?.horarios as unknown as ScheduleData) || {},
     });
-  }, [
-    initialData?.banner_url,
-    initialData?.color_primary,
-    initialData?.direccion,
-    initialData?.direccion_notas,
-    initialData?.facebook_url,
-    initialData?.horarios,
-    initialData?.id,
-    initialData?.instagram_url,
-    initialData?.localidad,
-    initialData?.logo_url,
-    initialData?.nombre,
-    initialData?.slug,
-    initialData?.tiktok_url,
-    initialData?.whatsapp,
-  ]);
+  }, [initialData?.id]);
 
   const hasSlugChanged =
     initialData?.slug !== undefined && initialData?.slug !== formData.slug;
@@ -746,7 +737,7 @@ function GeneralInfoBlock({
             Aclaraciones de Despacho u Ubicación (Opcional)
           </label>
           <textarea
-            name="direccion_notes"
+            name="direccion_notas"
             value={formData.direccion_notas}
             onChange={onChange}
             className="w-full p-2 bg-[var(--admin-bg)] border border-[var(--admin-border)] rounded-lg text-[var(--admin-text)] focus:outline-none focus:ring-1 focus:ring-[var(--admin-accent)] focus:border-[var(--admin-accent)] resize-none h-14 transition-all text-xs"
