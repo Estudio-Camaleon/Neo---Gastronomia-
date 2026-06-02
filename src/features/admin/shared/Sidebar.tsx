@@ -19,6 +19,8 @@ import {
   Activity,
 } from "lucide-react";
 
+const supabase = createClient();
+
 const NAVIGATION_LINKS = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { name: "Pedidos", href: "/pedidos", icon: ClipboardList },
@@ -37,7 +39,6 @@ export function Sidebar({ slug, negocioNombre, negocioId }: SidebarProps) {
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
-  const supabase = createClient();
   const router = useRouter();
   const pathname = usePathname();
 
@@ -65,13 +66,13 @@ export function Sidebar({ slug, negocioNombre, negocioId }: SidebarProps) {
           <div className="flex items-center justify-start gap-3 group px-2 h-10 shrink-0">
             {theme === "dark" ? (
               <img
-                src="/icons/neo_logo_blanco.svg"
+                src="/icons/neo_logo_blanco.webp"
                 alt="NEO Sistema Gastronómico"
                 className="h-7 w-auto object-contain transition-transform duration-200 group-hover:scale-[1.01]"
               />
             ) : (
               <img
-                src="/icons/neo_logo_negro.svg"
+                src="/icons/neo_logo_negro.webp"
                 alt="NEO Sistema Gastronómico"
                 className="h-7 w-auto object-contain transition-transform duration-200 group-hover:scale-[1.01]"
                 // NOTA TÉCNICA: Si el logo se sigue viendo blanco/invisible debido al archivo físico SVG,

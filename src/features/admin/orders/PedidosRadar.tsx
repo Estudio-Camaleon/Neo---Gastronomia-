@@ -16,6 +16,8 @@ import { updateOrderStatusAction } from "./actions";
 import { enviarNotificacionWhatsApp } from "@/core/lib/utils/whatsappActions";
 import type { RealtimePostgresChangesPayload } from "@supabase/supabase-js";
 
+const supabase = createClient();
+
 export interface PedidoItem {
   id: string;
   cantidad: number;
@@ -51,7 +53,6 @@ export function PedidosRadar({
   const [filter, setFilter] = useState("");
   const [pedidos, setPedidos] = useState<PedidoData[]>(initialPedidos);
   const [loadingId, setLoadingId] = useState<string | null>(null);
-  const supabase = createClient();
 
   useEffect(() => {
     const channel = supabase

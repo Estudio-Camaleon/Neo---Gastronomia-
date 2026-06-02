@@ -45,7 +45,7 @@ export default function LoginPage() {
             >
               <div className="relative h-8 w-24">
                 <Image
-                  src="/icons/neo_logo_negro.svg"
+                  src="/icons/neo_logo_negro.webp"
                   alt="NEO Logo"
                   fill
                   sizes="96px"
@@ -93,7 +93,7 @@ export default function LoginPage() {
               <TransitionLink href="/">
                 <div className="relative h-8 w-24">
                   <Image
-                    src="/icons/neo_logo_negro.svg"
+                    src="/icons/neo_logo_negro.webp"
                     alt="NEO Logo"
                     fill
                     sizes="96px"
@@ -141,7 +141,7 @@ export default function LoginPage() {
             >
               <div className="relative h-4 w-4">
                 <Image
-                  src="/icons/google.svg"
+                  src="/icons/google.webp"
                   alt="Google OAuth"
                   fill
                   sizes="16px"

@@ -12,6 +12,8 @@ import {
 import { toast } from "sonner";
 import { createClient } from "@/core/lib/supabase/client";
 import { submitOrderPublicAction } from "../../admin/orders/actions";
+
+const supabase = createClient();
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
@@ -35,7 +37,6 @@ export function OrderForm({
   onSuccess,
   config,
 }: OrderFormProps) {
-  const supabase = createClient();
   const [isPending, setIsPending] = useState(false);
   const [form, setForm] = useState({
     nombre: "",

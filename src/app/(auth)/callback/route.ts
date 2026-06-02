@@ -1,4 +1,3 @@
-// src/app/auth/callback/route.ts
 import { NextResponse } from "next/server";
 import { createClient } from "@/core/lib/supabase/server";
 
@@ -13,23 +12,28 @@ export async function GET(request: Request) {
 
   if (code) {
     const { error } = await supabase.auth.exchangeCodeForSession(code);
-    if (!error) {
-      return NextResponse.redirect(`${origin}/pedidos`);
+    if (error) {
+      console.error("[AUTH CALLBACK]: Error exchanging code:", error.message);
+      return NextResponse.redirect(
+        `${origin}/login?error=Fallo_de_validacion_de_correo`,
+      );
     }
-  } else if (access_token && refresh_token) {
+    return NextResponse.redirect(`${origin}/pedidos`);
+  }
+
+  if (access_token && refresh_token) {
     const { error } = await supabase.auth.setSession({
       access_token,
       refresh_token,
     });
-    if (!error) {
-      return NextResponse.redirect(`${origin}/pedidos`);
+    if (error) {
+      console.error("[AUTH CALLBACK]: Error setting session:", error.message);
+      return NextResponse.redirect(
+        `${origin}/login?error=Fallo_de_validacion_de_correo`,
+      );
     }
-  } else {
-    // Si no hay tokens ni código, redirigimos al login para que el usuario vuelva a intentar.
-    return NextResponse.redirect(`${origin}/login?success=validar_correo`);
+    return NextResponse.redirect(`${origin}/pedidos`);
   }
 
-  return NextResponse.redirect(
-    `${origin}/login?error=Fallo_de_validacion_de_correo`,
-  );
+  return NextResponse.redirect(`${origin}/login?message=correo_validado`);
 }

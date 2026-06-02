@@ -243,7 +243,9 @@ export function ConfigForm({
     } catch (error: unknown) {
       setFormData((prev) => ({ ...prev, [field]: previousValue }));
       const errorMessage =
-        error instanceof Error ? error.message : "Fallo crítico en el pipeline de storage multimedia.";
+        error instanceof Error
+          ? error.message
+          : "Fallo crítico en el pipeline de storage multimedia.";
       toast.error("No se pudo subir la imagen", {
         description: errorMessage,
       });
@@ -269,7 +271,9 @@ export function ConfigForm({
       return toast.error("Error estructural: Falta el ID del tenant.");
     }
     if (uploading) {
-      return toast.error("Espera a que termine la carga de la imagen antes de guardar.");
+      return toast.error(
+        "Espera a que termine la carga de la imagen antes de guardar.",
+      );
     }
 
     setIsPending(true);

@@ -6,6 +6,8 @@ import { Tag, Plus, Trash2, Loader2, Hash, X } from "lucide-react";
 import { toast } from "sonner";
 import type { RealtimeChannel } from "@supabase/supabase-js";
 
+const supabase = createClient();
+
 interface CategoriaBase {
   id: string;
   nombre: string;
@@ -26,7 +28,6 @@ export function CategoriaManager({
   const [nuevoNombre, setNuevoNombre] = useState("");
   const [isPending, setIsPending] = useState(false);
   const [loadingList, setLoadingList] = useState(true);
-  const supabase = createClient();
 
   const slugificar = (texto: string): string => {
     return texto

@@ -102,7 +102,10 @@ export async function updateTenantBrandingAction(
     negocioActual.banner_url,
     "imagenes-negocios",
   );
-  const nextLogoPath = extractStoragePath(payload.logo_url, "imagenes-negocios");
+  const nextLogoPath = extractStoragePath(
+    payload.logo_url,
+    "imagenes-negocios",
+  );
   const nextBannerPath = extractStoragePath(
     payload.banner_url,
     "imagenes-negocios",
@@ -117,7 +120,8 @@ export async function updateTenantBrandingAction(
   }
 
   if (brandingFilesToRemove.length > 0) {
-    const { error: removeError } = await supabase.storage
+    const { supabaseAdmin } = await import("@/core/lib/supabase/admin");
+    const { error: removeError } = await supabaseAdmin.storage
       .from("imagenes-negocios")
       .remove(brandingFilesToRemove);
 
@@ -207,31 +211,39 @@ export async function deleteTenantBrandingAction(id: string) {
   if (bannerPath) brandingPathsToPurge.push(bannerPath);
 
   // 5. Purga en bloque de Cloud Storage (Productos + Identidad)
+  const { supabaseAdmin } = await import("@/core/lib/supabase/admin");
   if (mediaPathsToPurge.length > 0) {
-    const { error: mediaStorageError } = await supabase.storage
+    const { error: mediaStorageError } = await supabaseAdmin.storage
       .from(MEDIA_BUCKET)
       .remove(mediaPathsToPurge);
     if (mediaStorageError) {
-      console.error(`[NEO RECOVERY WARN]: Error purga media: ${mediaStorageError.message}`);
+      console.error(
+        `[NEO RECOVERY WARN]: Error purga media: ${mediaStorageError.message}`,
+      );
     }
   }
 
   if (brandingPathsToPurge.length > 0) {
-    const { error: brandingStorageError } = await supabase.storage
+    const { error: brandingStorageError } = await supabaseAdmin.storage
       .from(BRANDING_BUCKET)
       .remove(brandingPathsToPurge);
     if (brandingStorageError) {
-      console.error(`[NEO RECOVERY WARN]: Error purga branding: ${brandingStorageError.message}`);
+      console.error(
+        `[NEO RECOVERY WARN]: Error purga branding: ${brandingStorageError.message}`,
+      );
     }
   }
 
   // 6. Purga Manual en Cascada de Base de Datos para asegurar borrado absoluto sin depender de FK constraints
-  const { data: pedidos } = await supabase.from("pedidos").select("id").eq("negocio_id", id);
+  const { data: pedidos } = await supabase
+    .from("pedidos")
+    .select("id")
+    .eq("negocio_id", id);
   if (pedidos && pedidos.length > 0) {
     const pedidoIds = pedidos.map((p) => p.id);
     await supabase.from("pedido_items").delete().in("pedido_id", pedidoIds);
   }
-  
+
   await supabase.from("pedidos").delete().eq("negocio_id", id);
   await supabase.from("clientes").delete().eq("negocio_id", id);
   await supabase.from("productos").delete().eq("negocio_id", id);
@@ -253,12 +265,18 @@ export async function deleteTenantBrandingAction(id: string) {
   // 8. Eliminar la cuenta de usuario de auth de forma definitiva para evitar residuos y bloqueos de nuevo registro
   try {
     const { supabaseAdmin } = await import("@/core/lib/supabase/admin");
-    const { error: deleteUserError } = await supabaseAdmin.auth.admin.deleteUser(user.id);
+    const { error: deleteUserError } =
+      await supabaseAdmin.auth.admin.deleteUser(user.id);
     if (deleteUserError) {
-      console.error(`[NEO RECOVERY WARN]: Error purga user Auth: ${deleteUserError.message}`);
+      console.error(
+        `[NEO RECOVERY WARN]: Error purga user Auth: ${deleteUserError.message}`,
+      );
     }
   } catch (adminErr) {
-    console.error(`[NEO RECOVERY WARN]: No se pudo instanciar supabaseAdmin para purgar usuario:`, adminErr);
+    console.error(
+      `[NEO RECOVERY WARN]: No se pudo instanciar supabaseAdmin para purgar usuario:`,
+      adminErr,
+    );
   }
 
   // 9. Invalidar las rutas del frontend

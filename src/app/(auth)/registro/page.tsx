@@ -37,7 +37,7 @@ export default function RegisterPage() {
             >
               <div className="relative h-8 w-24">
                 <Image
-                  src="/icons/neo_logo_negro.svg"
+                  src="/icons/neo_logo_negro.webp"
                   alt="NEO Logo"
                   fill
                   sizes="96px"
@@ -87,7 +87,7 @@ export default function RegisterPage() {
               <TransitionLink href="/">
                 <div className="relative h-8 w-24">
                   <Image
-                    src="/icons/neo_logo_negro.svg"
+                    src="/icons/neo_logo_negro.webp"
                     alt="NEO Logo"
                     fill
                     sizes="96px"

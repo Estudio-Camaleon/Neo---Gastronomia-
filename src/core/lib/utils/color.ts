@@ -34,11 +34,19 @@ function hexToRgb(hex: string): RGB {
 
 function rgbToHex({ r, g, b }: RGB): string {
   return [r, g, b]
-    .map((value) => Math.max(0, Math.min(255, Math.round(value))).toString(16).padStart(2, "0"))
+    .map((value) =>
+      Math.max(0, Math.min(255, Math.round(value)))
+        .toString(16)
+        .padStart(2, "0"),
+    )
     .join("");
 }
 
-function mixHexColor(base: string, target: string, targetWeight: number): string {
+function mixHexColor(
+  base: string,
+  target: string,
+  targetWeight: number,
+): string {
   const baseRgb = hexToRgb(base);
   const targetRgb = hexToRgb(target);
   const baseWeight = 1 - targetWeight;

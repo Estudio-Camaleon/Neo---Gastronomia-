@@ -34,8 +34,10 @@ export async function createClient() {
                 sameSite: options.sameSite ?? "lax",
               });
             });
-          } catch {
-            // Captura segura: Ocurre cuando Next.js renderiza Server Components de pura lectura.
+          } catch (e) {
+            console.warn(
+              `[NEO COOKIE]: No se pudieron persistir cookies en Server Component: ${e instanceof Error ? e.message : "Error desconocido"}`,
+            );
           }
         },
       },

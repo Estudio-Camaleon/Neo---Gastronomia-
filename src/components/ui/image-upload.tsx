@@ -66,7 +66,9 @@ export function ImageUpload({
       };
 
       if (!response.ok) {
-        throw new Error(payload.error || "Error desconocido al subir la imagen");
+        throw new Error(
+          payload.error || "Error desconocido al subir la imagen",
+        );
       }
 
       if (!payload.publicUrl) {

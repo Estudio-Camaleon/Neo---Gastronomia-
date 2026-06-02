@@ -4,14 +4,15 @@
   "private": true,
   "scripts": {
     "dev": "tsx scripts/dev.ts",
-    "next-dev": "next dev --turbo",
+    "dev:next": "next dev --turbo",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint . --cache && echo \"✅ [NEO SYSTEM]: Codigo Impecable. Listo para produccion. 🚀\"",
-    "typecheck": "tsc --noEmit && echo \"✅ [NEO SYSTEM]: Tipado estricto validado.\"",
-    "clean": "rmdir /s /q .next && echo 🧹 [NEO SYSTEM]: Caché purgada. Lista para dev.",
-    "free-port": "npx kill-port 3000 && echo 🔫 [NEO SYSTEM]: Puerto 3000 liberado.",
-    "impecable": "npm run lint && npm run typecheck"
+    "lint": "eslint . --cache",
+    "typecheck": "tsc --noEmit",
+    "format": "prettier --write \"src/**/*.{ts,tsx,css}\"",
+    "clean": "npx rimraf .next",
+    "free-port": "npx kill-port 3000",
+    "impecable": "npm run lint && npm run typecheck && npm run format"
   },
   "dependencies": {
     "@radix-ui/react-label": "^2.1.8",
@@ -47,6 +48,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.2.4",
     "globals": "^17.6.0",
+    "prettier": "^3.8.3",
     "supabase": "^2.100.1",
     "tailwindcss": "^4.2.4",
     "tsx": "^4.21.0",

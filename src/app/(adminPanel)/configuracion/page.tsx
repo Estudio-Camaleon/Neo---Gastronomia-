@@ -57,7 +57,10 @@ export default async function ConfiguracionPage() {
         </div>
         <div className="flex gap-6 text-xs font-semibold">
           <div className="flex items-center gap-2">
-            <Activity size={14} className="text-[var(--admin-accent)] animate-pulse" />
+            <Activity
+              size={14}
+              className="text-[var(--admin-accent)] animate-pulse"
+            />
             <span>EN LÍNEA</span>
           </div>
           <div className="flex items-center gap-2">

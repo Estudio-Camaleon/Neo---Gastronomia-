@@ -140,7 +140,10 @@ export function CatalogClient({ negocio, categorias }: CatalogClientProps) {
   const cartQuantityByProduct = useMemo(() => {
     const map = new Map<string, number>();
     cart.forEach((item) => {
-      map.set(item.producto_id, (map.get(item.producto_id) || 0) + item.cantidad);
+      map.set(
+        item.producto_id,
+        (map.get(item.producto_id) || 0) + item.cantidad,
+      );
     });
     return map;
   }, [cart]);
@@ -194,7 +197,7 @@ export function CatalogClient({ negocio, categorias }: CatalogClientProps) {
               <div className="flex items-center gap-3 sm:gap-4">
                 <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-2xl bg-white/10 p-1 sm:h-12 sm:w-12 sm:p-1.5">
                   <Image
-                    src="/icons/neo_logo_negro.svg"
+                    src="/icons/neo_logo_negro.webp"
                     alt="Estudio Camaleon"
                     width={32}
                     height={32}
@@ -206,7 +209,8 @@ export function CatalogClient({ negocio, categorias }: CatalogClientProps) {
                     {negocio.nombre}
                   </p>
                   <div className="mt-1 inline-flex rounded-full bg-white/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-white/95 sm:mt-2 sm:px-3 sm:text-[11px] sm:tracking-[0.18em]">
-                    {isOpenNow ? "Abierto ahora" : "Cerrado ahora"} · Pedí por WhatsApp
+                    {isOpenNow ? "Abierto ahora" : "Cerrado ahora"} · Pedí por
+                    WhatsApp
                   </div>
                 </div>
               </div>
@@ -255,7 +259,8 @@ export function CatalogClient({ negocio, categorias }: CatalogClientProps) {
                     Horarios reales
                   </div>
                   <p className="max-w-md text-sm text-white/80">
-                    Los horarios se toman directamente de la configuración del negocio.
+                    Los horarios se toman directamente de la configuración del
+                    negocio.
                   </p>
                 </div>
 
@@ -395,7 +400,11 @@ export function CatalogClient({ negocio, categorias }: CatalogClientProps) {
                   </div>
                 ) : (
                   categoriasFiltradas.map((cat) => (
-                    <section key={cat.id} id={`cat-${cat.id}`} className="space-y-4">
+                    <section
+                      key={cat.id}
+                      id={`cat-${cat.id}`}
+                      className="space-y-4"
+                    >
                       <div className="flex items-center gap-3">
                         <span className="h-1.5 w-16 rounded-full bg-[var(--color-custom-600)]" />
                         <span className="rounded-full bg-[var(--color-custom-900)] px-4 py-1.5 text-xs font-bold uppercase tracking-[0.16em] text-white">
@@ -411,7 +420,8 @@ export function CatalogClient({ negocio, categorias }: CatalogClientProps) {
                         }`}
                       >
                         {cat.productos.map((prod) => {
-                          const cantidad = cartQuantityByProduct.get(prod.id) || 0;
+                          const cantidad =
+                            cartQuantityByProduct.get(prod.id) || 0;
 
                           return (
                             <article
@@ -442,13 +452,15 @@ export function CatalogClient({ negocio, categorias }: CatalogClientProps) {
                                     {prod.nombre}
                                   </p>
                                   <p className="mt-1 line-clamp-3 text-sm text-[var(--color-custom-text-muted)]">
-                                    {prod.descripcion || "Producto disponible en el catálogo."}
+                                    {prod.descripcion ||
+                                      "Producto disponible en el catálogo."}
                                   </p>
                                 </div>
 
                                 <div className="mt-4 flex items-center justify-between gap-3">
                                   <div className="text-base font-black text-[var(--color-custom-950)]">
-                                    ${Number(prod.precio).toLocaleString("es", {
+                                    $
+                                    {Number(prod.precio).toLocaleString("es", {
                                       minimumFractionDigits: 0,
                                     })}
                                   </div>

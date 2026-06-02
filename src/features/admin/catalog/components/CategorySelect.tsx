@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { createClient } from "@/core/lib/supabase/client";
 import { Loader2 } from "lucide-react";
 
+const supabase = createClient();
+
 interface Categoria {
   id: string;
   nombre: string;
@@ -23,7 +25,6 @@ export function CategorySelect({
 }: CategorySelectProps) {
   const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [loading, setLoading] = useState(true);
-  const supabase = createClient();
 
   useEffect(() => {
     async function cargarCategorias() {

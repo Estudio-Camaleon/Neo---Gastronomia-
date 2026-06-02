@@ -3,7 +3,6 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   reactStrictMode: true,
 
-  // Dejamos el objeto vacío o removemos la sección si no tenés otras funciones experimentales activas
   experimental: {},
 
   images: {

@@ -1,111 +1,84 @@
-import { BadgePercent, Sparkles, Truck, ChevronRight } from "lucide-react";
+"use client";
+
+import { Quote, Star } from "lucide-react";
+import { useScrollReveal } from "@/core/hooks/useScrollReveal";
 
 export function Testimonials() {
-  const promos = [
+  const { ref, isVisible } = useScrollReveal(0.2);
+
+  const reviews = [
     {
-      title: "2x1 en rolls",
-      subtitle: "Sushi Lab",
-      label: "Hasta las 22 hs",
-      accent: "bg-[linear-gradient(135deg,rgba(31,107,61,0.2),rgba(141,187,122,0.24))]",
+      author: "Martín G.",
+      business: "Pizzería Nápoles",
+      content:
+        "Dejamos de pagarle el 30% a las apps de delivery. Ahora nuestros clientes de la zona nos piden directo por WhatsApp usando nuestro QR. El sistema se paga solo en el primer día del mes.",
     },
     {
-      title: "20% OFF combos",
-      subtitle: "Burger Corner",
-      label: "Envío gratis",
-      accent: "bg-[linear-gradient(135deg,rgba(255,255,255,0.95),rgba(238,245,233,0.9))]",
+      author: "Lucía F.",
+      business: "Café Central",
+      content:
+        "La facilidad para cambiar los precios en contexto de inflación nos salvó. Antes teníamos que tachar menús impresos, ahora lo hago en 2 minutos desde el celular y se actualiza al instante.",
     },
     {
-      title: "Bowl + bebida",
-      subtitle: "Healthy Bowl",
-      label: "Disponible ahora",
-      accent: "bg-[linear-gradient(135deg,rgba(141,187,122,0.22),rgba(255,255,255,0.9))]",
+      author: "Diego R.",
+      business: "Burger Lab",
+      content:
+        "Nuestros camareros ya no pierden tiempo tomando notas en la mesa. La gente se sienta, escanea el QR, elige tranquilo y el pedido llega directo a nuestra caja. Excelente plataforma.",
     },
   ];
 
   return (
-    <section id="promotions" className="py-16 relative">
+    <section id="testimonials" className="py-16 relative" ref={ref}>
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-12">
-        <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-          <div className="space-y-3">
-            <h2 className="text-xs font-black uppercase tracking-widest text-[var(--theme-primary)]">
-              Promociones y banners
-            </h2>
-            <p className="text-3xl md:text-5xl font-black tracking-tighter uppercase text-[var(--theme-text)] max-w-3xl">
-              Contenido visual para empujar la conversión.
-            </p>
-          </div>
-          <p className="max-w-md text-sm text-[var(--theme-text-muted)]">
-            Espacios destacados para promociones activas, banners web y llamados
-            a la acción que se noten sin saturar la pantalla.
+        <div className="flex flex-col gap-3 text-center items-center">
+          <h2 className="text-xs font-black uppercase tracking-widest text-[var(--theme-primary)]">
+            Casos de éxito
+          </h2>
+          <p className="text-3xl md:text-5xl font-black tracking-tighter uppercase text-[var(--theme-text)] max-w-3xl">
+            Locales que ya optimizaron sus ventas
           </p>
         </div>
 
-        <div className="grid gap-5 lg:grid-cols-[1.35fr_0.65fr]">
-          <article className="glass-card relative overflow-hidden border border-[var(--theme-border)] bg-[linear-gradient(135deg,rgba(31,107,61,0.92),rgba(47,126,73,0.88))] p-6 md:p-8 text-white">
-            <div className="absolute right-0 top-0 h-44 w-44 rounded-full bg-white/10 blur-3xl" />
-            <div className="relative space-y-6">
-              <div className="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-[10px] font-black uppercase tracking-widest">
-                <Sparkles className="h-3.5 w-3.5" />
-                Banner principal
-              </div>
-              <div className="space-y-3 max-w-xl">
-                <h3 className="text-3xl md:text-5xl font-black uppercase tracking-tighter leading-[0.92]">
-                  Promos activas para decidir rápido
-                </h3>
-                <p className="text-sm md:text-base text-white/80 max-w-lg">
-                  Un banner hero con contraste fuerte, mensaje claro y un CTA
-                  directo para llevar al usuario al restaurante o al combo.
+        <div className="grid gap-5 md:grid-cols-3">
+          {reviews.map((review, idx) => (
+            <article
+              key={idx}
+              className={`glass-card relative flex flex-col justify-between gap-6 border border-[var(--theme-border)] p-6 opacity-0 ${
+                isVisible ? "animate-fade-in-up" : ""
+              }`}
+              style={{ animationDelay: `${idx * 150}ms` }}
+            >
+              <Quote className="absolute right-6 top-6 h-8 w-8 text-[var(--theme-primary-soft-2)] opacity-50" />
+
+              <div className="space-y-4 relative z-10">
+                <div className="flex gap-1">
+                  {[...Array(5)].map((_, i) => (
+                    <Star
+                      key={i}
+                      className="h-4 w-4 fill-[var(--theme-primary)] text-[var(--theme-primary)]"
+                    />
+                  ))}
+                </div>
+                <p className="text-sm font-medium leading-relaxed text-[var(--theme-text-muted)] italic">
+                  "{review.content}"
                 </p>
               </div>
-              <div className="flex flex-wrap gap-3">
-                {[
-                  "Combo clásico",
-                  "Envío gratis",
-                  "2x1 hoy",
-                ].map((item) => (
-                  <span
-                    key={item}
-                    className="rounded-full border border-white/20 bg-white/10 px-4 py-2 text-xs font-black uppercase tracking-widest"
-                  >
-                    {item}
-                  </span>
-                ))}
-              </div>
-            </div>
-          </article>
 
-          <div className="grid gap-4">
-            {promos.map((promo) => (
-              <article
-                key={promo.title}
-                className={`glass-card border border-[var(--theme-border)] p-5 ${promo.accent}`}
-              >
-                <div className="flex items-start justify-between gap-4">
-                  <div className="space-y-2">
-                    <span className="inline-flex items-center gap-1 rounded-full bg-white/75 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-[var(--theme-primary)]">
-                      <BadgePercent className="h-3.5 w-3.5" />
-                      {promo.label}
-                    </span>
-                    <h3 className="text-xl font-black uppercase tracking-tight text-[var(--theme-text)]">
-                      {promo.title}
-                    </h3>
-                    <p className="text-sm font-medium text-[var(--theme-text-muted)]">
-                      {promo.subtitle}
-                    </p>
-                  </div>
-                  <div className="rounded-2xl bg-white p-3 text-[var(--theme-primary)] shadow-sm">
-                    <Truck className="h-5 w-5" />
-                  </div>
+              <div className="flex items-center gap-3 border-t border-[var(--theme-border)] pt-4">
+                <div className="h-10 w-10 flex items-center justify-center rounded-full bg-[var(--theme-primary-soft)] text-[var(--theme-primary)] font-black">
+                  {review.author.charAt(0)}
                 </div>
-                <div className="mt-4 flex items-center justify-between border-t border-[var(--theme-border)] pt-4">
-                  <span className="text-[10px] font-black uppercase tracking-[0.3em] text-[var(--theme-text-muted)]">
-                    Banner web
-                  </span>
-                  <ChevronRight className="h-4 w-4 text-[var(--theme-primary)]" />
+                <div>
+                  <h4 className="text-sm font-black text-[var(--theme-text)]">
+                    {review.author}
+                  </h4>
+                  <p className="text-[10px] uppercase tracking-wider text-[var(--theme-text-muted)]">
+                    {review.business}
+                  </p>
                 </div>
-              </article>
-            ))}
-          </div>
+              </div>
+            </article>
+          ))}
         </div>
       </div>
     </section>

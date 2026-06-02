@@ -22,8 +22,16 @@
 /* Global Background for auth pages */
 .auth-layout-container {
   background-image:
-    radial-gradient(circle at top left, rgba(141, 187, 122, 0.2), transparent 30%),
-    radial-gradient(circle at bottom right, rgba(31, 107, 61, 0.1), transparent 30%),
+    radial-gradient(
+      circle at top left,
+      rgba(141, 187, 122, 0.2),
+      transparent 30%
+    ),
+    radial-gradient(
+      circle at bottom right,
+      rgba(31, 107, 61, 0.1),
+      transparent 30%
+    ),
     linear-gradient(180deg, #faf8f2 0%, #f7f4ec 50%, #f3efe6 100%);
   background-color: var(--auth-bg);
 }

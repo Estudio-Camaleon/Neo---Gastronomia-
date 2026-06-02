@@ -10,7 +10,8 @@ import { deleteProductAction } from "../actions";
 import type { RealtimeChannel } from "@supabase/supabase-js";
 import { Badge } from "@/components/ui/badge";
 
-// ... (Interface UnifiedProduct se mantiene igual)
+const supabase = createClient();
+
 export interface UnifiedProduct {
   id: string;
   nombre: string;
@@ -41,7 +42,6 @@ interface ProductTableProps {
 export function ProductTable({ negocioId, onEdit }: ProductTableProps) {
   const [productos, setProductos] = useState<UnifiedProduct[]>([]);
   const [loading, setLoading] = useState(true);
-  const supabase = createClient();
 
   const cargarProductos = useCallback(async () => {
     try {

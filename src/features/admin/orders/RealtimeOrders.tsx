@@ -5,9 +5,12 @@ import { createClient } from "@/core/lib/supabase/client";
 import { PedidoCard } from "./PedidoCard";
 import { toast } from "sonner";
 import { PedidoData } from "./PedidosRadar";
+import { updateOrderStatusAction } from "./actions";
 import { enviarNotificacionWhatsApp } from "@/core/lib/utils/whatsappActions";
 import { Loader2, ShoppingBag, BellDot } from "lucide-react";
 import type { RealtimePostgresChangesPayload } from "@supabase/supabase-js";
+
+const supabase = createClient();
 
 interface RealtimeOrdersProps {
   negocioId: string;
@@ -21,7 +24,6 @@ export function RealtimeOrders({
   const [pedidos, setPedidos] = useState<PedidoData[]>([]);
   const [loadingId, setLoadingId] = useState<string | null>(null);
   const [initializing, setInitializing] = useState(true);
-  const supabase = createClient();
 
   const fetchPedidos = useCallback(async () => {
     try {
@@ -51,12 +53,7 @@ export function RealtimeOrders({
     const pedidoAfectado = pedidos.find((p) => p.id === id);
 
     try {
-      const { error } = await supabase
-        .from("pedidos")
-        .update({ estado: nuevoEstado })
-        .eq("id", id);
-
-      if (error) throw error;
+      await updateOrderStatusAction(id, nuevoEstado);
 
       if (pedidoAfectado) {
         enviarNotificacionWhatsApp(

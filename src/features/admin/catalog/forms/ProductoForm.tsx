@@ -252,7 +252,10 @@ export function ProductoForm({
               <ImageUpload
                 value={formData.imagen_url ?? ""}
                 onChange={(url) =>
-                  setFormData({ ...formData, imagen_url: url === "" ? null : url })
+                  setFormData({
+                    ...formData,
+                    imagen_url: url === "" ? null : url,
+                  })
                 }
               />
             </div>

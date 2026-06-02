@@ -57,7 +57,10 @@ export async function POST(request: Request) {
       );
     }
 
-    if (typeof field !== "string" || !ALLOWED_FIELDS.includes(field as (typeof ALLOWED_FIELDS)[number])) {
+    if (
+      typeof field !== "string" ||
+      !ALLOWED_FIELDS.includes(field as (typeof ALLOWED_FIELDS)[number])
+    ) {
       return NextResponse.json(
         { error: "No se recibió el tipo de imagen válido." },
         { status: 400 },

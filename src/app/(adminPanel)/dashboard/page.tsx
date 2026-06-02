@@ -1,6 +1,12 @@
 import { createClient } from "@/core/lib/supabase/server";
 import { redirect } from "next/navigation";
-import { ShoppingBag, Users, TrendingUp, Package, ArrowRight } from "lucide-react";
+import {
+  ShoppingBag,
+  Users,
+  TrendingUp,
+  Package,
+  ArrowRight,
+} from "lucide-react";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -39,7 +45,9 @@ export default async function DashboardPage() {
 
       {/* Quick Actions (Navegación) */}
       <div className="admin-card p-6 md:p-8">
-        <h2 className="text-xl font-bold mb-6 text-[var(--admin-text)]">Acceso Rápido</h2>
+        <h2 className="text-xl font-bold mb-6 text-[var(--admin-text)]">
+          Acceso Rápido
+        </h2>
         <div className="flex flex-col sm:flex-row gap-4">
           <a
             href="/productos"
@@ -79,7 +87,9 @@ function KPIWidget({
   return (
     <div className="admin-card p-5 flex items-center justify-between group hover:border-[var(--admin-accent)]/50 cursor-default">
       <div>
-        <p className="text-sm font-medium text-[var(--admin-text-muted)] mb-1">{title}</p>
+        <p className="text-sm font-medium text-[var(--admin-text-muted)] mb-1">
+          {title}
+        </p>
         <p className="text-2xl font-bold text-[var(--admin-text)]">{value}</p>
       </div>
       <div className="p-3 bg-[var(--admin-surface-accent)]/30 rounded-2xl text-[var(--admin-accent)] group-hover:scale-110 group-hover:bg-[var(--admin-accent)] group-hover:text-white transition-all duration-300">

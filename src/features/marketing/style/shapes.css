@@ -1,0 +1,70 @@
+@layer utilities {
+  /* Patrón de puntos minimalista (Dot Grid) */
+  .neo-grid-pattern {
+    background-image: radial-gradient(
+      var(--theme-border-strong) 1px,
+      transparent 1px
+    );
+    background-size: 40px 40px;
+    opacity: 0.4;
+  }
+
+  /* Líneas arquitectónicas sutiles */
+  .neo-line-vertical {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: linear-gradient(
+      to bottom,
+      transparent,
+      var(--theme-border),
+      transparent
+    );
+  }
+
+  .neo-line-horizontal {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(
+      to right,
+      transparent,
+      var(--theme-border),
+      transparent
+    );
+  }
+
+  /* Animaciones mecánicas para geometría sólida */
+  .animate-float-shape {
+    animation: floatShape 12s ease-in-out infinite;
+  }
+
+  .animate-spin-slow {
+    animation: spinSlow 20s linear infinite;
+  }
+
+  .animate-spin-slow-reverse {
+    animation: spinSlow 25s linear infinite reverse;
+  }
+
+  @keyframes floatShape {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-20px);
+    }
+  }
+
+  @keyframes spinSlow {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+}

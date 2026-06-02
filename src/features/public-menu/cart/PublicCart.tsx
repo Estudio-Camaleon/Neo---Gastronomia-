@@ -89,7 +89,10 @@ export function PublicCart({
                       className="h-full w-full object-cover"
                     />
                   ) : (
-                    <ShoppingBag size={18} className="text-[var(--color-custom-text-muted)]" />
+                    <ShoppingBag
+                      size={18}
+                      className="text-[var(--color-custom-text-muted)]"
+                    />
                   )}
                 </div>
 
@@ -152,19 +155,23 @@ export function PublicCart({
               <div className="flex items-center justify-between text-sm text-[var(--color-custom-text-muted)]">
                 <span className="font-semibold italic">Subtotal</span>
                 <span className="font-black text-[var(--color-custom-deep)]">
-                  {config.moneda_simbolo}{formatMoney(subtotal)}
+                  {config.moneda_simbolo}
+                  {formatMoney(subtotal)}
                 </span>
               </div>
               <div className="flex items-center justify-between text-sm text-[var(--color-custom-text-muted)]">
                 <span className="font-semibold italic">Descuento</span>
-                <span className="font-black text-[var(--color-custom-deep)]">-{config.moneda_simbolo}0,00</span>
+                <span className="font-black text-[var(--color-custom-deep)]">
+                  -{config.moneda_simbolo}0,00
+                </span>
               </div>
               <div>
                 <span className="block text-[12px] font-black uppercase italic tracking-[0.18em] text-[var(--color-custom)]">
                   Total
                 </span>
                 <p className="mt-1 text-3xl font-black italic tracking-tight text-[var(--color-custom)]">
-                  {config.moneda_simbolo}{formatMoney(subtotal)}
+                  {config.moneda_simbolo}
+                  {formatMoney(subtotal)}
                 </p>
               </div>
             </div>
