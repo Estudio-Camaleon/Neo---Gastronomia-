@@ -51,7 +51,7 @@ export function Pricing() {
               }`}
               style={{ animationDelay: `${idx * 150}ms` }}
             >
-              <div className="absolute right-[-10%] top-[-10%] text-9xl font-black text-[var(--theme-primary-soft)] opacity-40 pointer-events-none">
+              <div className="absolute right-[-8%] top-[-8%] text-6xl sm:text-9xl font-black text-[var(--theme-primary-soft)] opacity-25 sm:opacity-40 pointer-events-none">
                 {step.number}
               </div>
 

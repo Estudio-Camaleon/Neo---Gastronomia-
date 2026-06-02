@@ -55,7 +55,7 @@ export function Footer() {
         <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-[var(--theme-accent)] opacity-10 blur-[100px] rounded-full pointer-events-none" />
 
         <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-12 items-start mb-20">
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-8 md:gap-12 items-start mb-16 md:mb-20">
             {/* Brand Column */}
             <div className="md:col-span-2 flex flex-col gap-6">
               <div className="flex items-center gap-2">

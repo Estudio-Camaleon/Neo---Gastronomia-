@@ -68,7 +68,7 @@ export function Features() {
           {featuresList.map((feat, idx) => (
             <div
               key={idx}
-              className={`glass-card p-6 sm:p-7 flex flex-col gap-4 border border-[var(--theme-border)] min-h-[180px] sm:min-h-[200px] opacity-0 transition-all duration-300 hover:border-[var(--theme-primary-soft-2)] hover:shadow-[0_20px_50px_rgba(31,107,61,0.1)] ${
+              className={`group glass-card p-6 sm:p-7 flex flex-col gap-4 border border-[var(--theme-border)] min-h-[180px] sm:min-h-[200px] opacity-0 transition-all duration-300 hover:border-[var(--theme-primary-soft-2)] hover:shadow-[0_20px_50px_rgba(31,107,61,0.1)] ${
                 isVisible ? "animate-fade-in-up" : ""
               }`}
               style={{ animationDelay: `${idx * 100}ms` }}

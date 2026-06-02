@@ -43,14 +43,14 @@ export function Navbar() {
         {/* Logo */}
         <TransitionLink href="/" className="flex items-center gap-2 group">
           <div className="neo-chip p-2 rounded-xl transition-transform group-hover:rotate-6 duration-300">
-            <Image
-              src="/icons/neo_logo_negro.webp"
-              alt="NEO Brand Logo"
-              width={75}
-              height={75}
-              priority
-              className="object-contain"
-            />
+              <Image
+                  src="/icons/neo_logo_negro.webp"
+                  alt="NEO Brand Logo"
+                  width={60}
+                  height={60}
+                  priority
+                  className="object-contain"
+                />
           </div>
         </TransitionLink>
 
