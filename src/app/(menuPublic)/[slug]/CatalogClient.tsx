@@ -218,15 +218,15 @@ export function CatalogClient({ negocio, categorias }: CatalogClientProps) {
 
               <div className="flex justify-center lg:flex-1">
                 {negocio.logo_url ? (
-                  <div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-[22px] border border-white/10 bg-white/10 p-1.5 shadow-[0_12px_28px_rgba(0,0,0,0.18)] sm:h-24 sm:w-24 sm:p-2 lg:h-32 lg:w-32">
-                    <Image
-                      src={negocio.logo_url}
-                      alt={negocio.nombre}
-                      width={160}
-                      height={160}
-                      className="h-full w-full rounded-[18px] object-cover sm:rounded-[22px]"
-                    />
-                  </div>
+                    <div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-full bg-white/10 p-1.5 sm:h-24 sm:w-24 sm:p-2 lg:h-32 lg:w-32 shadow-md transition-shadow hover:shadow-lg ring-1 ring-transparent hover:ring-white/20">
+                      <Image
+                        src={negocio.logo_url}
+                        alt={negocio.nombre}
+                        width={160}
+                        height={160}
+                        className="h-full w-full rounded-full object-cover"
+                      />
+                    </div>
                 ) : null}
               </div>
 
