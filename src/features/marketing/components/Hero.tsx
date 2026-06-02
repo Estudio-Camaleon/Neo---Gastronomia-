@@ -10,7 +10,6 @@ export function Hero() {
       id="hero"
       className="relative overflow-hidden pb-12 pt-16 sm:pb-16 sm:pt-24 md:pb-24 md:pt-28"
     >
-      <div className="pointer-events-none absolute -top-20 left-0 h-32 w-32 sm:h-56 sm:w-56 rounded-full bg-[var(--theme-primary-soft)] blur-3xl opacity-30 sm:opacity-45" />
       <div className="pointer-events-none absolute right-0 top-24 h-32 w-32 sm:h-64 sm:w-64 rounded-full bg-[var(--theme-primary-soft-2)] blur-3xl opacity-20 sm:opacity-28" />
 
       <div className="relative mx-auto grid max-w-[92rem] items-center gap-6 md:gap-12 px-4 lg:grid-cols-[1.1fr_0.9fr] xl:grid-cols-[1.2fr_0.8fr] lg:px-8">

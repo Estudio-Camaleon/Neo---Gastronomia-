@@ -101,10 +101,11 @@ export function Navbar() {
         </div>
 
         {/* Mobile Toggle */}
-        <div className="md:hidden">
+        <div className="relative md:hidden">
+          <div className="pointer-events-none absolute -top-4 -left-4 h-14 w-14 rounded-full bg-[var(--theme-primary-soft)] blur-2xl opacity-60 sm:opacity-70" />
           <button
             onClick={() => setIsOpen(!isOpen)}
-            className="p-2 text-[var(--theme-text-muted)] hover:text-[var(--theme-primary)] focus:outline-none transition-colors duration-200"
+            className="relative p-2 text-[var(--theme-text-muted)] hover:text-[var(--theme-primary)] focus:outline-none transition-colors duration-200"
             aria-label="Alternar menú de navegación"
           >
             {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
