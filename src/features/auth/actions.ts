@@ -65,7 +65,7 @@ export async function registerAction(payload: {
     email: payload.email,
     password: payload.password,
     options: {
-      emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/auth/callback`,
+      emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/callback`,
       data: {
         nombre_negocio: payload.nombreNegocio,
       },
@@ -84,7 +84,7 @@ export async function signInWithGoogleAction() {
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: "google",
     options: {
-      redirectTo: `${origin}/auth/callback`,
+      redirectTo: `${origin}/callback`,
     },
   });
 
@@ -103,7 +103,7 @@ export async function resetPasswordAction(email: string) {
   const origin = (await headers()).get("origin") ?? "http://localhost:3000";
 
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `${origin}/auth/callback?type=recovery`,
+    redirectTo: `${origin}/callback?type=recovery`,
   });
 
   if (error) return { error: error.message };
