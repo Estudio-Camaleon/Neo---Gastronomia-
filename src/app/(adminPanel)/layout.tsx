@@ -25,11 +25,13 @@ export default async function AdminPanelLayout({
   }
 
   // 2. Obtención de Contexto Multi-tenant (usa admin para evitar RLS)
-  const { data: negocio, error: businessError } = await supabaseAdmin
+  const { data: negocios, error: businessError } = await supabaseAdmin
     .from("negocios")
     .select("slug, nombre")
     .eq("user_id", user.id)
-    .single();
+    .limit(1);
+
+  const negocio = negocios?.[0] ?? null;
 
   // 3. Debug: si falla la consulta del negocio
   if (businessError || !negocio) {
