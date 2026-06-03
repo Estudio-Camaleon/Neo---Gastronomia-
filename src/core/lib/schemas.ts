@@ -9,13 +9,38 @@ export const loginSchema = z.object({
 });
 
 export const registerSchema = z.object({
-  email: z.string().email("El correo no tiene un formato válido"),
+  email: z
+    .string()
+    .email("El correo no tiene un formato válido")
+    .transform((v) => v.trim().toLowerCase()),
   password: z
     .string()
     .min(8, "La contraseña debe tener al menos 8 caracteres"),
-  nombreNegocio: z.string().min(2, "Nombre de negocio muy corto"),
-  whatsapp: z.string().optional(),
-  descripcion: z.string().optional(),
+  nombreNegocio: z
+    .string()
+    .min(2, "El nombre debe tener al menos 2 caracteres")
+    .max(100, "El nombre es demasiado largo")
+    .transform((v) => v.trim()),
+  slug: z
+    .string()
+    .min(2, "El slug debe tener al menos 2 caracteres")
+    .max(60, "El slug es demasiado largo")
+    .regex(/^[a-z0-9-]+$/, "Solo minúsculas, números y guiones")
+    .transform((v) => v.trim().toLowerCase()),
+  whatsapp: z
+    .string()
+    .regex(/^\+?\d{7,15}$/, "Ingresa un número válido con código de país (ej: +5491123456789)")
+    .optional()
+    .or(z.literal("")),
+  direccion: z
+    .string()
+    .max(200, "La dirección es demasiado larga")
+    .optional()
+    .or(z.literal("")),
+  color_primary: z
+    .string()
+    .regex(/^#[0-9a-fA-F]{6}$/, "Color inválido")
+    .default("#10b981"),
 });
 
 const productVariantSchema = z.object({

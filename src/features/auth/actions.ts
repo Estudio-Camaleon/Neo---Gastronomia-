@@ -64,12 +64,44 @@ export async function loginAction(payload: {
   redirect("/pedidos");
 }
 
+export async function checkDuplicateAction(field: string, value: string) {
+  const ip = (await headers()).get("x-forwarded-for") ?? "unknown";
+  if (!checkRateLimit(`check:${ip}`, 30)) {
+    return { error: "Demasiadas solicitudes. Intentalo de nuevo." };
+  }
+
+  try {
+    if (field === "email") {
+      const { data } = await supabaseAdmin.auth.admin.listUsers();
+      const exists = data?.users.some(
+        (u) => u.email?.toLowerCase() === value.toLowerCase(),
+      );
+      return { exists: !!exists };
+    }
+
+    if (field === "slug" || field === "nombre" || field === "whatsapp") {
+      const { data } = await supabaseAdmin
+        .from("negocios")
+        .select("id")
+        .eq(field === "nombre" ? "nombre" : field, value)
+        .maybeSingle();
+      return { exists: !!data };
+    }
+
+    return { exists: false };
+  } catch {
+    return { exists: false };
+  }
+}
+
 export async function registerAction(payload: {
   email: string;
   password: string;
   nombreNegocio: string;
+  slug: string;
   whatsapp?: string;
-  descripcion?: string;
+  direccion?: string;
+  color_primary?: string;
 }) {
   const parsed = registerSchema.safeParse(payload);
   if (!parsed.success) {
@@ -79,82 +111,83 @@ export async function registerAction(payload: {
     };
   }
 
-  const { email, password, nombreNegocio, whatsapp, descripcion } = parsed.data;
-
-  const safeNombre = nombreNegocio.trim().replace(/<[^>]*>/g, "");
-  const safeWhatsapp = (whatsapp || "").trim();
-  const safeDescripcion = (descripcion || "").trim().replace(/<[^>]*>/g, "");
-
-  if (safeNombre.length < 2) {
-    return { error: "El nombre comercial debe tener al menos 2 caracteres." };
-  }
+  const { email, password, nombreNegocio, slug, whatsapp, direccion, color_primary } = parsed.data;
 
   const ip = (await headers()).get("x-forwarded-for") ?? "unknown";
   if (!checkRateLimit(`register:${ip}`, 5)) {
     return { error: "Demasiados intentos. Intentalo de nuevo en un minuto." };
   }
 
-  // Crear usuario confirmado via admin client (bypassea config de confirmación)
+  // Verificar duplicados (server-side, doble validación)
+  const { data: existingEmail } = await supabaseAdmin.auth.admin.listUsers();
+  if (existingEmail?.users.some((u) => u.email?.toLowerCase() === email)) {
+    return { error: "El correo ya está registrado. Inicia sesión o usa otro correo." };
+  }
+
+  const { data: existingNombre } = await supabaseAdmin
+    .from("negocios")
+    .select("id")
+    .eq("nombre", nombreNegocio)
+    .maybeSingle();
+  if (existingNombre) {
+    return { error: "El nombre del negocio ya está registrado." };
+  }
+
+  const { data: existingSlug } = await supabaseAdmin
+    .from("negocios")
+    .select("id")
+    .eq("slug", slug)
+    .maybeSingle();
+  if (existingSlug) {
+    return { error: "El slug ya está en uso. Elegí otro." };
+  }
+
+  if (whatsapp) {
+    const { data: existingWhatsapp } = await supabaseAdmin
+      .from("negocios")
+      .select("id")
+      .eq("whatsapp", whatsapp)
+      .maybeSingle();
+    if (existingWhatsapp) {
+      return { error: "El número de WhatsApp ya está registrado." };
+    }
+  }
+
+  // Crear usuario confirmado via admin client
   const { data: authData, error: createError } =
     await supabaseAdmin.auth.admin.createUser({
       email,
       password,
       email_confirm: true,
-      user_metadata: { nombre_negocio: safeNombre },
+      user_metadata: { nombre_negocio: nombreNegocio },
     });
 
-  console.log("[NEO REGISTER DEBUG]: createUser result", {
-    userId: authData?.user?.id,
-    userEmail: authData?.user?.email,
-    createError: createError?.message,
-  });
-
-  if (createError) return { error: createError.message };
+  if (createError) {
+    if (createError.message.includes("already exists")) {
+      return { error: "El correo ya está registrado. Inicia sesión." };
+    }
+    return { error: createError.message };
+  }
   if (!authData.user) return { error: "No se pudo crear el usuario." };
 
-  // Iniciar sesión para establecer cookies de sesión
+  // Iniciar sesión
   const supabase = await createClient();
-  const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+  const { error: signInError } = await supabase.auth.signInWithPassword({
     email,
     password,
-  });
-
-  console.log("[NEO REGISTER DEBUG]: signInWithPassword result", {
-    userId: signInData?.user?.id,
-    sessionExists: !!signInData?.session,
-    signInError: signInError?.message,
   });
 
   if (signInError) {
     return { error: signInError.message };
   }
 
-  let slug = safeNombre
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9-]/g, "-")
-    .replace(/-+/g, "-")
-    .replace(/(^-|-$)+/g, "")
-    || `local-${authData.user.id.slice(0, 8)}`;
-
-  const { data: existing } = await supabaseAdmin
-    .from("negocios")
-    .select("id")
-    .eq("slug", slug)
-    .maybeSingle();
-
-  if (existing) {
-    const suffix = Math.random().toString(36).slice(2, 6);
-    slug = `${slug}-${suffix}`;
-  }
-
   const { error: negocioError } = await supabaseAdmin.from("negocios").insert({
     user_id: authData.user.id,
-    nombre: safeNombre,
+    nombre: nombreNegocio,
     slug,
-    ...(safeWhatsapp ? { whatsapp: safeWhatsapp } : {}),
-    ...(safeDescripcion ? { descripcion: safeDescripcion } : {}),
+    color_primary,
+    ...(whatsapp ? { whatsapp } : {}),
+    ...(direccion ? { direccion } : {}),
   });
 
   if (negocioError) {
