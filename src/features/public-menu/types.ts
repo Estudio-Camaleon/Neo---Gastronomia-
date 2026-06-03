@@ -1,3 +1,22 @@
+export interface ExtraItem {
+  id: string;
+  nombre: string;
+  precio: number;
+}
+
+export interface ExtraGroup {
+  id: string;
+  titulo: string;
+  requerido: boolean;
+  multiple: boolean;
+  items: ExtraItem[];
+}
+
+export interface ProductoConfiguracion {
+  variantes?: Array<{ nombre: string; precio: number }>;
+  grupos_opciones?: ExtraGroup[];
+}
+
 export interface Producto {
   id: string;
   nombre: string;
@@ -5,6 +24,7 @@ export interface Producto {
   precio: number;
   imagen_url: string | null;
   disponible: boolean;
+  configuracion: ProductoConfiguracion | null;
 }
 
 export interface Categoria {

@@ -1,6 +1,14 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 
+export interface CartExtra {
+  grupo_id: string;
+  grupo_titulo: string;
+  item_id: string;
+  item_nombre: string;
+  item_precio: number;
+}
+
 export interface CartItem {
   id: string;
   producto_id: string;
@@ -9,6 +17,16 @@ export interface CartItem {
   precio: number;
   cantidad: number;
   detalles: string | null;
+  extras: CartExtra[];
+}
+
+export function generateItemId(producto_id: string, extras: CartExtra[]): string {
+  if (!extras || extras.length === 0) return producto_id;
+  const key = extras
+    .map((e) => `${e.grupo_id}:${e.item_id}`)
+    .sort()
+    .join("|");
+  return `${producto_id}__${key}`;
 }
 
 interface CartState {
@@ -40,7 +58,8 @@ export const useCartStore = create<CartState>()(
             const updatedCart = [...state.cart];
             updatedCart[existingItemIdx] = {
               ...updatedCart[existingItemIdx],
-              cantidad: updatedCart[existingItemIdx].cantidad + newItem.cantidad,
+              cantidad:
+                updatedCart[existingItemIdx].cantidad + newItem.cantidad,
             };
             return { cart: updatedCart };
           }
@@ -50,7 +69,9 @@ export const useCartStore = create<CartState>()(
 
       removeItem: (id) =>
         set((state) => {
-          const existingItemIdx = state.cart.findIndex((item) => item.id === id);
+          const existingItemIdx = state.cart.findIndex(
+            (item) => item.id === id,
+          );
 
           if (existingItemIdx > -1) {
             const updatedCart = [...state.cart];

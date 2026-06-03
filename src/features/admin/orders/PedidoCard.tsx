@@ -97,11 +97,31 @@ export function PedidoCard({
                     <p className="font-medium text-[var(--admin-text)] leading-tight">
                       {item.nombre_producto}
                     </p>
-                    {item.detalles && (
-                      <p className="text-xs text-[var(--admin-text-muted)] mt-1 bg-[var(--admin-surface)] p-2 rounded-lg border border-[var(--admin-border)] inline-block">
-                        Nota: {item.detalles}
-                      </p>
-                    )}
+                    {(() => {
+                      if (!item.detalles) return null;
+                      try {
+                        const extras = JSON.parse(item.detalles);
+                        if (Array.isArray(extras) && extras.length > 0) {
+                          return (
+                            <div className="mt-1 space-y-0.5">
+                              {extras.map((e: Record<string, string>, ei: number) => (
+                                <p
+                                  key={ei}
+                                  className="text-[11px] text-[var(--admin-text-muted)]"
+                                >
+                                  + {e["item_nombre"] || e["nombre"] || ""}
+                                </p>
+                              ))}
+                            </div>
+                          );
+                        }
+                      } catch { /* not JSON */ }
+                      return (
+                        <p className="text-xs text-[var(--admin-text-muted)] mt-1 bg-[var(--admin-surface)] p-2 rounded-lg border border-[var(--admin-border)] inline-block">
+                          Nota: {item.detalles}
+                        </p>
+                      );
+                    })()}
                   </div>
                 </div>
               </div>

@@ -79,6 +79,17 @@ export function buildBrandPalette(inputHex: string) {
 
   return {
     base,
+    "50": `#${mixHexColor(base, "#ffffff", 0.95)}`,
+    "100": `#${mixHexColor(base, "#ffffff", 0.88)}`,
+    "200": `#${mixHexColor(base, "#ffffff", 0.76)}`,
+    "300": `#${mixHexColor(base, "#ffffff", 0.6)}`,
+    "400": `#${mixHexColor(base, "#ffffff", 0.35)}`,
+    "500": base,
+    "600": `#${mixHexColor(base, "#000000", 0.15)}`,
+    "700": deep,
+    "800": `#${mixHexColor(base, "#000000", 0.3)}`,
+    "900": darker,
+    "950": `#${mixHexColor(base, "#000000", 0.52)}`,
     soft,
     softAlt,
     deep,

@@ -1,22 +1,54 @@
 "use client";
 
-import Image from "next/image";
+import { motion, AnimatePresence } from "framer-motion";
 import { useCartStore } from "./useCartStore";
 import {
   Trash2,
   Plus,
   Minus,
   ShoppingBag,
-  ArrowRight,
   X,
   AlertCircle,
+  CheckCircle2,
+  Scissors,
+  Printer,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useEffect, useRef, useCallback, useState } from "react";
 import { OrderForm } from "./OrderForm";
 
+const receiptContainerVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { staggerChildren: 0.05, delayChildren: 0.05 },
+  },
+};
+
+const receiptLineVariants = {
+  hidden: { opacity: 0, y: -8, filter: "blur(2px)" },
+  visible: {
+    opacity: 1,
+    y: 0,
+    filter: "blur(0px)",
+    transition: { type: "spring" as const, stiffness: 200, damping: 30 },
+  },
+  exit: { opacity: 0, x: -20, transition: { duration: 0.12 } },
+};
+
+const receiptEmptyVariants = {
+  hidden: { opacity: 0, scale: 0.95 },
+  visible: {
+    opacity: 1,
+    scale: 1,
+    transition: { type: "spring" as const, stiffness: 200, damping: 20 },
+  },
+};
+
 interface PublicCartProps {
   negocioId: string;
+  negocioNombre?: string;
   isDrawer?: boolean;
   onCloseDrawer?: () => void;
   config?: {
@@ -28,6 +60,7 @@ interface PublicCartProps {
 
 export function PublicCart({
   negocioId,
+  negocioNombre = "TICKET",
   isDrawer = false,
   onCloseDrawer,
   config = { moneda_simbolo: "$", pedido_minimo: 0, costo_envio: 0 },
@@ -53,6 +86,7 @@ export function PublicCart({
   const esPedidoValido = subtotal >= (config.pedido_minimo || 0);
   const panelRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const simbolo = config.moneda_simbolo || "$";
 
   const handleVaciar = () => {
     clearCart();
@@ -95,167 +129,293 @@ export function PublicCart({
     };
   }, [isDrawer, handleEscape]);
 
+  const receiptId = `#${Math.random().toString(36).slice(2, 7).toUpperCase()}`;
+
+  const DashedDivider = () => (
+    <div className="relative my-2 flex items-center justify-center overflow-hidden">
+      <div className="h-px w-full bg-[length:8px_1px] bg-[repeating-linear-gradient(90deg,#aaa_0px,#aaa_4px,transparent_4px,transparent_8px)] opacity-60" />
+      <Scissors
+        size={10}
+        className="absolute text-[#aaa] rotate-90 opacity-40"
+      />
+    </div>
+  );
+
+  const ReceiptHeader = () => (
+    <motion.div
+      variants={receiptLineVariants}
+      className="text-center space-y-1 pb-2"
+    >
+      <div className="flex justify-center gap-1 text-[11px] font-mono tracking-[0.25em] text-[#555] uppercase opacity-60">
+        <Printer size={11} />
+        TICKET
+      </div>
+      <p className="font-mono text-[11px] text-[#555]">{receiptId}</p>
+    </motion.div>
+  );
+
   const renderCartContent = () => (
-    <div className="flex h-full flex-col justify-between ">
+    <div className="flex h-full flex-col justify-between font-mono text-[14px] leading-relaxed text-[#111]">
       {cart.length === 0 ? (
-        <div className="flex flex-1 select-none flex-col items-center justify-center px-4 py-16 text-center">
-          <div className="mb-4 rounded-full bg-[var(--color-custom-50)] p-4 text-[var(--color-custom-900)]" aria-hidden="true">
-            <ShoppingBag size={40} strokeWidth={1.5} />
-          </div>
-          <h4 className="text-lg font-extrabold uppercase tracking-tight text-[var(--color-custom-deep)]">
-            Tu carrito está vacío
-          </h4>
-          <p className="mt-2 max-w-[220px] text-sm text-[var(--color-custom-text-muted)]">
+        <motion.div
+          key="empty"
+          variants={receiptEmptyVariants}
+          initial="hidden"
+          animate="visible"
+          className="flex flex-1 flex-col items-center justify-center px-4 py-16 text-center"
+        >
+          <motion.div
+            initial={{ scale: 0, rotate: -180 }}
+            animate={{ scale: 1, rotate: 0 }}
+            transition={{
+              type: "spring",
+              stiffness: 150,
+              damping: 15,
+              delay: 0.1,
+            }}
+            className="mb-4 rounded-lg border border-dashed border-[#aaa] p-4 text-[#555]"
+            aria-hidden="true"
+          >
+            {showOrderForm ? (
+              <CheckCircle2 size={36} strokeWidth={1.5} />
+            ) : (
+              <ShoppingBag size={36} strokeWidth={1.5} />
+            )}
+          </motion.div>
+          <p className="text-[12px] font-mono uppercase tracking-[0.15em] text-[#555]">
+            {showOrderForm ? "PROCESADO" : "VACÍO"}
+          </p>
+          <p className="mt-2 max-w-[200px] text-[12px] font-mono text-[#555]">
             {showOrderForm
-              ? "Tu pedido fue procesado con éxito."
-              : "Explora nuestro menú y agrega productos para comenzar."}
+              ? "Gracias por tu compra"
+              : "Agregá productos para empezar"}
           </p>
           {showOrderForm && (
-            <button
+            <motion.button
               type="button"
               onClick={() => setShowOrderForm(false)}
-              className="mt-4 rounded-full bg-[var(--color-custom)] px-6 py-2 text-sm font-bold text-white"
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
+              className="mt-4 border border-dashed border-[#aaa] px-5 py-2 text-[11px] font-mono uppercase tracking-[0.15em] text-[#555] hover:bg-[#eee] transition-colors"
             >
-              Seguir agregando productos
-            </button>
+              + Nuevo pedido
+            </motion.button>
           )}
-        </div>
+        </motion.div>
       ) : !showOrderForm ? (
-        <div className="flex h-full flex-col justify-between">
-          <div className="max-h-[430px] overflow-y-auto pr-2 public-scrollbar">
-            {cart.map((item) => (
-              <div
-                key={item.id}
-                className="mb-3 grid grid-cols-[56px_minmax(0,1fr)] gap-x-3 gap-y-2 rounded-[18px] border border-[var(--color-custom-border)] bg-[var(--color-custom-surface)] p-3 animate-in fade-in duration-200 sm:grid-cols-[56px_minmax(0,1fr)_auto] sm:items-center"
-              >
-                <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-[14px] bg-[var(--color-custom-surface-strong)] border border-[var(--color-custom-border)]">
-                  {item.imagen_url ? (
-                    <Image
-                      src={item.imagen_url}
-                      alt={item.nombre}
-                      width={56}
-                      height={56}
-                      className="h-full w-full object-cover"
-                    />
-                  ) : (
-                    <ShoppingBag
-                      size={18}
-                      className="text-[var(--color-custom-text-muted)]"
-                      aria-hidden="true"
-                    />
-                  )}
-                </div>
+        <motion.div
+          variants={receiptContainerVariants}
+          initial="hidden"
+          animate="visible"
+          className="flex h-full flex-col justify-between"
+        >
+          <div>
+            <ReceiptHeader />
+            <DashedDivider />
 
-                <div className="min-w-0 space-y-1">
-                  <p className="whitespace-normal break-words text-[11px] font-black uppercase italic leading-tight tracking-[0.14em] text-[var(--color-custom)] sm:text-[12px]">
-                    {item.nombre}
-                  </p>
-                  {item.detalles && (
-                    <p className="whitespace-normal break-words text-[11px] leading-snug text-[var(--color-custom-text-muted)]">
-                      Nota: {item.detalles}
-                    </p>
-                  )}
-                  <p className="text-[12px] font-black text-[var(--color-custom)] sm:text-[13px]">
-                    {config.moneda_simbolo}
-                    {formatMoney(item.precio * item.cantidad)}
-                  </p>
-                </div>
+            <div className="max-h-[340px] overflow-y-auto pr-1 receipt-scrollbar">
+              <AnimatePresence mode="popLayout">
+                {cart.map((item) => (
+                  <motion.div
+                    key={item.id}
+                    layout
+                    variants={receiptLineVariants}
+                    initial="hidden"
+                    animate="visible"
+                    exit="exit"
+                    className="mb-2"
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-[11px] font-bold text-[#555] tabular-nums">
+                            {String(item.cantidad).padStart(2, "0")}x
+                          </span>
+                          <span className="truncate text-[13px] font-semibold uppercase text-[#111]">
+                            {item.nombre}
+                          </span>
+                        </div>
+                        {item.extras && item.extras.length > 0 && (
+                          <div className="ml-[22px] mt-0.5 space-y-0.5">
+                            {item.extras.map((e, ei) => (
+                              <p
+                                key={ei}
+                                className="text-[10px] text-[#777]"
+                              >
+                                + {e.item_nombre}
+                                {e.item_precio > 0 &&
+                                  ` (${simbolo}${formatMoney(e.item_precio)})`}
+                              </p>
+                            ))}
+                          </div>
+                        )}
+                        <div className="ml-[22px] mt-0.5 flex items-center gap-2 text-[11px] text-[#555]">
+                          <span>
+                            {simbolo}
+                            {formatMoney(item.precio)}
+                          </span>
+                        </div>
+                      </div>
 
-                <div className="col-span-2 flex justify-end sm:col-span-1 sm:justify-self-end">
-                  <div className="flex shrink-0 items-center overflow-hidden rounded-full bg-[var(--color-custom-500)] text-white shadow-[0_8px_18px_rgba(0,0,0,0.18)]">
-                    <button
-                      type="button"
-                      aria-label={`Disminuir cantidad de ${item.nombre}`}
-                      onClick={() => removeItem(item.id)}
-                      className="flex h-10 w-10 items-center justify-center text-white/95 transition-opacity hover:opacity-80 sm:h-7 sm:w-7"
-                    >
-                      <Minus size={16} className="sm:size-[14px]" />
-                    </button>
-                    <span className="inline-flex min-w-9 items-center justify-center px-2 text-center text-[11px] font-black leading-10 sm:min-w-6 sm:leading-7 sm:px-1">
-                      {item.cantidad}
-                    </span>
-                    <button
-                      type="button"
-                      aria-label={`Aumentar cantidad de ${item.nombre}`}
-                      onClick={() => addItem({ ...item, cantidad: 1 })}
-                      className="flex h-10 w-10 items-center justify-center text-white/95 transition-opacity hover:opacity-80 sm:h-7 sm:w-7"
-                    >
-                      <Plus size={16} className="sm:size-[14px]" />
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+                      <div className="flex items-center gap-0.5 shrink-0">
+                        <button
+                          type="button"
+                          aria-label={`Disminuir ${item.nombre}`}
+                          onClick={() => removeItem(item.id)}
+                          className="flex h-6 w-6 items-center justify-center rounded border border-[#bbb] text-[#555] transition-colors hover:bg-[#eee] disabled:opacity-30"
+                          disabled={item.cantidad <= 1}
+                        >
+                          <Minus size={10} />
+                        </button>
+                        <motion.span
+                          key={item.cantidad}
+                          initial={{ scale: 1.3 }}
+                          animate={{ scale: 1 }}
+                          className="inline-flex w-6 items-center justify-center text-[12px] font-bold tabular-nums text-[#111]"
+                        >
+                          {item.cantidad}
+                        </motion.span>
+                        <button
+                          type="button"
+                          aria-label={`Aumentar ${item.nombre}`}
+                          onClick={() => addItem({ ...item, cantidad: 1 })}
+                          className="flex h-6 w-6 items-center justify-center rounded border border-[#bbb] text-[#555] transition-colors hover:bg-[#eee]"
+                        >
+                          <Plus size={10} />
+                        </button>
+                      </div>
+                    </div>
 
-          <div className="mt-auto space-y-4 border-t border-[var(--color-custom-border)] pt-4">
-            {!esPedidoValido && (
-              <div className="flex items-start gap-3 rounded-[16px] border border-[var(--color-custom-border)] bg-[var(--color-custom-50)] p-3 text-sm text-[var(--color-custom-deep)]">
-                <AlertCircle size={16} className="mt-0.5 shrink-0" aria-hidden="true" />
-                <p>
-                  Agrega{" "}
-                  <strong>
-                    {config.moneda_simbolo}
-                    {formatMoney(faltaParaMinimo)}
-                  </strong>{" "}
-                  más para alcanzar el pedido mínimo.
-                </p>
-              </div>
-            )}
-
-            <div className="space-y-3 rounded-[18px] border border-[var(--color-custom-border)] bg-[var(--color-custom-surface-strong)] p-4">
-              <div className="flex items-center justify-between text-sm text-[var(--color-custom-text-muted)]">
-                <span className="font-semibold italic">Subtotal</span>
-                <span className="font-black text-[var(--color-custom-deep)]">
-                  {config.moneda_simbolo}
-                  {formatMoney(subtotal)}
-                </span>
-              </div>
-              <div className="flex items-center justify-between text-sm text-[var(--color-custom-text-muted)]">
-                <span className="font-semibold italic">Descuento</span>
-                <span className="font-black text-[var(--color-custom-deep)]">
-                  -{config.moneda_simbolo}0,00
-                </span>
-              </div>
-              <div>
-                <span className="block text-[12px] font-black uppercase italic tracking-[0.18em] text-[var(--color-custom)]">
-                  Total
-                </span>
-                <p className="mt-1 text-3xl font-black italic tracking-tight text-[var(--color-custom)]">
-                  {config.moneda_simbolo}
-                  {formatMoney(subtotal)}
-                </p>
-              </div>
+                    <div className="ml-[22px] mt-0.5 flex justify-between text-[13px] font-bold tabular-nums text-[#111]">
+                      <span />
+                      <span>
+                        {simbolo}
+                        {formatMoney(item.precio * item.cantidad)}
+                      </span>
+                    </div>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
             </div>
 
-            <div className="flex gap-3">
-              <button
+            <DashedDivider />
+
+            <motion.div
+              variants={receiptLineVariants}
+              className="space-y-1.5 pt-1"
+            >
+              {!esPedidoValido && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="flex items-center gap-2 border border-dashed border-[#aaa]/50 bg-[#eee]/50 px-2 py-1.5 text-[11px] text-[#222]"
+                >
+                  <AlertCircle
+                    size={12}
+                    className="shrink-0"
+                    aria-hidden="true"
+                  />
+                  <span>
+                    Mínimo:{" "}
+                    <strong>
+                      {simbolo}
+                      {formatMoney(config.pedido_minimo || 0)}
+                    </strong>
+                    &nbsp;(falta {simbolo}
+                    {formatMoney(faltaParaMinimo)})
+                  </span>
+                </motion.div>
+              )}
+
+              <div className="space-y-1">
+                <div className="flex items-center justify-between text-[12px] text-[#555]">
+                  <span>SUBTOTAL</span>
+                  <span className="tabular-nums font-semibold text-[#111]">
+                    {simbolo}
+                    {formatMoney(subtotal)}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between text-[12px] text-[#555]">
+                  <span>DESCUENTO</span>
+                  <span className="tabular-nums font-semibold text-[#111]">
+                    -{simbolo}0,00
+                  </span>
+                </div>
+              </div>
+
+              <DashedDivider />
+
+              <div className="flex items-center justify-between pt-0.5">
+                <span className="text-[14px] font-bold uppercase tracking-[0.1em] text-[#111]">
+                  TOTAL
+                </span>
+                <motion.span
+                  key={subtotal}
+                  initial={{ scale: 1.1 }}
+                  animate={{ scale: 1 }}
+                  className="text-xl font-black tabular-nums tracking-tight text-[#111]"
+                >
+                  {simbolo}
+                  {formatMoney(subtotal)}
+                </motion.span>
+              </div>
+            </motion.div>
+
+            <motion.div
+              variants={receiptLineVariants}
+              className="mt-4 flex gap-2"
+            >
+              <motion.button
                 type="button"
                 aria-label="Vaciar carrito"
                 onClick={handleVaciar}
-                className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-full border border-[var(--color-custom-border)] bg-[var(--color-custom-surface-strong)] px-4 py-3 text-xs font-black uppercase tracking-[0.18em] text-[var(--color-custom-text-muted)] transition-colors hover:bg-[var(--color-custom-50)] sm:min-h-0"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className="flex-1 border border-[#bbb] px-2 py-2.5 text-[10px] font-mono uppercase tracking-[0.15em] text-[#555] transition-colors hover:bg-[#eee]"
               >
-                <Trash2 size={14} aria-hidden="true" /> Vaciar
-              </button>
-
-              <button
+                <Trash2
+                  size={12}
+                  className="mx-auto mb-0.5"
+                  aria-hidden="true"
+                />
+                VACIAR
+              </motion.button>
+              <motion.button
                 type="button"
                 aria-label="Finalizar pedido"
                 disabled={!esPedidoValido}
                 onClick={() => setShowOrderForm(true)}
-                className={`inline-flex min-h-11 flex-[1.3] items-center justify-center gap-2 rounded-full px-4 py-3 text-xs font-black uppercase tracking-[0.18em] transition-all sm:min-h-0 ${
+                whileHover={esPedidoValido ? { scale: 1.02 } : {}}
+                whileTap={esPedidoValido ? { scale: 0.98 } : {}}
+                className={`flex-[2] px-2 py-2.5 text-[10px] font-mono uppercase tracking-[0.15em] transition-colors ${
                   esPedidoValido
-                    ? "bg-[var(--color-custom)] text-white shadow-[0_12px_22px_rgba(31,107,61,0.2)]"
-                    : "cursor-not-allowed bg-[var(--color-custom-100)] text-[var(--color-custom-text-muted)]"
+                    ? "bg-[#111] text-[#fcfaf5] hover:bg-[#222]"
+                    : "bg-[#eee] text-[#555] cursor-not-allowed"
                 }`}
               >
-                Finalizar pedido <ArrowRight size={15} aria-hidden="true" />
-              </button>
-            </div>
+                CONFIRMAR
+                <br />
+                <span className="text-[9px] opacity-70">PEDIDO</span>
+              </motion.button>
+            </motion.div>
+
+            <motion.p
+              variants={receiptLineVariants}
+              className="mt-3 text-center font-mono text-[9px] uppercase tracking-[0.2em] text-[#555] opacity-50"
+            >
+              Gracias por tu compra
+            </motion.p>
           </div>
-        </div>
+        </motion.div>
       ) : (
-        <div className="flex-1 flex flex-col h-full justify-between">
+        <motion.div
+          key="order-form"
+          initial={{ opacity: 0, x: 30 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -30 }}
+          transition={{ type: "spring", stiffness: 200, damping: 25 }}
+          className="flex-1 flex flex-col h-full justify-between font-mono"
+        >
           <OrderForm
             negocioId={negocioId}
             cart={cart}
@@ -268,16 +428,19 @@ export function PublicCart({
               setShowOrderForm(false);
             }}
           />
-        </div>
+        </motion.div>
       )}
     </div>
   );
 
+  const receiptClasses =
+    "relative flex h-full w-full max-w-[390px] flex-col bg-[#fcfaf5] shadow-xl sm:max-w-[380px]";
+
   if (isDrawer) {
     return (
-      <div className="fixed inset-0 z-[99999] flex justify-end font-sans">
+      <div className="fixed inset-0 z-[99999] flex justify-end">
         <div
-          className="absolute inset-0 bg-[color:color-mix(in_srgb,var(--color-custom-900)_55%,transparent)] backdrop-blur-sm transition-opacity"
+          className="absolute inset-0 bg-black/55 backdrop-blur-sm transition-opacity"
           onClick={onCloseDrawer}
           aria-hidden="true"
         />
@@ -286,14 +449,15 @@ export function PublicCart({
           role="dialog"
           aria-modal="true"
           aria-label="Carrito de compras"
-          className="relative flex h-full w-full max-w-[390px] flex-col bg-[var(--color-custom-surface-strong)] p-5 shadow-2xl animate-in slide-in-from-right duration-300 sm:max-w-md"
+          className={`${receiptClasses} p-5 pt-6`}
+          style={{ boxShadow: "-8px 0 30px rgba(0,0,0,0.15)" }}
         >
-          <div className="mb-4 flex items-center justify-between border-b border-[var(--color-custom-border)] pb-4">
-            <h3 className="flex items-center gap-2 text-lg font-black italic uppercase tracking-tight text-[var(--color-custom)]">
-              Tu pedido
+          <div className="mb-3 flex items-center justify-between border-b border-dashed border-[#aaa] pb-3">
+            <h3 className="font-mono text-[12px] font-bold uppercase tracking-[0.2em] text-[#111]">
+              TICKET
               {totalItems > 0 && (
-                <span className="rounded-full bg-[var(--color-custom-50)] px-2.5 py-0.5 text-xs font-black text-[var(--color-custom-900)]">
-                  ({totalItems})
+                <span className="ml-2 font-mono text-[11px] text-[#555]">
+                  ({totalItems} {totalItems === 1 ? "item" : "items"})
                 </span>
               )}
             </h3>
@@ -302,9 +466,9 @@ export function PublicCart({
               type="button"
               onClick={onCloseDrawer}
               aria-label="Cerrar carrito"
-              className="rounded-full p-2 text-[var(--color-custom-text-muted)] transition-colors hover:bg-[var(--color-custom-50)] hover:text-[var(--color-custom-900)]"
+              className="flex h-7 w-7 items-center justify-center border border-[#bbb] text-[#555] transition-colors hover:bg-[#eee]"
             >
-              <X size={20} aria-hidden="true" />
+              <X size={14} aria-hidden="true" />
             </button>
           </div>
           {renderCartContent()}
@@ -314,7 +478,19 @@ export function PublicCart({
   }
 
   return (
-    <div className="flex h-full w-full flex-col rounded-[28px] border border-[var(--color-custom-border)] bg-[var(--color-custom-surface-strong)] p-5 shadow-[0_18px_36px_rgba(0,0,0,0.12)]">
+    <div
+      className={`${receiptClasses} p-5 pt-6 rounded-none border border-[#bbb]`}
+    >
+      <div className="mb-3 flex items-center justify-between border-b border-dashed border-[#aaa] pb-3">
+        <h3 className="font-mono text-[12px] font-bold uppercase tracking-[0.2em] text-[#111]">
+          TICKET
+          {totalItems > 0 && (
+            <span className="ml-2 font-mono text-[11px] text-[#555]">
+              ({totalItems} {totalItems === 1 ? "item" : "items"})
+            </span>
+          )}
+        </h3>
+      </div>
       {renderCartContent()}
     </div>
   );

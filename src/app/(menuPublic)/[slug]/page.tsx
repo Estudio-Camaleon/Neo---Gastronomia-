@@ -46,7 +46,7 @@ export default async function PublicMenuPage({ params }: PublicPageProps) {
     .select(
       `
       id, nombre, slug, color_primary, banner_url, logo_url, direccion, localidad, direccion_notas, whatsapp, instagram_url, facebook_url, tiktok_url, horarios,
-      categorias (id, nombre, slug, productos (id, nombre, descripcion, precio, imagen_url, disponible))
+      categorias (id, nombre, slug, productos (id, nombre, descripcion, precio, imagen_url, disponible, configuracion))
     `,
     )
     .eq("slug", slug.toLowerCase())

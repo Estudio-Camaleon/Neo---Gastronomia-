@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import Image from "next/image";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Search,
   Plus,
@@ -9,20 +10,48 @@ import {
   Image as ImageIcon,
   Clock,
   MapPin,
-  ChevronDown,
 } from "lucide-react";
 import { FaFacebookF, FaInstagram, FaWhatsapp } from "react-icons/fa6";
-import { useCartStore } from "@/features/public-menu/cart/useCartStore";
+import { useCartStore, generateItemId } from "@/features/public-menu/cart/useCartStore";
 import { CartFloatingButton } from "@/features/public-menu/cart/CartFloatingButton";
 import { PublicCart } from "@/features/public-menu/cart/PublicCart";
+import { FloatingFood } from "@/features/public-menu/components/FloatingFood";
+import { ExtrasSelector } from "@/features/public-menu/components/ExtrasSelector";
 import { estaAbierto } from "@/core/lib/utils/horarios";
-import type { Categoria, NegocioPublico } from "@/features/public-menu/types";
+import type { Categoria, NegocioPublico, ExtraGroup, Producto } from "@/features/public-menu/types";
 import {
   DAYS_ORDER,
   DAY_LABELS,
   getTodayKey,
   formatTurnos,
 } from "@/features/public-menu/utils";
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.06 },
+  },
+};
+
+const cardVariants = {
+  hidden: { opacity: 0, y: 30, scale: 0.95 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: { type: "spring" as const, stiffness: 180, damping: 20 },
+  },
+};
+
+const categoryVariants = {
+  hidden: { opacity: 0, x: -10 },
+  visible: {
+    opacity: 1,
+    x: 0,
+    transition: { type: "spring" as const, stiffness: 200, damping: 22 },
+  },
+};
 
 export function CatalogClient({
   negocio,
@@ -34,6 +63,8 @@ export function CatalogClient({
   const [searchQuery, setSearchQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState<string>("all");
   const [showSchedule, setShowSchedule] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  const [scheduleInited, setScheduleInited] = useState(false);
 
   const cart = useCartStore((state) => state.cart);
   const addItem = useCartStore((state) => state.addItem);
@@ -41,6 +72,10 @@ export function CatalogClient({
   const isCartOpen = useCartStore((state) => state.isCartOpen);
   const setCartOpen = useCartStore((state) => state.setCartOpen);
   const setNegocioId = useCartStore((state) => state.setNegocioId);
+  const [extrasProduct, setExtrasProduct] = useState<{
+    product: Producto;
+    groups: ExtraGroup[];
+  } | null>(null);
   const isOpenNow = estaAbierto(negocio.horarios);
   const todayKey = getTodayKey();
 
@@ -57,6 +92,20 @@ export function CatalogClient({
       })),
     [negocio.horarios],
   );
+
+  useEffect(() => {
+    const checkMobile = () => {
+      const mobile = window.innerWidth < 1024;
+      setIsMobile(mobile);
+      if (!scheduleInited) {
+        setShowSchedule(!mobile);
+        setScheduleInited(true);
+      }
+    };
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, [scheduleInited]);
 
   useEffect(() => {
     const syncCartVisibility = () => {
@@ -102,7 +151,7 @@ export function CatalogClient({
       .filter((categoria) => categoria.productos.length > 0);
   }, [categorias, activeCategory, searchQuery]);
 
-  const scrollToCategory = (id: string) => {
+  const scrollToCategory = useCallback((id: string) => {
     setActiveCategory(id);
 
     if (id === "all") return;
@@ -116,7 +165,7 @@ export function CatalogClient({
         heading?.focus({ preventScroll: true });
       }, 400);
     }
-  };
+  }, []);
 
   const menuConfig = {
     moneda_simbolo: "$",
@@ -124,11 +173,49 @@ export function CatalogClient({
     costo_envio: 0,
   };
 
+  const renderScheduleGrid = () =>
+    horariosOrdenados.map(({ dayId, label, config }) => {
+      const isToday = dayId === todayKey;
+      return (
+        <motion.div
+          key={dayId}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.05 }}
+          className={`rounded-2xl border px-3 py-2 text-sm transition-all ${
+            isToday
+              ? "border-[var(--color-custom-500)] bg-white text-[var(--color-custom-900)]"
+              : "border-white/10 bg-white/5 text-white/85"
+          }`}
+        >
+          <div className="flex items-center justify-between gap-2">
+            <span className="font-black uppercase tracking-[0.12em] text-[11px]">
+              {label}
+            </span>
+            {isToday && (
+              <span className="rounded-full bg-[var(--color-custom-500)] px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.12em] text-white">
+                Hoy
+              </span>
+            )}
+          </div>
+          <p className="mt-1 text-xs leading-snug opacity-90">
+            {formatTurnos(config)}
+          </p>
+        </motion.div>
+      );
+    });
+
   return (
     <>
-      <div className="min-h-screen bg-[var(--color-custom-950)] pb-8 text-[var(--color-custom-text)] selection:bg-[var(--color-custom-900)] selection:text-white">
+      <FloatingFood />
+      <div className="min-h-screen text-[var(--color-custom-text)] selection:bg-[var(--color-custom-deep)] selection:text-white relative z-10">
         {/* HEADER UNIFICADO */}
-        <header className="relative overflow-hidden pt-20 pb-10">
+        <motion.header
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: "easeOut" }}
+          className="relative overflow-hidden pt-20 pb-10"
+        >
           {negocio.banner_url && (
             <div
               className="pointer-events-none absolute inset-0 overflow-hidden"
@@ -142,15 +229,30 @@ export function CatalogClient({
                 sizes="100vw"
                 priority
               />
-              <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_60%,var(--color-custom-100)_95%)]" />
+              <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_60%,var(--color-custom-surface)_95%)]" />
             </div>
           )}
 
           <div className="relative z-10 flex flex-col gap-4 px-4 py-5 sm:px-6 sm:py-6">
             <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-start sm:justify-between">
-              <div className="flex flex-col items-center gap-3 sm:flex-row sm:items-center">
+              <motion.div
+                initial={{ opacity: 0, x: -30 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.5, delay: 0.2 }}
+                className="flex flex-col items-center gap-3 sm:flex-row sm:items-center"
+              >
                 {negocio.logo_url && (
-                  <div className="h-40 w-40 shrink-0 overflow-hidden rounded-full ring-2 ring-white/10 shadow-xl sm:h-30 sm:w-30 lg:h-50 lg:w-50">
+                  <motion.div
+                    initial={{ scale: 0, rotate: -180 }}
+                    animate={{ scale: 1, rotate: 0 }}
+                    transition={{
+                      type: "spring",
+                      stiffness: 150,
+                      damping: 15,
+                      delay: 0.3,
+                    }}
+                    className="h-40 w-40 shrink-0 overflow-hidden rounded-full ring-2 ring-white/10 shadow-xl sm:h-30 sm:w-30 lg:h-50 lg:w-50"
+                  >
                     <Image
                       src={negocio.logo_url}
                       alt={negocio.nombre}
@@ -159,38 +261,48 @@ export function CatalogClient({
                       className="h-full w-full rounded-full object-cover"
                       priority
                     />
-                  </div>
+                  </motion.div>
                 )}
                 <div className="text-center sm:text-left">
-                  <h1 className="text-5xl font-black  leading-none tracking-[-0.06em] text-[var(--color-custom-150)] sm:text-5xl text-shadow-lg/30">
+                  <h1 className="text-5xl font-black leading-none tracking-[-0.06em] text-[var(--color-custom-900)] sm:text-5xl">
                     {negocio.nombre}
                   </h1>
-                  <div
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.4 }}
                     className="mt-2 inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-[0.14em] sm:text-[15px]"
                     style={{
                       backgroundColor: isOpenNow
-                        ? "rgba(34,197,94,0.10)"
+                        ? "color-mix(in srgb, var(--color-custom-500) 12%, transparent)"
                         : "rgba(255,0,0,0.10)",
-                      color: isOpenNow ? "#4ade80" : "#be2414",
+                      color: isOpenNow ? "var(--color-custom-700)" : "#be2414",
                     }}
                   >
-                    <span
+                    <motion.span
+                      animate={isOpenNow ? { scale: [1, 1.3, 1] } : {}}
+                      transition={{ repeat: Infinity, duration: 2 }}
                       className={`h-1.5 w-1.5 rounded-full ${
-                        isOpenNow ? "animate-pulse bg-green-500" : "bg-white"
+                        isOpenNow ? "bg-[var(--color-custom-500)]" : "bg-white"
                       }`}
                     />
                     {isOpenNow ? "Abierto ahora" : "Cerrado ahora"}
-                  </div>
+                  </motion.div>
                 </div>
-              </div>
+              </motion.div>
 
-              <div className="flex flex-col items-center gap-3 sm:items-end">
-                <div className="flex flex-wrap justify-center gap-x-5 gap-y-1 sm:justify-end ">
-                  <div className="flex items-center gap-1.5 text-sm text-white rounded-2xl bg-black/60 p-2 ">
+              <motion.div
+                initial={{ opacity: 0, x: 30 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.5, delay: 0.3 }}
+                className="flex flex-col items-center gap-3 sm:items-end"
+              >
+                <div className="flex flex-wrap justify-center gap-x-5 gap-y-1 sm:justify-end">
+                  <div className="flex items-center gap-1.5 text-sm text-white rounded-2xl bg-[var(--color-custom-900)]/70 p-2">
                     <MapPin className="h-3.5 w-3.5 shrink-0" />
                     <span>{negocio.localidad || "Sucursal Centro"}</span>
                   </div>
-                  <div className="flex items-center gap-1.5 text-sm text-white rounded-2xl bg-black/70 p-2">
+                  <div className="flex items-center gap-1.5 text-sm text-white rounded-2xl bg-[var(--color-custom-800)]/80 p-2">
                     <Clock className="h-3.5 w-3.5 shrink-0" />
                     <span>
                       Hoy:{" "}
@@ -204,14 +316,19 @@ export function CatalogClient({
                 {(negocio.whatsapp ||
                   negocio.instagram_url ||
                   negocio.facebook_url) && (
-                  <div className="flex gap-2 ">
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.5 }}
+                    className="flex gap-2"
+                  >
                     {negocio.whatsapp && (
                       <a
                         href={`https://wa.me/${negocio.whatsapp.replace(/\D/g, "")}`}
                         target="_blank"
                         rel="noreferrer"
                         aria-label="WhatsApp"
-                        className="flex h-8 w-20 items-center justify-center rounded-full bg-black/40 text-white/80 transition-all hover:bg-white/20 hover:text-white "
+                        className="flex h-8 w-20 items-center justify-center rounded-full bg-[var(--color-custom-900)]/50 text-white/80 transition-all hover:bg-[var(--color-custom-500)] hover:text-white"
                       >
                         <FaWhatsapp size={27} />
                       </a>
@@ -222,7 +339,7 @@ export function CatalogClient({
                         target="_blank"
                         rel="noreferrer"
                         aria-label="Instagram"
-                        className="flex h-8 w-20 items-center justify-center rounded-full bg-black/40 text-white/80 transition-all hover:bg-white/20 hover:text-white"
+                        className="flex h-8 w-20 items-center justify-center rounded-full bg-[var(--color-custom-900)]/50 text-white/80 transition-all hover:bg-[var(--color-custom-500)] hover:text-white"
                       >
                         <FaInstagram size={26} />
                       </a>
@@ -233,29 +350,34 @@ export function CatalogClient({
                         target="_blank"
                         rel="noreferrer"
                         aria-label="Facebook"
-                        className="flex h-8 w-20 items-center justify-center rounded-full bg-black/40 text-white/80 transition-all hover:bg-white/20 hover:text-white"
+                        className="flex h-8 w-20 items-center justify-center rounded-full bg-[var(--color-custom-900)]/50 text-white/80 transition-all hover:bg-[var(--color-custom-500)] hover:text-white"
                       >
                         <FaFacebookF size={25} />
                       </a>
                     )}
-                  </div>
+                  </motion.div>
                 )}
-              </div>
+              </motion.div>
             </div>
           </div>
-        </header>
+        </motion.header>
 
         {/* CATALOGO */}
         <div className="w-full">
-          <main className=" flex flex-col gap-6 lg:flex-row">
+          <main className="flex flex-col gap-6 lg:flex-row">
             <section
-              className={`min-w-0 flex-1 bg-[var(--color-custom-100)] p-4 shadow-sm lg:p-6 transition-all duration-300 ${
+              className={`min-w-0 flex-1 bg-[var(--color-custom-surface)] p-4 lg:p-6 transition-all duration-300 ${
                 isCartOpen ? "lg:basis-auto" : "lg:basis-full"
               }`}
             >
-              <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between"
+              >
                 <div>
-                  <p className="text-5xl font-black italic leading-none tracking-[-0.05em] text-[var(--color-custom-950)] sm:text-3xl">
+                  <p className="text-5xl font-black italic leading-none tracking-[-0.05em] text-[var(--color-custom-900)] sm:text-3xl">
                     Menú
                   </p>
                   <p className="mt-1 text-sm font-medium text-[var(--color-custom-text-muted)]">
@@ -264,189 +386,248 @@ export function CatalogClient({
                 </div>
 
                 <div className="relative w-full lg:max-w-sm">
-                  <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--color-custom-600)]" />
+                  <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--color-custom-500)]" />
                   <input
                     type="text"
                     placeholder="Buscar producto..."
                     aria-label="Buscar producto"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full rounded-full border border-[var(--color-custom-200)] bg-white py-3 pl-11 pr-4 text-sm text-[var(--color-custom-text)] outline-none placeholder:text-[var(--color-custom-text-muted)] focus:border-[var(--color-custom-500)]"
+                    className="w-full rounded-full border border-[var(--color-custom-200)] bg-[var(--color-custom-surface-strong)] py-3 pl-11 pr-4 text-sm text-[var(--color-custom-text)] outline-none placeholder:text-[var(--color-custom-text-muted)] focus:border-[var(--color-custom-500)]"
                   />
                 </div>
-              </div>
+              </motion.div>
 
-              <div
+              <motion.div
+                variants={containerVariants}
+                initial="hidden"
+                animate="visible"
                 className="mt-4 flex gap-2 overflow-x-auto pb-1"
                 role="tablist"
                 aria-label="Categorías del menú"
               >
-                <button
+                <motion.button
+                  variants={categoryVariants}
                   type="button"
                   role="tab"
                   aria-selected={activeCategory === "all"}
                   onClick={() => scrollToCategory("all")}
-                  className={`shrink-0 rounded-full px-4 py-2 text-sm font-semibold transition-all ${
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className={`shrink-0 rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
                     activeCategory === "all"
-                      ? "bg-[var(--color-custom-900)] text-white"
-                      : "border border-[var(--color-custom-200)] bg-white text-[var(--color-custom-950)] hover:border-[var(--color-custom-500)]"
+                      ? "bg-[var(--color-custom-900)] text-white shadow-md"
+                      : "border border-[var(--color-custom-200)] bg-[var(--color-custom-surface-strong)] text-[var(--color-custom-900)] hover:border-[var(--color-custom-500)]"
                   }`}
                 >
                   Todos
-                </button>
+                </motion.button>
                 {categorias.map((cat) => (
-                  <button
+                  <motion.button
                     key={cat.id}
+                    variants={categoryVariants}
                     type="button"
                     role="tab"
                     aria-selected={activeCategory === cat.id}
                     onClick={() => scrollToCategory(cat.id)}
-                    className={`shrink-0 rounded-full px-4 py-2 text-sm font-semibold transition-all ${
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className={`shrink-0 rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
                       activeCategory === cat.id
-                        ? "bg-[var(--color-custom-900)] text-white"
-                        : "border border-[var(--color-custom-200)] bg-white text-[var(--color-custom-950)] hover:border-[var(--color-custom-500)]"
+                        ? "bg-[var(--color-custom-900)] text-white shadow-md"
+                        : "border border-[var(--color-custom-200)] bg-[var(--color-custom-surface-strong)] text-[var(--color-custom-900)] hover:border-[var(--color-custom-500)]"
                     }`}
                   >
                     {cat.nombre}
-                  </button>
+                  </motion.button>
                 ))}
-              </div>
+              </motion.div>
 
               <div className="mt-6 space-y-8">
-                {categoriasFiltradas.length === 0 ? (
-                  <div className="rounded-3xl bg-white py-20 text-center text-sm font-medium text-[var(--color-custom-text-muted)] shadow-sm">
-                    No encontramos productos para tu búsqueda.
-                  </div>
-                ) : (
-                  categoriasFiltradas.map((cat) => (
-                    <section
-                      key={cat.id}
-                      id={`cat-${cat.id}`}
-                      className="space-y-4"
+                <AnimatePresence mode="wait">
+                  {categoriasFiltradas.length === 0 ? (
+                    <motion.div
+                      key="empty"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -20 }}
+                      className="rounded-3xl bg-[var(--color-custom-surface-strong)] py-20 text-center text-sm font-medium text-[var(--color-custom-text-muted)] shadow-sm"
                     >
-                      <div className="flex items-center gap-3">
-                        <span className="h-1.5 w-16 rounded-full bg-[var(--color-custom-600)]" />
-                        <h3
-                          id={`heading-${cat.id}`}
-                          tabIndex={-1}
-                          className="rounded-full bg-[var(--color-custom-900)] px-4 py-1.5 text-xs font-bold uppercase tracking-[0.16em] text-white"
-                        >
-                          {cat.nombre}
-                        </h3>
-                      </div>
-
-                      <div
-                        className={`grid grid-cols-1 gap-4 md:grid-cols-2 transition-all duration-300 ${
-                          isCartOpen
-                            ? "lg:grid-cols-3 xl:grid-cols-4"
-                            : "lg:grid-cols-4 xl:grid-cols-5"
-                        }`}
+                      No encontramos productos para tu búsqueda.
+                    </motion.div>
+                  ) : (
+                    categoriasFiltradas.map((cat) => (
+                      <section
+                        key={cat.id}
+                        id={`cat-${cat.id}`}
+                        className="space-y-4"
                       >
-                        {cat.productos.map((prod) => {
-                          const cantidad =
-                            cartQuantityByProduct.get(prod.id) || 0;
+                        <motion.div
+                          initial={{ opacity: 0, x: -20 }}
+                          whileInView={{ opacity: 1, x: 0 }}
+                          viewport={{ once: true, margin: "-50px" }}
+                          transition={{
+                            type: "spring",
+                            stiffness: 150,
+                            damping: 20,
+                          }}
+                          className="flex items-center gap-3"
+                        >
+                          <span className="h-1.5 w-16 rounded-full bg-[var(--color-custom-500)]" />
+                          <h3
+                            id={`heading-${cat.id}`}
+                            tabIndex={-1}
+                            className="rounded-full bg-[var(--color-custom-900)] px-4 py-1.5 text-xs font-bold uppercase tracking-[0.16em] text-white"
+                          >
+                            {cat.nombre}
+                          </h3>
+                        </motion.div>
 
-                          return (
-                            <article
-                              key={prod.id}
-                              className={`overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-black/5 ${
-                                !prod.disponible ? "opacity-50 grayscale" : ""
-                              }`}
-                              aria-disabled={!prod.disponible}
-                            >
-                              <div className="relative aspect-square w-full bg-[var(--color-custom-100)]">
-                                {prod.imagen_url ? (
-                                  <Image
-                                    src={prod.imagen_url}
-                                    alt={prod.nombre}
-                                    fill
-                                    className="rounded-t-2xl object-cover"
-                                    sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                                  />
-                                ) : (
-                                  <div
-                                    className="flex h-full items-center justify-center text-[var(--color-custom-text-muted)]"
-                                    aria-hidden="true"
-                                  >
-                                    <ImageIcon size={34} />
-                                  </div>
-                                )}
-                              </div>
+                        <motion.div
+                          variants={containerVariants}
+                          initial="hidden"
+                          whileInView="visible"
+                          viewport={{ once: true, margin: "-30px" }}
+                          className={`grid grid-cols-1 gap-4 md:grid-cols-2 transition-all duration-300 ${
+                            isCartOpen
+                              ? "lg:grid-cols-3 xl:grid-cols-4"
+                              : "lg:grid-cols-4 xl:grid-cols-5"
+                          }`}
+                        >
+                          {cat.productos.map((prod) => {
+                            const cantidad =
+                              cartQuantityByProduct.get(prod.id) || 0;
 
-                              <div className="flex min-h-[170px] flex-col justify-between p-4">
-                                <div>
-                                  <p className="text-sm font-bold uppercase tracking-[0.12em] text-[var(--color-custom-950)]">
-                                    {prod.nombre}
-                                  </p>
-                                  <p className="mt-1 line-clamp-3 text-sm text-[var(--color-custom-text-muted)]">
-                                    {prod.descripcion ||
-                                      "Producto disponible en el catálogo."}
-                                  </p>
-                                </div>
-
-                                <div className="mt-4 flex items-center justify-between gap-3">
-                                  <div className="text-base font-black text-[var(--color-custom-950)]">
-                                    $
-                                    {Number(prod.precio).toLocaleString(
-                                      "es-AR",
-                                      {
-                                        minimumFractionDigits: 0,
-                                      },
-                                    )}
-                                  </div>
-
-                                  {prod.disponible ? (
-                                    <div className="flex items-center overflow-hidden rounded-full bg-[var(--color-custom-500)] text-white">
-                                      <button
-                                        type="button"
-                                        aria-label={`Disminuir cantidad de ${prod.nombre}`}
-                                        onClick={() => removeItem(prod.id)}
-                                        className="flex h-11 w-11 items-center justify-center transition-opacity hover:opacity-80 disabled:cursor-not-allowed disabled:opacity-40 sm:h-8 sm:w-8"
-                                        disabled={cantidad === 0}
-                                      >
-                                        <Minus size={16} />
-                                      </button>
-                                      <span className="inline-flex min-w-10 items-center justify-center px-3 text-sm font-bold sm:min-w-8 sm:px-2 sm:leading-8">
-                                        {cantidad}
-                                      </span>
-                                      <button
-                                        type="button"
-                                        aria-label={`Aumentar cantidad de ${prod.nombre}`}
-                                        onClick={() =>
-                                          addItem({
-                                            id: prod.id,
-                                            producto_id: prod.id,
-                                            nombre: prod.nombre,
-                                            imagen_url: prod.imagen_url,
-                                            precio: prod.precio,
-                                            cantidad: 1,
-                                            detalles: null,
-                                          })
-                                        }
-                                        className="flex h-11 w-11 items-center justify-center transition-opacity hover:opacity-80 sm:h-8 sm:w-8"
-                                      >
-                                        <Plus size={16} />
-                                      </button>
-                                    </div>
+                            return (
+                              <motion.article
+                                key={prod.id}
+                                variants={cardVariants}
+                                whileHover={{
+                                  y: -4,
+                                  boxShadow: "0 12px 24px rgba(0,0,0,0.1)",
+                                }}
+                                layout
+                                className={`overflow-hidden rounded-2xl bg-[var(--color-custom-surface-strong)] shadow-sm ring-1 ring-black/5 ${
+                                  !prod.disponible ? "opacity-50 grayscale" : ""
+                                }`}
+                                aria-disabled={!prod.disponible}
+                              >
+                                <div className="relative aspect-square w-full bg-[var(--color-custom-100)]">
+                                  {prod.imagen_url ? (
+                                    <Image
+                                      src={prod.imagen_url}
+                                      alt={prod.nombre}
+                                      fill
+                                      className="rounded-t-2xl object-cover"
+                                      sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                                    />
                                   ) : (
-                                    <span className="rounded-full bg-[var(--color-custom-100)] px-3 py-1 text-xs font-semibold text-[var(--color-custom-950)]">
-                                      Agotado
-                                    </span>
+                                    <div
+                                      className="flex h-full items-center justify-center text-[var(--color-custom-text-muted)]"
+                                      aria-hidden="true"
+                                    >
+                                      <ImageIcon size={34} />
+                                    </div>
                                   )}
                                 </div>
-                              </div>
-                            </article>
-                          );
-                        })}
-                      </div>
-                    </section>
-                  ))
-                )}
+
+                                <div className="flex min-h-[170px] flex-col justify-between p-4">
+                                  <div>
+                                    <p className="text-sm font-bold uppercase tracking-[0.12em] text-[var(--color-custom-900)]">
+                                      {prod.nombre}
+                                    </p>
+                                    <p className="mt-1 line-clamp-3 text-sm text-[var(--color-custom-text-muted)]">
+                                      {prod.descripcion ||
+                                        "Producto disponible en el catálogo."}
+                                    </p>
+                                  </div>
+
+                                  <div className="mt-4 flex items-center justify-between gap-3">
+                                    <div className="text-base font-black text-[var(--color-custom-900)]">
+                                      $
+                                      {Number(prod.precio).toLocaleString(
+                                        "es-AR",
+                                        { minimumFractionDigits: 0 },
+                                      )}
+                                    </div>
+
+                                    {prod.disponible ? (
+                                      <motion.div
+                                        whileTap={{ scale: 0.95 }}
+                                        className="flex items-center overflow-hidden rounded-full bg-[var(--color-custom-500)] text-white"
+                                      >
+                                        <button
+                                          type="button"
+                                          aria-label={`Disminuir cantidad de ${prod.nombre}`}
+                                          onClick={() => removeItem(prod.id)}
+                                          className="flex h-11 w-11 items-center justify-center transition-opacity hover:opacity-80 disabled:cursor-not-allowed disabled:opacity-40 sm:h-8 sm:w-8"
+                                          disabled={cantidad === 0}
+                                        >
+                                          <Minus size={16} />
+                                        </button>
+                                        <motion.span
+                                          key={cantidad}
+                                          initial={{ scale: 1.3 }}
+                                          animate={{ scale: 1 }}
+                                          className="inline-flex min-w-10 items-center justify-center px-3 text-sm font-bold sm:min-w-8 sm:px-2 sm:leading-8"
+                                        >
+                                          {cantidad}
+                                        </motion.span>
+                                        <button
+                                          type="button"
+                                          aria-label={`Aumentar cantidad de ${prod.nombre}`}
+                                          onClick={() => {
+                                            const grupos =
+                                              prod.configuracion?.grupos_opciones;
+                                            if (
+                                              grupos &&
+                                              grupos.length > 0 &&
+                                              grupos.some(
+                                                (g) => g.items.length > 0,
+                                              )
+                                            ) {
+                                              setExtrasProduct({
+                                                product: prod,
+                                                groups: grupos,
+                                              });
+                                            } else {
+                                              addItem({
+                                                id: prod.id,
+                                                producto_id: prod.id,
+                                                nombre: prod.nombre,
+                                                imagen_url: prod.imagen_url,
+                                                precio: prod.precio,
+                                                cantidad: 1,
+                                                detalles: null,
+                                                extras: [],
+                                              });
+                                            }
+                                          }}
+                                          className="flex h-11 w-11 items-center justify-center transition-opacity hover:opacity-80 sm:h-8 sm:w-8"
+                                        >
+                                          <Plus size={16} />
+                                        </button>
+                                      </motion.div>
+                                    ) : (
+                                      <span className="rounded-full bg-[var(--color-custom-100)] px-3 py-1 text-xs font-semibold text-[var(--color-custom-900)]">
+                                        Agotado
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+                              </motion.article>
+                            );
+                          })}
+                        </motion.div>
+                      </section>
+                    ))
+                  )}
+                </AnimatePresence>
               </div>
             </section>
 
             <aside
-              className={`bg-[var(--color-custom-100)] pt-7 hidden w-[380px] shrink-0 transition-all duration-300 lg:sticky lg:top-4 lg:self-start ${
+              className={`bg-[var(--color-custom-surface)] pt-7 hidden w-[380px] shrink-0 transition-all duration-300 lg:sticky lg:top-4 lg:self-start ${
                 isCartOpen
                   ? "lg:block opacity-100 translate-x-0"
                   : "lg:hidden pointer-events-none opacity-0 translate-x-6"
@@ -454,91 +635,110 @@ export function CatalogClient({
             >
               <PublicCart
                 negocioId={negocio.id}
+                negocioNombre={negocio.nombre}
                 config={menuConfig}
                 onCloseDrawer={() => setCartOpen(false)}
               />
             </aside>
           </main>
-          <footer>
-            <div className="mt-4 rounded-3xl border border-white/10 bg-white/5 p-3 backdrop-blur-sm sm:mt-5 sm:p-4">
-              <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between sm:gap-4">
-                <div className="space-y-2">
-                  <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-[10px] font-black uppercase tracking-[0.14em] text-white/95 sm:text-[11px] sm:tracking-[0.18em]">
-                    <Clock className="h-3.5 w-3.5" />
-                    Horarios
-                  </div>
+        </div>
+        <motion.footer
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          className="bg-[var(--color-custom-950)]"
+        >
+          <div className="p-6 rounded-3xl border border-white/10 bg-white/5 backdrop-blur-sm">
+            <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between sm:gap-4">
+              <div className="space-y-2">
+                <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-[10px] font-black uppercase tracking-[0.14em] text-white/95 sm:text-[11px] sm:tracking-[0.18em]">
+                  <Clock className="h-3.5 w-3.5" />
+                  Horarios
                 </div>
-              </div>
-
-              <div className="mt-4">
                 <button
                   type="button"
                   onClick={() => setShowSchedule(!showSchedule)}
-                  className="flex w-full items-center justify-between gap-2 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white/85 transition-all hover:bg-white/10"
-                  aria-expanded={showSchedule}
-                  aria-controls="schedule-grid"
+                  className="lg:hidden text-xs text-white/60 hover:text-white transition-colors underline underline-offset-2"
                 >
-                  <span className="font-semibold">Horarios</span>
-                  <ChevronDown
-                    size={16}
-                    className={`transition-transform duration-200 ${
-                      showSchedule ? "rotate-180" : ""
-                    }`}
-                  />
+                  {showSchedule ? "Ocultar horarios" : "Ver horarios completos"}
                 </button>
-                {showSchedule && (
-                  <div
-                    id="schedule-grid"
-                    className="mt-2 grid gap-2 sm:grid-cols-2 xl:grid-cols-4"
-                  >
-                    {horariosOrdenados.map(({ dayId, label, config }) => {
-                      const isToday = dayId === todayKey;
-
-                      return (
-                        <div
-                          key={dayId}
-                          className={`rounded-2xl border px-3 py-2 text-sm transition-all ${
-                            isToday
-                              ? "border-[var(--color-custom-500)] bg-white text-[var(--color-custom-950)]"
-                              : "border-white/10 bg-white/5 text-white/85"
-                          }`}
-                        >
-                          <div className="flex items-center justify-between gap-2">
-                            <span className="font-black uppercase tracking-[0.12em] text-[11px]">
-                              {label}
-                            </span>
-                            {isToday && (
-                              <span className="rounded-full bg-[var(--color-custom-500)] px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.12em] text-white">
-                                Hoy
-                              </span>
-                            )}
-                          </div>
-                          <p className="mt-1 text-xs leading-snug opacity-90">
-                            {formatTurnos(config)}
-                          </p>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
               </div>
             </div>
-          </footer>
-        </div>
+
+            {isMobile ? (
+              <AnimatePresence>
+                {showSchedule && (
+                  <motion.div
+                    id="schedule-grid"
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.3 }}
+                    className="mt-2 grid gap-2 sm:grid-cols-2 xl:grid-cols-4 overflow-hidden"
+                  >
+                    {renderScheduleGrid()}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            ) : (
+              <div
+                id="schedule-grid"
+                className="mt-2 grid gap-2 sm:grid-cols-2 xl:grid-cols-4"
+              >
+                {renderScheduleGrid()}
+              </div>
+            )}
+          </div>
+        </motion.footer>
       </div>
 
-      {/* CARRITO DE DISPOSITIVOS SM Y MD */}
-      <div className="lg:hidden">
-        <CartFloatingButton />
-        {isCartOpen && (
-          <PublicCart
-            negocioId={negocio.id}
-            isDrawer
-            config={menuConfig}
-            onCloseDrawer={() => setCartOpen(false)}
+      {/* EXTRAS SELECTOR */}
+      <AnimatePresence>
+        {extrasProduct && (
+          <ExtrasSelector
+            productName={extrasProduct.product.nombre}
+            basePrice={extrasProduct.product.precio}
+            groups={extrasProduct.groups}
+            simbolo={menuConfig.moneda_simbolo}
+            onConfirm={(extras, extraTotal) => {
+              const id = generateItemId(
+                extrasProduct.product.id,
+                extras,
+              );
+              const precioFinal =
+                extrasProduct.product.precio + extraTotal;
+              addItem({
+                id,
+                producto_id: extrasProduct.product.id,
+                nombre: extrasProduct.product.nombre,
+                imagen_url: extrasProduct.product.imagen_url,
+                precio: precioFinal,
+                cantidad: 1,
+                detalles: null,
+                extras,
+              });
+              setExtrasProduct(null);
+            }}
+            onCancel={() => setExtrasProduct(null)}
           />
         )}
-      </div>
+      </AnimatePresence>
+
+      {/* CARRITO DE DISPOSITIVOS SM Y MD */}
+      {isMobile && (
+        <>
+          <CartFloatingButton />
+          {isCartOpen && (
+            <PublicCart
+              negocioId={negocio.id}
+              negocioNombre={negocio.nombre}
+              isDrawer
+              config={menuConfig}
+              onCloseDrawer={() => setCartOpen(false)}
+            />
+          )}
+        </>
+      )}
     </>
   );
 }

@@ -18,7 +18,11 @@ export default function CatalogError({
   return (
     <div className="w-full min-h-screen bg-[#fcfbf9] flex flex-col items-center justify-center p-6 text-center font-sans">
       <div className="w-24 h-24 bg-red-50 rounded-3xl flex items-center justify-center mb-6 border border-red-100/50">
-        <AlertOctagon className="w-10 h-10 text-red-500" strokeWidth={1.5} aria-hidden="true" />
+        <AlertOctagon
+          className="w-10 h-10 text-red-500"
+          strokeWidth={1.5}
+          aria-hidden="true"
+        />
       </div>
 
       <h1 className="text-2xl font-extrabold text-neutral-900 mb-2 tracking-tight">

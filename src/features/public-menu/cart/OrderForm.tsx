@@ -1,6 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft,
   Loader2,
@@ -10,10 +13,49 @@ import {
   CreditCard,
 } from "lucide-react";
 import { toast } from "sonner";
+import { z } from "zod";
 import { createClient } from "@/core/lib/supabase/client";
 import { submitOrderPublicAction } from "../../admin/orders/actions";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+
+const orderFormSchema = z
+  .object({
+    nombre: z
+      .string()
+      .min(1, "El nombre es obligatorio")
+      .max(100, "El nombre es demasiado largo"),
+    whatsapp: z
+      .string()
+      .min(1, "El WhatsApp es obligatorio")
+      .max(30, "WhatsApp demasiado largo"),
+    esDelivery: z.boolean(),
+    direccion: z.string().default(""),
+    metodoPago: z.enum(["efectivo", "transferencia"]),
+    notas: z
+      .string()
+      .max(500, "Las notas no pueden superar 500 caracteres")
+      .default(""),
+  })
+  .superRefine((data, ctx) => {
+    if (data.esDelivery && !data.direccion.trim()) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "La dirección de envío es obligatoria",
+        path: ["direccion"],
+      });
+    }
+  });
+
+function sanitize(v: string): string {
+  return v.trim().replace(/\s+/g, " ").normalize("NFC");
+}
+
+function sanitizePhone(v: string): string {
+  return v.trim().replace(/\s+/g, "");
+}
+
+type OrderFormValues = z.infer<typeof orderFormSchema>;
 
 interface OrderFormProps {
   negocioId: string;
@@ -36,16 +78,28 @@ export function OrderForm({
   config,
 }: OrderFormProps) {
   const [isPending, setIsPending] = useState(false);
-  const [form, setForm] = useState({
-    nombre: "",
-    whatsapp: "",
-    esDelivery: false,
-    direccion: "",
-    metodoPago: "efectivo" as "efectivo" | "transferencia",
-    notas: "",
+
+  const {
+    register,
+    handleSubmit,
+    watch,
+    control,
+    formState: { errors },
+  } = useForm({
+    resolver: zodResolver(orderFormSchema),
+    defaultValues: {
+      nombre: "",
+      whatsapp: "",
+      esDelivery: false,
+      direccion: "",
+      metodoPago: "efectivo",
+      notas: "",
+    },
   });
 
-  const costoEnvioActual = form.esDelivery ? config.costo_envio || 0 : 0;
+  const esDelivery = watch("esDelivery");
+
+  const costoEnvioActual = esDelivery ? config.costo_envio || 0 : 0;
   const totalFinal = subtotal + costoEnvioActual;
   const simbolo = config.moneda_simbolo || "$";
   const formatMoney = (value: number) =>
@@ -54,23 +108,27 @@ export function OrderForm({
       maximumFractionDigits: 2,
     });
 
-  const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
-  ) => {
-    const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
-  };
-
   const dispararWhatsAppExterno = (
     negocioWhatsapp: string,
     pedidoId: string,
+    formData: OrderFormValues,
   ): boolean => {
     const numeroLimpio = negocioWhatsapp.replace(/\D/g, "");
     if (!numeroLimpio) return false;
 
+    const formatearExtras = (i: typeof cart[0]) => {
+      if (!i.extras || i.extras.length === 0) return "";
+      return i.extras
+        .map((e) => `${e.item_nombre}`)
+        .join(", ");
+    };
+
     const lineasDetalle = cart.map(
-      (i) =>
-        `• ${i.cantidad}x ${i.nombre.toUpperCase()} ${i.detalles ? `(_${i.detalles}_)` : ""} - ${simbolo}${formatMoney(i.precio * i.cantidad)}`,
+      (i) => {
+        const extrasStr = formatearExtras(i);
+        const extraPart = extrasStr ? ` (_${extrasStr}_)` : "";
+        return `• ${i.cantidad}x ${i.nombre.toUpperCase()}${extraPart} - ${simbolo}${formatMoney(i.precio * i.cantidad)}`;
+      },
     );
 
     const MAX_DETALLE_ITEMS = 12;
@@ -84,19 +142,19 @@ export function OrderForm({
 
     const mensaje = [
       `*🆕 NUEVO PEDIDO (#${pedidoId.slice(0, 6).toUpperCase()})*`,
-      `👤 *Cliente:* ${form.nombre.toUpperCase()}`,
-      `📱 *WhatsApp:* ${form.whatsapp}`,
-      `🛵 *Entrega:* ${form.esDelivery ? `DELIVERY\n📍 *Dirección:* ${form.direccion.toUpperCase()}` : "RETIRO EN LOCAL"}`,
-      `💳 *Pago:* ${form.metodoPago.toUpperCase()}`,
+      `👤 *Cliente:* ${formData.nombre.toUpperCase()}`,
+      `📱 *WhatsApp:* ${formData.whatsapp}`,
+      `🛵 *Entrega:* ${formData.esDelivery ? `DELIVERY\n📍 *Dirección:* ${(formData.direccion || "").toUpperCase()}` : "RETIRO EN LOCAL"}`,
+      `💳 *Pago:* ${formData.metodoPago.toUpperCase()}`,
       `\n📦 *DETALLE DE COMANDA:*`,
       ...detalleTruncado,
       `\n---`,
       `*Subtotal:* ${simbolo}${formatMoney(subtotal)}`,
-      form.esDelivery
+      formData.esDelivery
         ? `*Envío:* ${simbolo}${formatMoney(costoEnvioActual)}`
         : "",
       `*💰 TOTAL FINAL: ${simbolo}${formatMoney(totalFinal)}*`,
-      `\n📝 *Notas:* ${form.notas || "Sin especificaciones."}`,
+      `\n📝 *Notas:* ${formData.notas || "Sin especificaciones."}`,
       `\n_Enviado de forma segura desde NEO Infrastructure_`,
     ]
       .filter(Boolean)
@@ -117,13 +175,7 @@ export function OrderForm({
     return true;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!form.nombre.trim() || !form.whatsapp.trim())
-      return toast.error("Por favor completa tus datos personales.");
-    if (form.esDelivery && !form.direccion.trim())
-      return toast.error("La dirección de envío es requerida.");
-
+  const onSubmit = async (formData: OrderFormValues) => {
     setIsPending(true);
     try {
       const supabase = createClient();
@@ -142,24 +194,33 @@ export function OrderForm({
 
       const payload = {
         negocio_id: negocioId,
-        cliente_nombre: form.nombre.trim(),
-        cliente_whatsapp: form.whatsapp.trim(),
-        es_delivery: form.esDelivery,
-        direccion_entrega: form.esDelivery ? form.direccion.trim() : null,
-        metodo_pago: form.metodoPago,
+        cliente_nombre: sanitize(formData.nombre),
+        cliente_whatsapp: sanitizePhone(formData.whatsapp),
+        es_delivery: formData.esDelivery,
+        direccion_entrega: formData.esDelivery
+          ? sanitize(formData.direccion || "")
+          : null,
+        metodo_pago: formData.metodoPago,
         total: totalFinal,
-        notas: form.notas.trim() || null,
+        notas: formData.notas ? sanitize(formData.notas) : null,
         items: cart.map((i) => ({
           producto_id: i.producto_id,
           nombre_producto: i.nombre,
           cantidad: i.cantidad,
           precio_unitario: i.precio,
-          detalles: i.detalles,
+          detalles:
+            i.extras && i.extras.length > 0
+              ? JSON.stringify(i.extras)
+              : i.detalles,
         })),
       };
 
       const orderId = await submitOrderPublicAction(payload);
-      const waOpened = dispararWhatsAppExterno(negocio.whatsapp, orderId);
+      const waOpened = dispararWhatsAppExterno(
+        negocio.whatsapp,
+        orderId,
+        formData,
+      );
 
       if (waOpened) {
         toast.success("Pedido procesado con éxito.");
@@ -179,155 +240,231 @@ export function OrderForm({
   };
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="flex flex-col h-full justify-between space-y-4 text-gray-900"
+    <motion.form
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.3 }}
+      onSubmit={handleSubmit(onSubmit)}
+      className="flex flex-col h-full justify-between space-y-4"
     >
       <div className="space-y-6 overflow-y-auto max-h-[450px] pr-2 public-scrollbar">
         <button
           type="button"
           onClick={onBack}
-          className="text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors flex items-center gap-2 mb-2"
+          className="text-sm font-medium text-[var(--color-custom-text-muted)] hover:text-[var(--color-custom-900)] transition-colors flex items-center gap-2 mb-2"
         >
           <ArrowLeft size={16} /> Volver al carrito
         </button>
 
-        <div className="space-y-4 bg-gray-50/50 p-4 rounded-xl border border-gray-100">
+        <div className="space-y-4 bg-[var(--color-custom-100)]/50 p-4 rounded-xl border border-[var(--color-custom-border)]">
           <div className="space-y-1.5">
-            <Label>Tu Nombre Completo</Label>
+            <Label className="text-[var(--color-custom-900)]">
+              Tu Nombre Completo
+            </Label>
             <Input
-              name="nombre"
-              required
-              value={form.nombre}
-              onChange={handleInputChange}
-              className="bg-white text-gray-900"
+              {...register("nombre")}
+              className="bg-[var(--color-custom-surface-strong)] text-[var(--color-custom-900)] border-[var(--color-custom-border)]"
               placeholder="Ej: Juan Pérez"
             />
+            {errors.nombre && (
+              <motion.p
+                initial={{ opacity: 0, y: -5 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="text-xs text-red-500 mt-1"
+              >
+                {errors.nombre.message}
+              </motion.p>
+            )}
           </div>
           <div className="space-y-1.5">
-            <Label>WhatsApp de Contacto</Label>
+            <Label className="text-[var(--color-custom-900)]">
+              WhatsApp de Contacto
+            </Label>
             <Input
-              name="whatsapp"
+              {...register("whatsapp")}
               type="tel"
-              required
-              value={form.whatsapp}
-              onChange={handleInputChange}
-              className="bg-white text-gray-900"
+              className="bg-[var(--color-custom-surface-strong)] text-[var(--color-custom-900)] border-[var(--color-custom-border)]"
               placeholder="Ej: +54 9 11 1234-5678"
             />
+            {errors.whatsapp && (
+              <motion.p
+                initial={{ opacity: 0, y: -5 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="text-xs text-red-500 mt-1"
+              >
+                {errors.whatsapp.message}
+              </motion.p>
+            )}
           </div>
         </div>
 
         <div className="space-y-3">
-          <Label>Forma de Entrega</Label>
-          <div className="grid grid-cols-2 gap-3" role="radiogroup" aria-label="Forma de entrega">
-            <button
-              type="button"
-              role="radio"
-              aria-checked={!form.esDelivery}
-              onClick={() => setForm({ ...form, esDelivery: false })}
-              className={`flex items-center justify-center gap-2 p-3 text-sm font-medium rounded-xl border transition-all ${
-                !form.esDelivery
-                  ? "bg-[var(--color-custom)] border-[var(--color-custom)] text-white shadow-sm"
-                  : "bg-white border-gray-200 text-gray-700 hover:border-[var(--color-custom)]"
-              }`}
-            >
-              <Store size={16} aria-hidden="true" /> Retiro
-            </button>
-            <button
-              type="button"
-              role="radio"
-              aria-checked={form.esDelivery}
-              onClick={() => setForm({ ...form, esDelivery: true })}
-              className={`flex items-center justify-center gap-2 p-3 text-sm font-medium rounded-xl border transition-all ${
-                form.esDelivery
-                  ? "bg-[var(--color-custom)] border-[var(--color-custom)] text-white shadow-sm"
-                  : "bg-white border-gray-200 text-gray-700 hover:border-[var(--color-custom)]"
-              }`}
-            >
-              <Truck size={16} aria-hidden="true" /> Envío
-            </button>
-          </div>
-
-          {form.esDelivery && (
-            <div className="p-4 rounded-xl border border-[var(--color-custom)]/30 bg-[var(--color-custom)]/5 space-y-3 animate-in fade-in zoom-in-95 duration-200">
-              <div className="flex justify-between items-center text-sm font-medium text-gray-700">
-                <span>Costo de envío:</span>
-                <span className="font-semibold text-gray-900">
-                  {simbolo}
-                  {formatMoney(config.costo_envio || 0)}
-                </span>
+          <Label className="text-[var(--color-custom-900)]">
+            Forma de Entrega
+          </Label>
+          <Controller
+            control={control}
+            name="esDelivery"
+            render={({ field }) => (
+              <div
+                className="grid grid-cols-2 gap-3"
+                role="radiogroup"
+                aria-label="Forma de entrega"
+              >
+                <button
+                  type="button"
+                  role="radio"
+                  aria-checked={!field.value}
+                  onClick={() => field.onChange(false)}
+                  className={`flex items-center justify-center gap-2 p-3 text-sm font-medium rounded-xl border transition-all ${
+                    !field.value
+                      ? "bg-[var(--color-custom-500)] border-[var(--color-custom-500)] text-white shadow-sm"
+                      : "bg-[var(--color-custom-surface-strong)] border-[var(--color-custom-border)] text-[var(--color-custom-text-muted)] hover:border-[var(--color-custom-500)]"
+                  }`}
+                >
+                  <Store size={16} aria-hidden="true" /> Retiro
+                </button>
+                <button
+                  type="button"
+                  role="radio"
+                  aria-checked={field.value}
+                  onClick={() => field.onChange(true)}
+                  className={`flex items-center justify-center gap-2 p-3 text-sm font-medium rounded-xl border transition-all ${
+                    field.value
+                      ? "bg-[var(--color-custom-500)] border-[var(--color-custom-500)] text-white shadow-sm"
+                      : "bg-[var(--color-custom-surface-strong)] border-[var(--color-custom-border)] text-[var(--color-custom-text-muted)] hover:border-[var(--color-custom-500)]"
+                  }`}
+                >
+                  <Truck size={16} aria-hidden="true" /> Envío
+                </button>
               </div>
-              <Input
-                name="direccion"
-                required
-                placeholder="Calle, Número, Depto..."
-                value={form.direccion}
-                onChange={handleInputChange}
-                className="bg-white text-gray-900"
-              />
-            </div>
-          )}
+            )}
+          />
+
+          <AnimatePresence>
+            {esDelivery && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.2 }}
+                className="p-4 rounded-xl border border-[var(--color-custom-500)]/30 bg-[var(--color-custom-500)]/5 space-y-3 overflow-hidden"
+              >
+                <div className="flex justify-between items-center text-sm font-medium text-[var(--color-custom-text-muted)]">
+                  <span>Costo de envío:</span>
+                  <span className="font-semibold text-[var(--color-custom-900)]">
+                    {simbolo}
+                    {formatMoney(config.costo_envio || 0)}
+                  </span>
+                </div>
+                <Input
+                  {...register("direccion")}
+                  placeholder="Calle, Número, Depto..."
+                  className="bg-[var(--color-custom-surface-strong)] text-[var(--color-custom-900)] border-[var(--color-custom-border)]"
+                />
+                {errors.direccion && (
+                  <motion.p
+                    initial={{ opacity: 0, y: -5 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="text-xs text-red-500"
+                  >
+                    {errors.direccion.message}
+                  </motion.p>
+                )}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
         <div className="space-y-3">
-          <Label>Medio de Pago</Label>
-          <div className="grid grid-cols-2 gap-3" role="radiogroup" aria-label="Medio de pago">
-            <button
-              type="button"
-              role="radio"
-              aria-checked={form.metodoPago === "efectivo"}
-              onClick={() => setForm({ ...form, metodoPago: "efectivo" })}
-              className={`flex items-center justify-center gap-2 p-3 text-sm font-medium rounded-xl border transition-all ${
-                form.metodoPago === "efectivo"
-                  ? "bg-[var(--color-custom)] border-[var(--color-custom)] text-white shadow-sm"
-                  : "bg-white border-gray-200 text-gray-700 hover:border-[var(--color-custom)]"
-              }`}
-            >
-              <Banknote size={16} aria-hidden="true" /> Efectivo
-            </button>
-            <button
-              type="button"
-              role="radio"
-              aria-checked={form.metodoPago === "transferencia"}
-              onClick={() => setForm({ ...form, metodoPago: "transferencia" })}
-              className={`flex items-center justify-center gap-2 p-3 text-sm font-medium rounded-xl border transition-all ${
-                form.metodoPago === "transferencia"
-                  ? "bg-[var(--color-custom)] border-[var(--color-custom)] text-white shadow-sm"
-                  : "bg-white border-gray-200 text-gray-700 hover:border-[var(--color-custom)]"
-              }`}
-            >
-              <CreditCard size={16} aria-hidden="true" /> Transferencia
-            </button>
-          </div>
+          <Label className="text-[var(--color-custom-900)]">
+            Medio de Pago
+          </Label>
+          <Controller
+            control={control}
+            name="metodoPago"
+            render={({ field }) => (
+              <div
+                className="grid grid-cols-2 gap-3"
+                role="radiogroup"
+                aria-label="Medio de pago"
+              >
+                <button
+                  type="button"
+                  role="radio"
+                  aria-checked={field.value === "efectivo"}
+                  onClick={() => field.onChange("efectivo")}
+                  className={`flex items-center justify-center gap-2 p-3 text-sm font-medium rounded-xl border transition-all ${
+                    field.value === "efectivo"
+                      ? "bg-[var(--color-custom-500)] border-[var(--color-custom-500)] text-white shadow-sm"
+                      : "bg-[var(--color-custom-surface-strong)] border-[var(--color-custom-border)] text-[var(--color-custom-text-muted)] hover:border-[var(--color-custom-500)]"
+                  }`}
+                >
+                  <Banknote size={16} aria-hidden="true" /> Efectivo
+                </button>
+                <button
+                  type="button"
+                  role="radio"
+                  aria-checked={field.value === "transferencia"}
+                  onClick={() => field.onChange("transferencia")}
+                  className={`flex items-center justify-center gap-2 p-3 text-sm font-medium rounded-xl border transition-all ${
+                    field.value === "transferencia"
+                      ? "bg-[var(--color-custom-500)] border-[var(--color-custom-500)] text-white shadow-sm"
+                      : "bg-[var(--color-custom-surface-strong)] border-[var(--color-custom-border)] text-[var(--color-custom-text-muted)] hover:border-[var(--color-custom-500)]"
+                  }`}
+                >
+                  <CreditCard size={16} aria-hidden="true" /> Transferencia
+                </button>
+              </div>
+            )}
+          />
         </div>
 
         <div className="space-y-1.5 pb-4">
-          <Label>Aclaraciones (Opcional)</Label>
+          <Label className="text-[var(--color-custom-900)]">
+            Aclaraciones (Opcional)
+          </Label>
           <textarea
-            name="notas"
-            value={form.notas}
-            onChange={handleInputChange}
-            className="w-full p-3 bg-white border border-gray-300 rounded-md text-sm resize-none h-20 text-gray-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-custom)] focus-visible:ring-offset-2"
+            {...register("notas")}
+            className="w-full p-3 bg-[var(--color-custom-surface-strong)] border border-[var(--color-custom-border)] rounded-md text-sm resize-none h-20 text-[var(--color-custom-900)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-custom-500)] focus-visible:ring-offset-2"
             placeholder="Ej: Sin aderezos, timbre no anda..."
           />
+          {errors.notas && (
+            <motion.p
+              initial={{ opacity: 0, y: -5 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-xs text-red-500"
+            >
+              {errors.notas.message}
+            </motion.p>
+          )}
         </div>
       </div>
 
-      <div className="pt-5 border-t border-gray-100 bg-white space-y-4">
+      <motion.div
+        layout
+        className="pt-5 border-t border-[var(--color-custom-border)] bg-[var(--color-custom-surface-strong)] space-y-4"
+      >
         <div className="flex justify-between items-end">
-          <span className="text-sm font-medium text-gray-500">
+          <span className="text-sm font-medium text-[var(--color-custom-text-muted)]">
             Total Final:
           </span>
-          <span className="text-3xl font-bold text-gray-900 tracking-tight">
+          <motion.span
+            key={totalFinal}
+            initial={{ scale: 1.1 }}
+            animate={{ scale: 1 }}
+            className="text-3xl font-bold text-[var(--color-custom-900)] tracking-tight"
+          >
             {simbolo}
             {formatMoney(totalFinal)}
-          </span>
+          </motion.span>
         </div>
-        <button
+        <motion.button
           type="submit"
           disabled={isPending}
-          className="w-full bg-[var(--color-custom)] hover:bg-[var(--color-custom)]/90 text-white rounded-xl py-3.5 font-semibold text-sm shadow-md transition-all flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+          whileHover={{ scale: 1.01 }}
+          whileTap={{ scale: 0.99 }}
+          className="w-full bg-[var(--color-custom-500)] hover:bg-[var(--color-custom-600)] text-white rounded-xl py-3.5 font-semibold text-sm shadow-md transition-colors flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
         >
           {isPending ? (
             <>
@@ -336,8 +473,8 @@ export function OrderForm({
           ) : (
             "Confirmar Pedido por WhatsApp"
           )}
-        </button>
-      </div>
-    </form>
+        </motion.button>
+      </motion.div>
+    </motion.form>
   );
 }
