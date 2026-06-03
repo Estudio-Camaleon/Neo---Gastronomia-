@@ -20,6 +20,9 @@ declare global {
       // Integraciones de Mensajería (WhatsApp Engine)
       WHATSAPP_API_URL?: string;
       WHATSAPP_TOKEN?: string;
+
+      // SMTP para correos transaccionales (local Supabase)
+      RESEND_API_KEY?: string;
     }
   }
 }

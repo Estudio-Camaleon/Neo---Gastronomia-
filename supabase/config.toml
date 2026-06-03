@@ -234,15 +234,15 @@ otp_expiry = 3600
 # Configurá SMTP custom acá (y en el Dashboard de Supabase) para enviar correos
 # con tu propio dominio y sin límites tan restrictivos.
 #
-# Proveedores recomendados: SendGrid, Resend, AWS SES.
+# Proveedores: Resend (recomendado), SendGrid, AWS SES.
 # ──────────────────────────────────────────────────────────────────────────────
 
 # [auth.email.smtp]
 # enabled = true
-# host = "smtp.sendgrid.net"
+# host = "smtp.resend.com"
 # port = 587
-# user = "apikey"
-# pass = "env(SENDGRID_API_KEY)"
+# user = "resend"
+# pass = "env(RESEND_API_KEY)"
 # admin_email = "no-reply@tudominio.com"
 # sender_name = "NEO Gastro"
 
