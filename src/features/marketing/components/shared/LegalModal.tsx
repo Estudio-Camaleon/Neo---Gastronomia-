@@ -21,10 +21,10 @@ export function LegalModal({
     if (isOpen) {
       document.body.style.overflow = "hidden";
     } else {
-      document.body.style.overflow = "unset";
+      document.body.style.overflow = "";
     }
     return () => {
-      document.body.style.overflow = "unset";
+      document.body.style.overflow = "";
     };
   }, [isOpen]);
 
@@ -34,7 +34,7 @@ export function LegalModal({
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6">
       {/* Overlay oscuro con blur */}
       <div
-        className="absolute inset-0 bg-[#0a1811]/60 backdrop-blur-sm transition-opacity animate-fade-in"
+        className="absolute inset-0 bg-[#0a1811]/60 backdrop-blur-sm animate-in fade-in duration-300"
         onClick={onClose}
         aria-hidden="true"
       />
