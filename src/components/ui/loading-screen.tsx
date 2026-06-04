@@ -200,4 +200,3 @@ export function LoadingScreen({ variant = "root" }: LoadingScreenProps) {
     </div>
   );
 }
-

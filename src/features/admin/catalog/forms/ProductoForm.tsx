@@ -268,7 +268,10 @@ export function ProductoForm({
               <textarea
                 value={formData.descripcion || ""}
                 onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, descripcion: e.target.value }))
+                  setFormData((prev) => ({
+                    ...prev,
+                    descripcion: e.target.value,
+                  }))
                 }
                 className="w-full p-2.5 bg-[var(--admin-bg)] border border-[var(--admin-border)] rounded-lg text-sm text-[var(--admin-text)] resize-none h-24 focus:outline-none focus:border-[var(--admin-accent)] focus:ring-1 focus:ring-[var(--admin-accent)] transition-all"
                 placeholder="Detalla los ingredientes del plato..."
@@ -355,7 +358,7 @@ export function ProductoForm({
                 {variantes.map((v, idx) => (
                   <div
                     key={variantIds.current[idx]}
-                    className="flex gap-2 items-center bg-[var(--admin-surface)] p-2 border border-[var(--admin-border)] rounded-lg shadow-sm"
+                    className="flex flex-wrap gap-2 items-center bg-[var(--admin-surface)] p-2 border border-[var(--admin-border)] rounded-lg shadow-sm"
                   >
                     <input
                       type="text"
@@ -457,7 +460,10 @@ export function ProductoForm({
                     {/* Sub-items del Grupo */}
                     <div className="space-y-2 pl-2 sm:pl-4 border-l-2 border-[var(--admin-border)]">
                       {grupo.items?.map((item) => (
-                        <div key={item.id} className="flex gap-2 items-center">
+                        <div
+                          key={item.id}
+                          className="flex flex-wrap gap-2 items-center"
+                        >
                           <input
                             type="text"
                             required

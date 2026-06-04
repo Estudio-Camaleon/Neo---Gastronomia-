@@ -74,9 +74,7 @@ export function RegisterForm() {
     {},
   );
 
-  const debounceRef = useRef<Record<string, ReturnType<typeof setTimeout>>>(
-    {},
-  );
+  const debounceRef = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
 
   const getPasswordStrength = (pass: string) => {
     if (pass.length === 0) {
@@ -114,19 +112,16 @@ export function RegisterForm() {
 
   const strength = getPasswordStrength(password);
 
-  const checkDuplicate = useCallback(
-    async (field: string, value: string) => {
-      if (!value || value.length < (field === "email" ? 5 : 2)) {
-        setDuplicates((prev) => ({ ...prev, [field]: null }));
-        return;
-      }
-      setCheckingFields((prev) => ({ ...prev, [field]: true }));
-      const res = await checkDuplicateAction(field, value);
-      setDuplicates((prev) => ({ ...prev, [field]: res.exists ?? false }));
-      setCheckingFields((prev) => ({ ...prev, [field]: false }));
-    },
-    [],
-  );
+  const checkDuplicate = useCallback(async (field: string, value: string) => {
+    if (!value || value.length < (field === "email" ? 5 : 2)) {
+      setDuplicates((prev) => ({ ...prev, [field]: null }));
+      return;
+    }
+    setCheckingFields((prev) => ({ ...prev, [field]: true }));
+    const res = await checkDuplicateAction(field, value);
+    setDuplicates((prev) => ({ ...prev, [field]: res.exists ?? false }));
+    setCheckingFields((prev) => ({ ...prev, [field]: false }));
+  }, []);
 
   const debouncedCheck = useCallback(
     (field: string, value: string) => {
@@ -195,9 +190,7 @@ export function RegisterForm() {
       duplicates["whatsapp"] === true;
 
     if (hasDuplicates) {
-      setErrorMsg(
-        "Corregí los campos marcados en rojo antes de continuar.",
-      );
+      setErrorMsg("Corregí los campos marcados en rojo antes de continuar.");
       return;
     }
 
@@ -239,7 +232,8 @@ export function RegisterForm() {
     emailSchemaCheck &&
     !checkingFields["email"] &&
     duplicates["email"] === false;
-  const passwordsMatch = password === confirmPassword && confirmPassword.length > 0;
+  const passwordsMatch =
+    password === confirmPassword && confirmPassword.length > 0;
   const passwordReady = strength.score >= 2 && passwordsMatch;
   const canProceedToStep2 = emailReady && passwordReady;
 
@@ -290,10 +284,7 @@ export function RegisterForm() {
               {isEmailRegistered && (
                 <p className="text-[11px] text-red-500 font-medium mt-1">
                   Este correo ya está registrado.{" "}
-                  <a
-                    href="/login"
-                    className="underline hover:text-red-600"
-                  >
+                  <a href="/login" className="underline hover:text-red-600">
                     Iniciá sesión
                   </a>
                 </p>
@@ -374,9 +365,7 @@ export function RegisterForm() {
               onClick={handleNextStep}
               disabled={!canProceedToStep2}
               className={`auth-btn-primary mt-2 w-full ${
-                !canProceedToStep2
-                  ? "opacity-50 cursor-not-allowed"
-                  : ""
+                !canProceedToStep2 ? "opacity-50 cursor-not-allowed" : ""
               }`}
             >
               Continuar <ArrowRight size={16} />
@@ -429,7 +418,8 @@ export function RegisterForm() {
                   className={`auth-input pr-10 ${
                     isNombreRegistered
                       ? "border-red-400 focus-visible:ring-red-400"
-                      : duplicates["nombre"] === false && nombreNegocio.length >= 2
+                      : duplicates["nombre"] === false &&
+                          nombreNegocio.length >= 2
                         ? "border-green-400 focus-visible:ring-green-400"
                         : ""
                   }`}
@@ -614,8 +604,8 @@ export function RegisterForm() {
               >
                 {loading ? (
                   <>
-                    <Loader2 className="w-4 h-4 animate-spin" />{" "}
-                    Creando cuenta...
+                    <Loader2 className="w-4 h-4 animate-spin" /> Creando
+                    cuenta...
                   </>
                 ) : (
                   <>

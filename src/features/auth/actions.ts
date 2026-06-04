@@ -33,8 +33,7 @@ export async function loginAction(payload: {
   const parsed = loginSchema.safeParse(payload);
   if (!parsed.success) {
     return {
-      error:
-        parsed.error.issues[0]?.message || "Datos de acceso inválidos.",
+      error: parsed.error.issues[0]?.message || "Datos de acceso inválidos.",
     };
   }
   const { email, password } = parsed.data;
@@ -106,12 +105,19 @@ export async function registerAction(payload: {
   const parsed = registerSchema.safeParse(payload);
   if (!parsed.success) {
     return {
-      error:
-        parsed.error.issues[0]?.message || "Datos de registro inválidos.",
+      error: parsed.error.issues[0]?.message || "Datos de registro inválidos.",
     };
   }
 
-  const { email, password, nombreNegocio, slug, whatsapp, direccion, color_primary } = parsed.data;
+  const {
+    email,
+    password,
+    nombreNegocio,
+    slug,
+    whatsapp,
+    direccion,
+    color_primary,
+  } = parsed.data;
 
   const ip = (await headers()).get("x-forwarded-for") ?? "unknown";
   if (!checkRateLimit(`register:${ip}`, 5)) {
@@ -121,7 +127,9 @@ export async function registerAction(payload: {
   // Verificar duplicados (server-side, doble validación)
   const { data: existingEmail } = await supabaseAdmin.auth.admin.listUsers();
   if (existingEmail?.users.some((u) => u.email?.toLowerCase() === email)) {
-    return { error: "El correo ya está registrado. Inicia sesión o usa otro correo." };
+    return {
+      error: "El correo ya está registrado. Inicia sesión o usa otro correo.",
+    };
   }
 
   const { data: nombresEncontrados } = await supabaseAdmin

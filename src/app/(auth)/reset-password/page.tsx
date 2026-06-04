@@ -65,8 +65,10 @@ export default function ResetPasswordPage() {
     if (/[A-Z]/.test(pass)) points++;
     if (/[0-9]/.test(pass)) points++;
     if (/[^A-Za-z0-9]/.test(pass)) points++;
-    if (points <= 1) return { score: 1, label: "Insegura", color: "bg-red-400" };
-    if (points <= 3) return { score: 2, label: "Moderada", color: "bg-amber-400" };
+    if (points <= 1)
+      return { score: 1, label: "Insegura", color: "bg-red-400" };
+    if (points <= 3)
+      return { score: 2, label: "Moderada", color: "bg-amber-400" };
     return { score: 3, label: "Fuerte", color: "bg-[var(--auth-primary)]" };
   };
 
@@ -103,14 +105,24 @@ export default function ResetPasswordPage() {
           <div className="absolute top-[40%] right-[30%] w-[300px] h-[300px] bg-[var(--auth-primary-soft)]/20 rounded-full auth-blob-secondary" />
         </div>
         <div className="flex-1 grid lg:grid-cols-12 overflow-hidden relative z-10">
-          <section className="hidden lg:flex lg:col-span-7 relative p-16 flex-col justify-between items-center overflow-hidden bg-gradient-to-br from-[var(--auth-bg)] via-transparent to-[var(--auth-primary-soft)]/10 border-r border-[var(--auth-border)]">
+          <section className="hidden lg:flex lg:col-span-7 relative p-12 xl:p-16 flex-col justify-between items-center overflow-hidden bg-gradient-to-br from-[var(--auth-bg)] via-transparent to-[var(--auth-primary-soft)]/10 border-r border-[var(--auth-border)]">
             <div className="absolute inset-0 auth-dot-grid opacity-30 pointer-events-none" />
             <div className="absolute top-[-15%] left-[-10%] w-[600px] h-[600px] bg-[var(--auth-primary)]/5 rounded-full auth-blob pointer-events-none" />
             <div className="absolute bottom-[-20%] right-[-15%] w-[500px] h-[500px] bg-[var(--auth-accent-secondary)]/8 rounded-full auth-blob-reverse pointer-events-none" />
             <div className="w-full text-left z-10">
-              <TransitionLink href="/" className="inline-block transition-all duration-300 hover:scale-[1.02] active:scale-95">
+              <TransitionLink
+                href="/"
+                className="inline-block transition-all duration-300 hover:scale-[1.02] active:scale-95"
+              >
                 <div className="relative h-8 w-24">
-                  <Image src="/icons/neo_logo_negro.webp" alt="NEO" fill sizes="96px" className="object-contain" priority />
+                  <Image
+                    src="/icons/neo_logo_negro.webp"
+                    alt="NEO"
+                    fill
+                    sizes="96px"
+                    className="object-contain"
+                    priority
+                  />
                 </div>
               </TransitionLink>
             </div>
@@ -118,7 +130,7 @@ export default function ResetPasswordPage() {
               <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center">
                 <CheckCircle2 className="h-8 w-8 text-green-600" />
               </div>
-              <h1 className="text-3xl font-bold text-[var(--auth-text)] text-center">
+              <h1 className="text-2xl xl:text-3xl font-bold text-[var(--auth-text)] text-center">
                 Contraseña actualizada
               </h1>
               <p className="text-sm text-[var(--auth-text-muted)] text-center max-w-sm">
@@ -133,14 +145,21 @@ export default function ResetPasswordPage() {
               </button>
             </div>
           </section>
-          <section className="col-span-12 lg:col-span-5 flex flex-col justify-center items-center p-6 md:p-12 bg-[var(--auth-surface-form)] backdrop-blur-xl">
+          <section className="col-span-12 lg:col-span-5 flex flex-col justify-center items-center p-4 sm:p-6 md:p-12 bg-[var(--auth-surface-form)] backdrop-blur-xl">
             <div className="absolute top-[-5%] right-[-10%] w-[300px] h-[300px] bg-[var(--auth-primary)]/5 rounded-full auth-blob pointer-events-none" />
             <div className="absolute bottom-[-5%] left-[-10%] w-[250px] h-[250px] bg-[var(--auth-accent-secondary)]/6 rounded-full auth-blob-reverse pointer-events-none" />
             <div className="w-full max-w-md space-y-8 relative z-10">
               <div className="flex lg:hidden justify-center mb-4">
                 <TransitionLink href="/">
                   <div className="relative h-8 w-24">
-                    <Image src="/icons/neo_logo_negro.webp" alt="NEO" fill sizes="96px" className="object-contain" priority />
+                    <Image
+                      src="/icons/neo_logo_negro.webp"
+                      alt="NEO"
+                      fill
+                      sizes="96px"
+                      className="object-contain"
+                      priority
+                    />
                   </div>
                 </TransitionLink>
               </div>
@@ -179,7 +198,7 @@ export default function ResetPasswordPage() {
 
       <div className="flex-1 grid lg:grid-cols-12 overflow-hidden relative z-10">
         {/* === SECCIÓN IZQUIERDA: HERO === */}
-        <section className="hidden lg:flex lg:col-span-7 relative p-16 flex-col justify-between items-center overflow-hidden bg-gradient-to-br from-[var(--auth-bg)] via-transparent to-[var(--auth-primary-soft)]/10 border-r border-[var(--auth-border)]">
+        <section className="hidden lg:flex lg:col-span-7 relative p-12 xl:p-16 flex-col justify-between items-center overflow-hidden bg-gradient-to-br from-[var(--auth-bg)] via-transparent to-[var(--auth-primary-soft)]/10 border-r border-[var(--auth-border)]">
           {/* Dot grid */}
           <div className="absolute inset-0 auth-dot-grid opacity-30 pointer-events-none" />
 
@@ -216,7 +235,7 @@ export default function ResetPasswordPage() {
               <div className="w-14 h-14 rounded-2xl bg-[var(--auth-primary-soft)] flex items-center justify-center mx-auto">
                 <Lock className="w-7 h-7 text-[var(--auth-primary)]" />
               </div>
-              <h1 className="text-4xl xl:text-5xl font-black tracking-tight text-[var(--auth-accent)] leading-[0.95] uppercase">
+              <h1 className="text-3xl xl:text-5xl font-black tracking-tight text-[var(--auth-accent)] leading-[0.95] uppercase">
                 Restablecé tu{" "}
                 <span className="text-[var(--auth-accent-muted)] font-light italic normal-case">
                   contraseña
@@ -248,26 +267,24 @@ export default function ResetPasswordPage() {
 
             {/* Badges */}
             <div className="flex flex-wrap justify-center gap-2">
-              {["Seguridad", "Encriptado", "Sin riesgos"].map(
-                (feat, idx) => (
-                  <div
-                    key={idx}
-                    className="auth-badge animate-in fade-in slide-in-from-bottom-2 duration-500"
-                    style={{ animationDelay: `${300 + idx * 100}ms` }}
-                  >
-                    <KeyRound size={12} />
-                    <span className="text-[10px] font-black uppercase tracking-wider">
-                      {feat}
-                    </span>
-                  </div>
-                ),
-              )}
+              {["Seguridad", "Encriptado", "Sin riesgos"].map((feat, idx) => (
+                <div
+                  key={idx}
+                  className="auth-badge animate-in fade-in slide-in-from-bottom-2 duration-500"
+                  style={{ animationDelay: `${300 + idx * 100}ms` }}
+                >
+                  <KeyRound size={12} />
+                  <span className="text-[10px] font-black uppercase tracking-wider">
+                    {feat}
+                  </span>
+                </div>
+              ))}
             </div>
           </div>
         </section>
 
         {/* === SECCIÓN DERECHA: FORMULARIO === */}
-        <section className="col-span-12 lg:col-span-5 flex flex-col justify-center items-center p-6 md:p-12 relative bg-[var(--auth-surface-form)] backdrop-blur-xl">
+        <section className="col-span-12 lg:col-span-5 flex flex-col justify-center items-center p-4 sm:p-6 md:p-12 relative bg-[var(--auth-surface-form)] backdrop-blur-xl">
           {/* Blobs sutiles del form */}
           <div className="absolute top-[-5%] right-[-10%] w-[300px] h-[300px] bg-[var(--auth-primary)]/5 rounded-full auth-blob pointer-events-none" />
           <div className="absolute bottom-[-5%] left-[-10%] w-[250px] h-[250px] bg-[var(--auth-accent-secondary)]/6 rounded-full auth-blob-reverse pointer-events-none" />
@@ -382,8 +399,7 @@ export default function ResetPasswordPage() {
               >
                 {loading ? (
                   <>
-                    <Loader2 className="h-4 w-4 animate-spin" />{" "}
-                    Actualizando...
+                    <Loader2 className="h-4 w-4 animate-spin" /> Actualizando...
                   </>
                 ) : (
                   <>

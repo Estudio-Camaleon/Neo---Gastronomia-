@@ -173,9 +173,7 @@ export function LoginForm() {
 
     const result = loginSchema.safeParse({ email, password });
     if (!result.success) {
-      setError(
-        result.error.issues[0]?.message || "Datos de acceso inválidos.",
-      );
+      setError(result.error.issues[0]?.message || "Datos de acceso inválidos.");
       return;
     }
 

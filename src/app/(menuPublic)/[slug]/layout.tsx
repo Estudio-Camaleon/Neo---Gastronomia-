@@ -65,14 +65,14 @@ export default async function PublicLayout({
           "--admin-accent-strong": palette.deep,
         } as React.CSSProperties
       }
-      className="relative min-h-screen bg-[var(--color-custom-surface)] text-[var(--color-custom-text)] font-sans antialiased selection:bg-[var(--color-custom-deep)] selection:text-white"
+      className="relative min-h-screen bg-[var(--color-custom-surface)] text-[var(--color-custom-text)] font-sans antialiased selection:bg-[var(--color-custom-deep)] selection:text-white overflow-x-hidden"
     >
       <div
         aria-hidden="true"
         className="pointer-events-none absolute inset-0 z-0 overflow-hidden"
       >
         <svg
-          className="absolute -top-12 -left-8 md:-left-24 w-[420px] md:w-[520px] h-[420px] md:h-[520px] opacity-60"
+          className="absolute -top-8 -left-4 sm:-top-12 sm:-left-8 md:-left-24 w-[260px] sm:w-[420px] md:w-[520px] h-[260px] sm:h-[420px] md:h-[520px] opacity-40 sm:opacity-60"
           viewBox="0 0 600 600"
           xmlns="http://www.w3.org/2000/svg"
         >
@@ -92,7 +92,7 @@ export default async function PublicLayout({
         </svg>
 
         <svg
-          className="absolute -bottom-12 -right-8 md:-bottom-28 md:-right-24 w-[480px] md:w-[640px] h-[480px] md:h-[640px] opacity-55"
+          className="absolute -bottom-8 -right-8 sm:-bottom-12 sm:-right-8 md:-bottom-28 md:-right-24 w-[300px] sm:w-[480px] md:w-[640px] h-[300px] sm:h-[480px] md:h-[640px] opacity-40 sm:opacity-55"
           viewBox="0 0 800 800"
           xmlns="http://www.w3.org/2000/svg"
         >

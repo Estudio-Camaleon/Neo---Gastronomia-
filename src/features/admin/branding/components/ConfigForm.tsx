@@ -108,7 +108,9 @@ export function ConfigForm({
   userId: string;
 }) {
   const router = useRouter();
-  const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "success" | "error">("idle");
+  const [saveStatus, setSaveStatus] = useState<
+    "idle" | "saving" | "success" | "error"
+  >("idle");
   const [isDeleting, setIsDeleting] = useState(false);
   const [uploading, setUploading] = useState<string | null>(null);
   const successTimerRef = useRef<ReturnType<typeof setTimeout>>(null);
@@ -420,9 +422,15 @@ export function ConfigForm({
             {saveStatus === "saving" ? (
               <Loader2 className="animate-spin" size={14} />
             ) : saveStatus === "success" ? (
-              <CheckCircle2 className="animate-in zoom-in-50 duration-200" size={14} />
+              <CheckCircle2
+                className="animate-in zoom-in-50 duration-200"
+                size={14}
+              />
             ) : saveStatus === "error" ? (
-              <XCircle className="animate-in zoom-in-50 duration-200" size={14} />
+              <XCircle
+                className="animate-in zoom-in-50 duration-200"
+                size={14}
+              />
             ) : (
               <Save size={14} />
             )}

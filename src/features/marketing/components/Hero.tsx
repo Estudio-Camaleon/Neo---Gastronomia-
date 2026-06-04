@@ -8,7 +8,7 @@ export function Hero() {
   return (
     <section
       id="hero"
-      className="relative overflow-hidden pb-12 pt-16 sm:pb-16 sm:pt-24 md:pb-24 md:pt-28"
+      className="relative overflow-hidden pb-12 pt-16 sm:pb-16 sm:pt-20 md:pb-24 md:pt-28"
     >
       <div className="pointer-events-none absolute right-0 top-24 h-32 w-32 sm:h-64 sm:w-64 rounded-full bg-[var(--theme-primary-soft-2)] blur-3xl opacity-20 sm:opacity-28" />
 
@@ -16,14 +16,14 @@ export function Hero() {
         {/* --- COLUMNA IZQUIERDA: Copy y CTA --- */}
         <div className="space-y-5 sm:space-y-8 lg:pr-2 xl:pr-6">
           <div className="space-y-4 sm:space-y-6 max-w-3xl">
-            <h1 className="text-5xl sm:text-5xl md:text-7xl font-black uppercase leading-[0.9] text-[var(--theme-text)] animate-fade-in-up delay-100">
+            <h1 className="text-fluid-4xl sm:text-fluid-5xl md:text-7xl font-black uppercase leading-[0.9] text-[var(--theme-text)] animate-fade-in-up delay-100">
               Menú digital y pedidos{" "}
               <span className="text-[var(--theme-primary)]">
                 sin comisiones
               </span>
             </h1>
 
-            <p className="max-w-2xl text-sm sm:text-lg md:text-xl font-medium leading-relaxed text-[var(--theme-text-muted)] animate-fade-in-up delay-200">
+            <p className="max-w-2xl text-fluid-sm sm:text-lg md:text-xl font-medium leading-relaxed text-[var(--theme-text-muted)] animate-fade-in-up delay-200">
               Modernizá la atención de tu local. Creá tu menú en minutos, recibí
               pedidos directamente en tu WhatsApp y gestioná tus ventas desde un
               panel centralizado.
@@ -50,7 +50,7 @@ export function Hero() {
             <div className="neo-panel flex flex-col gap-3 rounded-[20px] sm:rounded-[28px] sm:flex-row sm:items-center">
               <TransitionLink
                 href="/registro"
-                className="group flex items-center justify-center gap-2 rounded-xl sm:rounded-2xl bg-[var(--theme-primary)] px-5 py-3 sm:px-6 sm:py-3.5 text-xs sm:text-sm font-black uppercase tracking-tight text-white transition-all hover:opacity-90 active:scale-95"
+                className="group flex items-center justify-center gap-2 rounded-xl sm:rounded-2xl bg-[var(--theme-primary)] px-5 py-3 sm:px-6 sm:py-3.5 text-xs sm:text-sm font-black uppercase tracking-tight text-white transition-all hover:opacity-90 active:scale-95 w-full sm:w-auto touch-target"
               >
                 Crear mi menú gratis
                 <ArrowRight className="h-3.5 sm:h-4 w-3.5 sm:w-4 transition-transform group-hover:translate-x-1" />
@@ -61,10 +61,10 @@ export function Hero() {
 
         {/* --- COLUMNA DERECHA: Mockup del Panel de Gestión --- */}
         <div className="relative mx-auto w-full max-w-lg sm:max-w-2xl lg:max-w-none animate-fade-in-up delay-500 mt-4 sm:mt-8 lg:mt-0">
-          <div className="absolute -left-6 top-8 h-24 w-24 rounded-full bg-[var(--theme-primary-soft)] blur-2xl opacity-80" />
-          <div className="absolute -right-6 bottom-10 h-28 w-28 rounded-full bg-[var(--theme-primary-soft-2)] blur-2xl opacity-60" />
+          <div className="absolute -left-4 sm:-left-6 top-8 h-20 w-20 sm:h-24 sm:w-24 rounded-full bg-[var(--theme-primary-soft)] blur-2xl opacity-80" />
+          <div className="absolute -right-4 sm:-right-6 bottom-10 h-24 w-24 sm:h-28 sm:w-28 rounded-full bg-[var(--theme-primary-soft-2)] blur-2xl opacity-60" />
 
-          {/* Floating badges */}
+          {/* Floating badges - hidden below sm, visible sm+ */}
           <div className="absolute -top-3 -right-3 z-10 hidden animate-float sm:flex items-center gap-2 rounded-xl border border-[var(--theme-border)] bg-white/90 px-3 py-2 shadow-lg backdrop-blur-sm">
             <TrendingUp className="h-4 w-4 text-green-600" />
             <span className="text-xs font-black uppercase tracking-tight text-[var(--theme-text)]">

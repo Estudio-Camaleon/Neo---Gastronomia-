@@ -13,9 +13,7 @@ export const registerSchema = z.object({
     .string()
     .email("El correo no tiene un formato válido")
     .transform((v) => v.trim().toLowerCase()),
-  password: z
-    .string()
-    .min(8, "La contraseña debe tener al menos 8 caracteres"),
+  password: z.string().min(8, "La contraseña debe tener al menos 8 caracteres"),
   nombreNegocio: z
     .string()
     .min(2, "El nombre debe tener al menos 2 caracteres")
@@ -29,7 +27,10 @@ export const registerSchema = z.object({
     .transform((v) => v.trim().toLowerCase()),
   whatsapp: z
     .string()
-    .regex(/^\+?\d{7,15}$/, "Ingresa un número válido con código de país (ej: +5491123456789)")
+    .regex(
+      /^\+?\d{7,15}$/,
+      "Ingresa un número válido con código de país (ej: +5491123456789)",
+    )
     .optional()
     .or(z.literal("")),
   direccion: z
@@ -100,14 +101,11 @@ export const submitOrderSchema = z.object({
   direccion_entrega: z.string().nullable().optional(),
   metodo_pago: z.enum(["efectivo", "transferencia"]),
   notas: z.string().nullable().optional(),
-  total: z.number().min(0, "El total no puede ser negativo"),
   items: z
     .array(
       z.object({
         producto_id: z.string().min(1),
-        nombre_producto: z.string().min(1),
         cantidad: z.number().int().positive("La cantidad debe ser positiva"),
-        precio_unitario: z.number().min(0),
         detalles: z.string().nullable().optional(),
       }),
     )

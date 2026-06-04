@@ -198,13 +198,10 @@ export function OrderForm({
           ? sanitize(formData.direccion || "")
           : null,
         metodo_pago: formData.metodoPago,
-        total: totalFinal,
         notas: formData.notas ? sanitize(formData.notas) : null,
         items: cart.map((i) => ({
           producto_id: i.producto_id,
-          nombre_producto: i.nombre,
           cantidad: i.cantidad,
-          precio_unitario: i.precio,
           detalles:
             i.extras && i.extras.length > 0
               ? JSON.stringify(i.extras)

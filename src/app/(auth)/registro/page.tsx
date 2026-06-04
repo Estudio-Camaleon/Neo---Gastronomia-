@@ -38,7 +38,7 @@ export default function RegisterPage() {
 
       <div className="flex-1 grid lg:grid-cols-12 overflow-hidden relative z-10">
         {/* === SECCIÓN IZQUIERDA: HERO DE BENEFICIOS VIVO === */}
-        <section className="hidden lg:flex lg:col-span-7 relative p-16 flex-col justify-between items-center text-center overflow-hidden bg-gradient-to-br from-[var(--auth-bg)] via-transparent to-[var(--auth-primary-soft)]/10 border-r border-[var(--auth-border)]">
+        <section className="hidden lg:flex lg:col-span-7 relative p-12 xl:p-16 flex-col justify-between items-center text-center overflow-hidden bg-gradient-to-br from-[var(--auth-bg)] via-transparent to-[var(--auth-primary-soft)]/10 border-r border-[var(--auth-border)]">
           {/* Dot grid pattern */}
           <div className="absolute inset-0 auth-dot-grid opacity-30 pointer-events-none" />
 
@@ -72,13 +72,13 @@ export default function RegisterPage() {
           {/* Contenido Central */}
           <div className="flex-1 flex flex-col items-center justify-center space-y-12 max-w-xl z-10">
             <div className="space-y-4">
-              <h1 className="text-4xl xl:text-5xl font-black tracking-tight text-[var(--auth-accent)] leading-[0.95] uppercase">
+              <h1 className="text-3xl xl:text-5xl font-black tracking-tight text-[var(--auth-accent)] leading-[0.95] uppercase">
                 Tu menú digital <br />
                 <span className="text-[var(--auth-accent-muted)] font-light italic normal-case">
                   en 5 minutos
                 </span>
               </h1>
-              <p className="text-[var(--auth-text-muted)] text-base leading-relaxed max-w-md mx-auto font-medium">
+              <p className="text-[var(--auth-text-muted)] text-sm sm:text-base leading-relaxed max-w-md mx-auto font-medium">
                 Únete a los negocios que ya están vendiendo de forma inteligente
                 con NEO.
               </p>
@@ -121,7 +121,7 @@ export default function RegisterPage() {
         </section>
 
         {/* === SECCIÓN DERECHA: FORMULARIO DE REGISTRO === */}
-        <section className="col-span-12 lg:col-span-5 flex flex-col justify-center items-center p-6 md:p-12 xl:p-20 relative bg-[var(--auth-surface-form)] backdrop-blur-xl">
+        <section className="col-span-12 lg:col-span-5 flex flex-col justify-center items-center p-4 sm:p-6 md:p-12 xl:p-20 relative bg-[var(--auth-surface-form)] backdrop-blur-xl">
           {/* Blobs sutiles del lado del form */}
           <div className="absolute top-[-5%] right-[-10%] w-[300px] h-[300px] bg-[var(--auth-primary)]/5 rounded-full auth-blob pointer-events-none" />
           <div className="absolute bottom-[-5%] left-[-10%] w-[250px] h-[250px] bg-[var(--auth-accent-secondary)]/6 rounded-full auth-blob-reverse pointer-events-none" />

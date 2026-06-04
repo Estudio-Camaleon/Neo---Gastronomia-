@@ -58,7 +58,7 @@ export function SubscriptionPlans() {
         </div>
 
         {/* Grid de Planes */}
-        <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8 max-w-4xl mx-auto">
           {plans.map((plan, idx) => (
             <div
               key={plan.name}

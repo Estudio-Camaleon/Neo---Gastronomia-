@@ -37,6 +37,16 @@ export async function updateOrderStatusAction(
 
 /**
  * Inserción transaccional atómica ejecutada por el comensal.
+ *
+ * Delega en el RPC `submit_order_atomic` (Supabase/Postgres) que:
+ * - Valida que cada producto exista y pertenezca al negocio
+ * - Toma precio/nombre de la DB (el server es la autoridad)
+ * - Suma extras del JSON de `detalles` para el precio real
+ * - UPSERT del cliente por (negocio_id, telefono) en una sola pasada
+ * - Setea `cliente_id` en el pedido
+ * - Computa y persiste el total server-side
+ *
+ * El cliente solo envía { producto_id, cantidad, detalles }.
  */
 export async function submitOrderPublicAction(
   payload: z.infer<typeof submitOrderSchema>,
@@ -49,76 +59,35 @@ export async function submitOrderPublicAction(
     );
   }
 
-  const { data: pedidos, error: pedidoError } = await supabaseAdmin
-    .from("pedidos")
-    .insert({
-      negocio_id: parsed.data.negocio_id,
-      cliente_nombre: parsed.data.cliente_nombre.trim(),
-      cliente_whatsapp: parsed.data.cliente_whatsapp.trim(),
-      es_delivery: parsed.data.es_delivery,
-      direccion_entrega: parsed.data.es_delivery
-        ? (parsed.data.direccion_entrega?.trim() ?? null)
-        : null,
-      metodo_pago: parsed.data.metodo_pago,
-      total: parsed.data.total,
-      estado: "pendiente",
-      notas: parsed.data.notas?.trim() ?? null,
-    })
-    .select("id")
-    .limit(1);
-
-  const pedido = pedidos?.[0] ?? null;
-  if (pedidoError || !pedido) {
-    throw new Error(
-      pedidoError?.message || "Fallo crítico al inicializar la orden.",
-    );
-  }
-
-  // Crear o actualizar cliente por teléfono (no por nombre)
-  const clienteTelefono = parsed.data.cliente_whatsapp.trim();
-  const { data: clientesEncontrados } = await supabaseAdmin
-    .from("clientes")
-    .select("id")
-    .eq("negocio_id", parsed.data.negocio_id)
-    .eq("telefono", clienteTelefono)
-    .limit(1);
-
-  const clienteExistente = clientesEncontrados?.[0] ?? null;
-
-  if (clienteExistente) {
-    await supabaseAdmin
-      .from("clientes")
-      .update({
-        nombre: parsed.data.cliente_nombre.trim(),
-        direccion: parsed.data.direccion_entrega?.trim() ?? null,
-      })
-      .eq("id", clienteExistente.id);
-  } else {
-    await supabaseAdmin.from("clientes").insert({
-      negocio_id: parsed.data.negocio_id,
-      nombre: parsed.data.cliente_nombre.trim(),
-      telefono: clienteTelefono,
-      direccion: parsed.data.direccion_entrega?.trim() ?? null,
-    });
-  }
-
-  const itemsPayload = parsed.data.items.map((item) => ({
-    pedido_id: pedido.id,
+  const itemsJson = parsed.data.items.map((item) => ({
     producto_id: item.producto_id,
-    nombre_producto: item.nombre_producto,
     cantidad: item.cantidad,
-    precio_unitario: item.precio_unitario,
     detalles: item.detalles ?? null,
   }));
 
-  const { error: itemsError } = await supabaseAdmin
-    .from("pedido_items")
-    .insert(itemsPayload);
+  const { data: pedidoId, error } = await supabaseAdmin.rpc(
+    "submit_order_atomic",
+    {
+      p_negocio_id: parsed.data.negocio_id,
+      p_cliente_nombre: parsed.data.cliente_nombre,
+      p_cliente_whatsapp: parsed.data.cliente_whatsapp,
+      p_es_delivery: parsed.data.es_delivery,
+      p_direccion_entrega:
+        parsed.data.es_delivery && parsed.data.direccion_entrega
+          ? parsed.data.direccion_entrega
+          : "",
+      p_metodo_pago: parsed.data.metodo_pago,
+      p_notas: parsed.data.notas ?? "",
+      p_items: itemsJson,
+    },
+  );
 
-  if (itemsError)
+  if (error || !pedidoId) {
+    console.error("[NEO ORDER ERROR]", error);
     throw new Error(
-      `Fallo al ensamblar comanda interna: ${itemsError.message}`,
+      "No pudimos procesar tu pedido. Intentá de nuevo en unos minutos.",
     );
+  }
 
-  return pedido.id;
+  return pedidoId as string;
 }

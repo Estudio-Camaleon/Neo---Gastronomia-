@@ -76,13 +76,11 @@ export async function GET(request: Request) {
     .replace(/-+/g, "-")
     .replace(/(^-|-$)+/g, "");
 
-  const { error: createError } = await supabaseAdmin
-    .from("negocios")
-    .insert({
-      user_id: user.id,
-      nombre: nombreNegocio,
-      slug: defaultSlug || `local-${user.id.slice(0, 8)}`,
-    });
+  const { error: createError } = await supabaseAdmin.from("negocios").insert({
+    user_id: user.id,
+    nombre: nombreNegocio,
+    slug: defaultSlug || `local-${user.id.slice(0, 8)}`,
+  });
 
   if (createError) {
     console.error("[CALLBACK]: Error creando negocio:", createError.message);

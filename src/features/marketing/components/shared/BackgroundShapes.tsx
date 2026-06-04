@@ -141,12 +141,12 @@ export function BackgroundShapes() {
         </svg>
       </div>
 
-      {/* 5. BOTTOM RIGHT: Círculos concéntricos y bloques (Reducidos y marginados en móvil) */}
-      <div className="absolute bottom-0 right-[5%] md:right-[20%] w-20 md:w-48 h-4 md:h-14 bg-[var(--theme-text)] rounded-tl-[20px]" />
-      <div className="absolute bottom-[1rem] md:bottom-[3.5rem] right-[15%] md:right-[30%] w-12 md:w-28 h-4 md:h-14 bg-[var(--theme-accent)] opacity-80 rounded-tl-[15px]" />
-      <div className="absolute -bottom-8 -right-8 md:-bottom-24 md:-right-24 w-20 h-20 md:w-80 md:h-80 bg-[var(--theme-text)] rounded-full flex items-center justify-center opacity-20 md:opacity-100">
-        <div className="w-14 h-14 md:w-56 md:h-56 bg-[var(--theme-background)] rounded-full flex items-center justify-center">
-          <div className="w-8 h-8 md:w-28 md:h-28 bg-[var(--theme-primary-soft)] rounded-full" />
+      {/* 5. BOTTOM RIGHT: Círculos concéntricos y bloques */}
+      <div className="absolute bottom-0 right-[5%] md:right-[20%] w-16 md:w-48 h-3 md:h-14 bg-[var(--theme-text)] rounded-tl-[20px]" />
+      <div className="absolute bottom-[0.75rem] md:bottom-[3.5rem] right-[12%] md:right-[30%] w-10 md:w-28 h-3 md:h-14 bg-[var(--theme-accent)] opacity-80 rounded-tl-[15px]" />
+      <div className="absolute -bottom-6 -right-6 md:-bottom-24 md:-right-24 w-16 h-16 md:w-80 md:h-80 bg-[var(--theme-text)] rounded-full flex items-center justify-center opacity-15 md:opacity-100">
+        <div className="w-10 h-10 md:w-56 md:h-56 bg-[var(--theme-background)] rounded-full flex items-center justify-center">
+          <div className="w-5 h-5 md:w-28 md:h-28 bg-[var(--theme-primary-soft)] rounded-full" />
         </div>
       </div>
 
@@ -160,9 +160,9 @@ export function BackgroundShapes() {
         <div className="w-8 h-14 bg-[var(--theme-accent)] rounded-tr-full rounded-bl-full rounded-br-sm rounded-tl-sm rotate-[25deg] shadow-sm -ml-2" />
       </div>
 
-      {/* 7. BOTTOM LEFT: Arcos concéntricos (Reducidos en móvil) */}
-      <div className="absolute bottom-0 md:left-0 w-16 h-16 md:w-80 md:h-80 bg-[var(--theme-text)] rounded-tr-full flex items-end justify-start opacity-20 md:opacity-100 -left-4 md:-left-0">
-        <div className="w-10 h-10 md:w-48 md:h-48 bg-[var(--theme-primary)] rounded-tr-full" />
+      {/* 7. BOTTOM LEFT: Arcos concéntricos */}
+      <div className="absolute bottom-0 left-0 w-12 h-12 md:w-80 md:h-80 bg-[var(--theme-text)] rounded-tr-full flex items-end justify-start opacity-15 md:opacity-100 -left-2 md:left-0">
+        <div className="w-8 h-8 md:w-48 md:h-48 bg-[var(--theme-primary)] rounded-tr-full" />
       </div>
 
       {/* Contenedor verde medio con tenedor (Solo Desktop) */}

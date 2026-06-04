@@ -57,8 +57,7 @@ export function TransitionLink({
       prevPathRef.current = pathname;
       showLoading(loadingMessage);
 
-      const targetUrl =
-        typeof href === "string" ? href : href.pathname || "/";
+      const targetUrl = typeof href === "string" ? href : href.pathname || "/";
 
       setTimeout(() => {
         router.push(targetUrl);

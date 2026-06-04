@@ -50,26 +50,26 @@ export function Footer() {
 
   return (
     <>
-      <footer className="relative w-full overflow-hidden bg-[linear-gradient(180deg,var(--theme-text),#0a1811)] pt-24 pb-10 sm:pt-32 sm:pb-12 mt-20 border-t-4 border-[var(--theme-primary)]">
+      <footer className="relative w-full overflow-hidden bg-[linear-gradient(180deg,var(--theme-text),#0a1811)] pt-16 pb-8 sm:pt-32 sm:pb-12 mt-20 border-t-4 border-[var(--theme-primary)]">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-[var(--theme-primary)] opacity-20 blur-[120px] rounded-full pointer-events-none" />
         <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-[var(--theme-accent)] opacity-10 blur-[100px] rounded-full pointer-events-none" />
 
         <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-8 md:gap-12 items-start mb-16 md:mb-20">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-8 md:gap-12 items-start mb-12 md:mb-20">
             {/* Brand Column */}
-            <div className="md:col-span-2 flex flex-col gap-6">
+            <div className="sm:col-span-2 flex flex-col gap-4 sm:gap-6">
               <div className="flex items-center gap-2">
-                <div className=" p-3 rounded-2xl transition-transform hover:scale-105 duration-300">
+                <div className="p-2 sm:p-3 rounded-2xl transition-transform hover:scale-105 duration-300">
                   <Image
                     src="/icons/neo_logo_blanco.webp"
                     alt="NEO Brand Logo"
-                    width={85}
-                    height={85}
-                    className="object-contain"
+                    width={70}
+                    height={70}
+                    className="object-contain w-16 h-16 sm:w-20 sm:h-20"
                   />
                 </div>
               </div>
-              <p className="text-base text-white/70 max-w-sm leading-relaxed">
+              <p className="text-sm sm:text-base text-white/70 max-w-sm leading-relaxed">
                 El sistema definitivo para digitalizar tu restaurante, eliminar
                 comisiones abusivas y aumentar tus ganancias reales.
               </p>
@@ -79,18 +79,17 @@ export function Footer() {
             {sections.map((section) => (
               <div
                 key={section.title}
-                className="flex flex-col gap-5 mt-2 md:mt-0"
+                className="flex flex-col gap-4 sm:gap-5 mt-0"
               >
                 <h3 className="text-xs font-black uppercase tracking-widest text-white/40">
                   {section.title}
                 </h3>
-                <ul className="flex flex-col gap-3.5">
-                  {/* Renderizamos Links o Botones según corresponda */}
+                <ul className="flex flex-col gap-3">
                   {section.links?.map((link) => (
                     <li key={link.name}>
                       <Link
                         href={link.href}
-                        className="group text-sm font-medium text-white/80 hover:text-[var(--theme-accent)] flex items-center gap-1.5 transition-all duration-300 hover:translate-x-2"
+                        className="group text-sm font-medium text-white/80 hover:text-[var(--theme-accent)] flex items-center gap-1.5 transition-all duration-300 hover:translate-x-2 py-1 touch-target min-h-[44px]"
                       >
                         {link.name}
                         {link.href.startsWith("http") && (
@@ -103,7 +102,7 @@ export function Footer() {
                     <li key={item.name}>
                       <button
                         onClick={item.action}
-                        className="group text-sm font-medium text-white/80 hover:text-[var(--theme-accent)] flex items-center gap-1.5 transition-all duration-300 hover:translate-x-2 text-left"
+                        className="group text-sm font-medium text-white/80 hover:text-[var(--theme-accent)] flex items-center gap-1.5 transition-all duration-300 hover:translate-x-2 text-left py-1 touch-target min-h-[44px]"
                       >
                         {item.name}
                       </button>
@@ -115,8 +114,10 @@ export function Footer() {
           </div>
 
           {/* Bottom Bar */}
-          <div className="flex flex-col lg:flex-row items-center justify-between gap-6 border-t border-white/10 pt-8 text-sm font-medium text-white/50">
-            <p>&copy; {currentYear} NEO. Todos los derechos reservados.</p>
+          <div className="flex flex-col sm:flex-row lg:flex-row items-center justify-between gap-4 sm:gap-6 border-t border-white/10 pt-6 sm:pt-8 text-sm font-medium text-white/50">
+            <p className="text-center sm:text-left">
+              &copy; {currentYear} NEO. Todos los derechos reservados.
+            </p>
 
             <div className="flex items-center gap-2 text-sm">
               <span>Creado por</span>

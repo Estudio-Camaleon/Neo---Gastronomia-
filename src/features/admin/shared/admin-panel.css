@@ -51,10 +51,12 @@
     transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
-  .admin-card:hover {
-    border-color: var(--admin-border-strong);
-    box-shadow: 0 12px 40px rgba(31, 107, 61, 0.1);
-    transform: translateY(-1px);
+  @media (hover: hover) {
+    .admin-card:hover {
+      border-color: var(--admin-border-strong);
+      box-shadow: 0 12px 40px rgba(31, 107, 61, 0.1);
+      transform: translateY(-1px);
+    }
   }
 
   .admin-sidebar {

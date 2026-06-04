@@ -44,6 +44,13 @@ export type Database = {
             referencedRelation: "negocios"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "fk_categorias_negocio"
+            columns: ["negocio_id"]
+            isOneToOne: false
+            referencedRelation: "negocios"
+            referencedColumns: ["id"]
+          },
         ]
       }
       clientes: {
@@ -80,6 +87,13 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "clientes_negocio_id_fkey"
+            columns: ["negocio_id"]
+            isOneToOne: false
+            referencedRelation: "negocios"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_clientes_negocio"
             columns: ["negocio_id"]
             isOneToOne: false
             referencedRelation: "negocios"
@@ -180,6 +194,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "fk_pedido_items_pedido"
+            columns: ["pedido_id"]
+            isOneToOne: false
+            referencedRelation: "pedidos"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "pedido_items_pedido_id_fkey"
             columns: ["pedido_id"]
             isOneToOne: false
@@ -240,6 +261,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "fk_pedidos_negocio"
+            columns: ["negocio_id"]
+            isOneToOne: false
+            referencedRelation: "negocios"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "pedidos_cliente_id_fkey"
             columns: ["cliente_id"]
             isOneToOne: false
@@ -294,6 +322,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "fk_productos_negocio"
+            columns: ["negocio_id"]
+            isOneToOne: false
+            referencedRelation: "negocios"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "productos_categoria_id_fkey"
             columns: ["categoria_id"]
             isOneToOne: false
@@ -320,6 +355,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "fk_pedidos_negocio"
+            columns: ["negocio_id"]
+            isOneToOne: false
+            referencedRelation: "negocios"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "pedidos_negocio_id_fkey"
             columns: ["negocio_id"]
             isOneToOne: false
@@ -330,6 +372,22 @@ export type Database = {
       }
     }
     Functions: {
+      eliminar_negocio_completo: {
+        Args: { p_negocio_id: string }
+        Returns: Json
+      }
+      eliminar_usuario_completo: { Args: { p_user_id: string }; Returns: Json }
+      listar_negocios_usuario: {
+        Args: { p_email?: string }
+        Returns: {
+          created_at: string
+          negocio_id: string
+          negocio_nombre: string
+          negocio_slug: string
+          user_email: string
+          user_id: string
+        }[]
+      }
       obtener_ranking_fidelidad: {
         Args: { target_negocio_id: string }
         Returns: {
@@ -341,6 +399,19 @@ export type Database = {
           telefono: string
           total_gasto: number
         }[]
+      }
+      submit_order_atomic: {
+        Args: {
+          p_cliente_nombre: string
+          p_cliente_whatsapp: string
+          p_direccion_entrega: string
+          p_es_delivery: boolean
+          p_items: Json
+          p_metodo_pago: string
+          p_negocio_id: string
+          p_notas: string
+        }
+        Returns: string
       }
     }
     Enums: {

@@ -22,11 +22,11 @@ const STEPS = [
 
 export default function OnboardingPage() {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-[var(--auth-bg,#f7f4ec)] text-[var(--auth-text,#163225)]">
-      <div className="max-w-lg w-full space-y-10">
-        <div className="text-center space-y-4">
+    <div className="min-h-screen flex flex-col items-center justify-center p-4 sm:p-6 bg-[var(--auth-bg,#f7f4ec)] text-[var(--auth-text,#163225)]">
+      <div className="max-w-lg w-full space-y-8 sm:space-y-10">
+        <div className="text-center space-y-3 sm:space-y-4">
           <div className="flex justify-center">
-            <div className="relative h-10 w-28">
+            <div className="relative h-8 sm:h-10 w-24 sm:w-28">
               <Image
                 src="/icons/neo_logo_negro.webp"
                 alt="NEO"
@@ -37,11 +37,11 @@ export default function OnboardingPage() {
               />
             </div>
           </div>
-          <h1 className="text-3xl font-bold tracking-tight">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
             Bienvenido a{" "}
             <span className="text-[var(--auth-primary,#1f6b3d)]">NEO</span>
           </h1>
-          <p className="text-sm text-[var(--auth-text-muted,#5d6d64)]">
+          <p className="text-xs sm:text-sm text-[var(--auth-text-muted,#5d6d64)]">
             En unos pocos pasos tendrás tu menú digital funcionando.
           </p>
         </div>

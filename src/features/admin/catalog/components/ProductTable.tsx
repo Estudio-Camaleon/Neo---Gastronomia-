@@ -135,7 +135,7 @@ export function ProductTable({ negocioId, onEdit }: ProductTableProps) {
 
   return (
     <div className="overflow-x-auto">
-      <table className="w-full text-left border-collapse">
+      <table className="w-full text-left border-collapse min-w-[700px]">
         <thead>
           <tr className="text-[10px] font-black uppercase tracking-widest text-[var(--admin-text-muted)]">
             <th className="p-4 pl-6 border-b border-[var(--admin-border)]">
@@ -179,8 +179,11 @@ export function ProductTable({ negocioId, onEdit }: ProductTableProps) {
                     )}
                   </div>
                   <div className="space-y-1">
-                    <p className="font-semibold text-[var(--admin-text)] leading-none">
+                    <p className="font-semibold text-[var(--admin-text)] leading-none flex items-center gap-2 flex-wrap">
                       {prod.nombre}
+                      <span className="md:hidden inline-flex items-center gap-1 text-[10px] font-medium text-[var(--admin-text-muted)] bg-[var(--admin-bg)] px-1.5 py-0.5 rounded border border-[var(--admin-border)]">
+                        {prod.categorias?.nombre || "General"}
+                      </span>
                     </p>
                     <IngredientBadge configuracion={prod.configuracion} />
                     <p className="text-xs text-[var(--admin-text-muted)] line-clamp-1 max-w-[240px]">
