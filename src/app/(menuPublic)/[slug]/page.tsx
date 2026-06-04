@@ -1,5 +1,6 @@
 import React from "react";
 import { createClient } from "@/core/lib/supabase/server";
+import { supabaseAdmin } from "@/core/lib/supabase/admin";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { CatalogClient } from "@/features/public-menu/components/CatalogClient";
@@ -45,10 +46,7 @@ export default async function PublicMenuPage({ params }: PublicPageProps) {
   const { data: negocios } = await supabase
     .from("negocios")
     .select(
-      `
-      id, nombre, slug, color_primary, banner_url, logo_url, direccion, localidad, direccion_notas, whatsapp, instagram_url, facebook_url, tiktok_url, horarios,
-      categorias (id, nombre, slug, productos (id, nombre, descripcion, precio, imagen_url, disponible, configuracion))
-    `,
+      "id, nombre, slug, color_primary, banner_url, logo_url, direccion, localidad, direccion_notas, whatsapp, instagram_url, facebook_url, tiktok_url, horarios",
     )
     .eq("slug", slug.toLowerCase())
     .limit(1);
@@ -56,14 +54,22 @@ export default async function PublicMenuPage({ params }: PublicPageProps) {
   const negocio = negocios?.[0] ?? null;
   if (!negocio) return notFound();
 
+  const { data: categorias } = await supabaseAdmin
+    .from("categorias")
+    .select(
+      "id, nombre, slug, productos (id, nombre, descripcion, precio, imagen_url, disponible, configuracion)",
+    )
+    .eq("negocio_id", negocio.id)
+    .order("nombre");
+
   const categoriasFormateadas =
-    (negocio.categorias as Categoria[])?.filter(
+    (categorias as Categoria[])?.filter(
       (cat) => cat.productos && cat.productos.length > 0,
     ) || [];
 
   return (
     <CatalogClient
-      negocio={negocio as NegocioPublico}
+      negocio={negocio as unknown as NegocioPublico}
       categorias={categoriasFormateadas}
     />
   );
