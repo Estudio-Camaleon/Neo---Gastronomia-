@@ -17,17 +17,23 @@ import { Input } from "@/components/ui/input";
 import { StepIndicator } from "./StepIndicator";
 import { registerAction, checkDuplicateAction } from "../actions";
 
-const step1Schema = z.object({
-  email: z
-    .string()
-    .min(1, "El correo electrónico es obligatorio.")
-    .email("Ingresa un formato de correo válido")
-    .transform((val) => val.trim().toLowerCase()),
-  password: z
-    .string()
-    .min(8, "La contraseña debe tener al menos 8 caracteres.")
-    .transform((val) => val.trim()),
-});
+const step1Schema = z
+  .object({
+    email: z
+      .string()
+      .min(1, "El correo electrónico es obligatorio.")
+      .email("Ingresa un formato de correo válido")
+      .transform((val) => val.trim().toLowerCase()),
+    password: z
+      .string()
+      .min(8, "La contraseña debe tener al menos 8 caracteres.")
+      .transform((val) => val.trim()),
+    confirmPassword: z.string().min(1, "Confirmá la contraseña."),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Las contraseñas no coinciden.",
+    path: ["confirmPassword"],
+  });
 
 function generateSlug(text: string): string {
   return (
@@ -48,6 +54,7 @@ export function RegisterForm() {
   const [step, setStep] = useState(1);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [nombreNegocio, setNombreNegocio] = useState("");
   const [slug, setSlug] = useState("");
   const [whatsapp, setWhatsapp] = useState("");
@@ -165,7 +172,7 @@ export function RegisterForm() {
 
   const handleNextStep = () => {
     setErrorMsg("");
-    const result = step1Schema.safeParse({ email, password });
+    const result = step1Schema.safeParse({ email, password, confirmPassword });
     if (!result.success) {
       setErrorMsg(result.error.issues[0]?.message || "Datos inválidos.");
       return;
@@ -232,7 +239,8 @@ export function RegisterForm() {
     emailSchemaCheck &&
     !checkingFields["email"] &&
     duplicates["email"] === false;
-  const passwordReady = strength.score >= 2;
+  const passwordsMatch = password === confirmPassword && confirmPassword.length > 0;
+  const passwordReady = strength.score >= 2 && passwordsMatch;
   const canProceedToStep2 = emailReady && passwordReady;
 
   return (
@@ -318,6 +326,31 @@ export function RegisterForm() {
               </div>
             </div>
 
+            <div className="space-y-2">
+              <label className="auth-label">Confirmar contraseña</label>
+              <Input
+                required
+                autoComplete="new-password"
+                type="password"
+                disabled={loading}
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="Repetí la contraseña"
+                className={`auth-input ${
+                  confirmPassword && password !== confirmPassword
+                    ? "border-red-400 focus-visible:ring-red-400"
+                    : confirmPassword && password === confirmPassword
+                      ? "border-green-400 focus-visible:ring-green-400"
+                      : ""
+                }`}
+              />
+              {confirmPassword && password !== confirmPassword && (
+                <p className="text-[11px] text-red-500 font-medium mt-1">
+                  Las contraseñas no coinciden.
+                </p>
+              )}
+            </div>
+
             {errorMsg && (
               <div className="auth-error-box">
                 <ShieldAlert className="h-4 w-4 shrink-0 mt-0.5" />
@@ -363,10 +396,16 @@ export function RegisterForm() {
                     Verificando correo...
                   </span>
                 )}
-                {!passwordReady && (
+                {strength.score < 2 && (
                   <span className="flex items-center gap-1.5">
                     <span className="w-1.5 h-1.5 rounded-full bg-red-400" />
                     Contraseña segura (mín. moderada)
+                  </span>
+                )}
+                {!passwordsMatch && strength.score >= 2 && (
+                  <span className="flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-red-400" />
+                    Confirmar contraseña
                   </span>
                 )}
               </div>

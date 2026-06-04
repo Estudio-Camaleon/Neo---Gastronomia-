@@ -233,6 +233,25 @@ export async function resetPasswordAction(email: string) {
   return { success: true };
 }
 
+export async function updatePasswordAction(newPassword: string) {
+  const ip = (await headers()).get("x-forwarded-for") ?? "unknown";
+  if (!checkRateLimit(`update-password:${ip}`, 5)) {
+    return { error: "Demasiados intentos. Intentalo de nuevo en un minuto." };
+  }
+
+  if (newPassword.length < 8) {
+    return { error: "La contraseña debe tener al menos 8 caracteres." };
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase.auth.updateUser({
+    password: newPassword,
+  });
+
+  if (error) return { error: error.message };
+  return { success: true };
+}
+
 export async function logoutAction() {
   const supabase = await createClient();
   await supabase.auth.signOut();

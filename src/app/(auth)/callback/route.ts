@@ -8,6 +8,7 @@ export async function GET(request: Request) {
   const code = searchParams.get("code");
   const access_token = searchParams.get("access_token");
   const refresh_token = searchParams.get("refresh_token");
+  const type = searchParams.get("type");
 
   const supabase = await createClient();
 
@@ -32,6 +33,11 @@ export async function GET(request: Request) {
     }
   } else {
     return NextResponse.redirect(`${origin}/login?message=correo_validado`);
+  }
+
+  // Recovery flow → redirect to reset-password page
+  if (type === "recovery") {
+    return NextResponse.redirect(`${origin}/reset-password`);
   }
 
   const {
