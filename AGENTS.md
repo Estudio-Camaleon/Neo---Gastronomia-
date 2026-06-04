@@ -203,7 +203,7 @@ File: `src/proxy.ts`, exported function: `proxy(request: NextRequest)`.
 - No Prettier config file exists — uses defaults (no semi, single quotes for .ts/.tsx?)
 - `scripts/dev.ts` is a custom startup script that spawns `next dev --turbo` with filtered stderr (suppresses workspace & middleware deprecation warnings)
 - Admin panel layout uses `supabaseAdmin` (service role) to query negocios bypassing RLS — intentional fix
-- **Supabase resource embedding** requires explicit FK hint `!fk_name` when multiple FKs exist between tables (e.g., `pedido_items!fk_pedido_items_pedido(id, ...)`). Migration `20260613` dropped auto-generated duplicate FKs; use `!fk_*` syntax in `.select()` if ambiguity persists.
+- **Supabase resource embedding** requires explicit FK hint `!fk_name` when multiple FKs exist between tables (e.g., `pedido_items!fk_pedido_items_pedido(id, ...)`). Migration `20260613` dropped all auto-generated duplicate FKs — now simple `pedido_items(id, ...)` works.
 - Admin cart flows: `submitOrderSchema` validates items array with min 1, supports `efectivo`/`transferencia` payment methods
 - Public menu `/callback` route handler creates default `negocios` row using `supabaseAdmin`
 - CSS: `admin-panel.css` defines `--admin-*` vars, `auth.css` defines `--auth-*` vars, `home.css` defines `--theme-*` vars

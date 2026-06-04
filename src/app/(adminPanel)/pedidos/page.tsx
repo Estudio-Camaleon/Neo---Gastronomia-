@@ -48,7 +48,7 @@ export default async function PedidosPage() {
       `
       id, estado, cliente_nombre, metodo_pago, total,
       cliente_whatsapp, es_delivery, direccion_entrega, notas,
-      pedido_items!fk_pedido_items_pedido (id, cantidad, nombre_producto, precio_unitario, detalles)
+      pedido_items (id, cantidad, nombre_producto, precio_unitario, detalles)
     `,
     )
     .in("negocio_id", negocioIds)

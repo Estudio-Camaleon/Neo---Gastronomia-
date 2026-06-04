@@ -178,7 +178,7 @@ export function PedidosRadar({
           if (payload.eventType === "INSERT" && payload.new) {
             const { data: pedidos } = await supabase
               .from("pedidos")
-              .select("*, pedido_items!fk_pedido_items_pedido(*)")
+              .select("*, pedido_items(*)")
               .eq("id", payload.new.id)
               .limit(1)
               .returns<PedidoData[]>();

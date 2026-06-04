@@ -66,3 +66,14 @@ DO $$ BEGIN
     RAISE NOTICE 'Dropped duplicate FK: clientes_negocio_id_fkey';
   END IF;
 END $$;
+
+-- 6. productos.categoria_id → categorias.id
+DO $$ BEGIN
+  IF EXISTS (
+    SELECT 1 FROM pg_constraint
+    WHERE conname = 'productos_categoria_id_fkey'
+  ) THEN
+    ALTER TABLE public.productos DROP CONSTRAINT productos_categoria_id_fkey;
+    RAISE NOTICE 'Dropped duplicate FK: productos_categoria_id_fkey';
+  END IF;
+END $$;
