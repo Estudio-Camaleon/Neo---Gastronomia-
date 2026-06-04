@@ -4,6 +4,7 @@ import { createClient } from "@/core/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { getAuthenticatedTenant } from "@/core/lib/tenant";
 import { upsertProductSchema } from "@/core/lib/schemas";
+import { logAuditEvent } from "@/core/lib/audit";
 import { z } from "zod";
 
 async function revalidateMenus(tenantId: string) {
@@ -32,6 +33,7 @@ export async function upsertProductAction(
   }
 
   const supabase = await createClient();
+  const { user } = (await supabase.auth.getUser()).data;
   const tenantId = await getAuthenticatedTenant(supabase);
 
   const productRow = {
@@ -46,9 +48,29 @@ export async function upsertProductAction(
     ...(productId ? { id: productId } : {}),
   };
 
-  const { error } = await supabase.from("productos").upsert(productRow);
-
-  if (error) throw new Error(`Fallo de persistencia: ${error.message}`);
+  const isUpdate = !!productId;
+  if (isUpdate) {
+    const { data: old } = await supabase
+      .from("productos")
+      .select("nombre, precio, disponible")
+      .eq("id", productId)
+      .limit(1)
+      .single();
+    const { error } = await supabase.from("productos").upsert(productRow);
+    if (error) throw new Error(`Fallo de persistencia: ${error.message}`);
+    logAuditEvent({
+      negocio_id: tenantId,
+      user_id: user?.id ?? "",
+      accion: "update",
+      entidad: "producto",
+      entidad_id: productId,
+      cambios_previos: old ?? undefined,
+      cambios_nuevos: productRow as unknown as Record<string, unknown>,
+    });
+  } else {
+    const { error } = await supabase.from("productos").upsert(productRow);
+    if (error) throw new Error(`Fallo de persistencia: ${error.message}`);
+  }
 
   revalidatePath("/productos");
   await revalidateMenus(tenantId);
@@ -62,7 +84,15 @@ export async function deleteProductAction(productId: string) {
   if (!parsed.success) throw new Error("ID de producto inválido");
 
   const supabase = await createClient();
+  const { user } = (await supabase.auth.getUser()).data;
   const tenantId = await getAuthenticatedTenant(supabase);
+
+  const { data: old } = await supabase
+    .from("productos")
+    .select("nombre")
+    .eq("id", parsed.data)
+    .limit(1)
+    .single();
 
   const { error } = await supabase
     .from("productos")
@@ -71,6 +101,15 @@ export async function deleteProductAction(productId: string) {
     .eq("negocio_id", tenantId);
 
   if (error) throw new Error(error.message);
+
+  logAuditEvent({
+    negocio_id: tenantId,
+    user_id: user?.id ?? "",
+    accion: "delete",
+    entidad: "producto",
+    entidad_id: parsed.data,
+    cambios_previos: old ?? undefined,
+  });
 
   revalidatePath("/productos");
   await revalidateMenus(tenantId);
@@ -89,15 +128,26 @@ export async function createCategoryAction(nombre: string, slug: string) {
   if (!parsed.success) throw new Error("Datos de categoría inválidos");
 
   const supabase = await createClient();
+  const { user } = (await supabase.auth.getUser()).data;
   const tenantId = await getAuthenticatedTenant(supabase);
 
-  const { error } = await supabase.from("categorias").insert({
-    nombre: parsed.data.nombre,
-    slug: parsed.data.slug,
-    negocio_id: tenantId,
-  });
+  const { data: newCat, error } = await supabase
+    .from("categorias")
+    .insert({ nombre: parsed.data.nombre, slug: parsed.data.slug, negocio_id: tenantId })
+    .select("id")
+    .limit(1)
+    .single();
 
   if (error) throw new Error(error.message);
+
+  logAuditEvent({
+    negocio_id: tenantId,
+    user_id: user?.id ?? "",
+    accion: "create",
+    entidad: "categoria",
+    entidad_id: newCat?.id,
+    cambios_nuevos: { nombre: parsed.data.nombre, slug: parsed.data.slug },
+  });
 
   revalidatePath("/productos");
   await revalidateMenus(tenantId);
@@ -106,7 +156,15 @@ export async function createCategoryAction(nombre: string, slug: string) {
 
 export async function deleteCategoryAction(categoriaId: string) {
   const supabase = await createClient();
+  const { user } = (await supabase.auth.getUser()).data;
   const tenantId = await getAuthenticatedTenant(supabase);
+
+  const { data: old } = await supabase
+    .from("categorias")
+    .select("nombre")
+    .eq("id", categoriaId)
+    .limit(1)
+    .single();
 
   const { error } = await supabase
     .from("categorias")
@@ -115,6 +173,15 @@ export async function deleteCategoryAction(categoriaId: string) {
     .eq("negocio_id", tenantId);
 
   if (error) throw new Error(error.message);
+
+  logAuditEvent({
+    negocio_id: tenantId,
+    user_id: user?.id ?? "",
+    accion: "delete",
+    entidad: "categoria",
+    entidad_id: categoriaId,
+    cambios_previos: old ?? undefined,
+  });
 
   revalidatePath("/productos");
   await revalidateMenus(tenantId);

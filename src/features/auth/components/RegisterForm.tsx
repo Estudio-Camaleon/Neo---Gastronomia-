@@ -65,7 +65,6 @@ export function RegisterForm() {
   const [errorMsg, setErrorMsg] = useState("");
 
   const [duplicates, setDuplicates] = useState<Record<string, boolean | null>>({
-    email: null,
     nombre: null,
     slug: null,
     whatsapp: null,
@@ -172,10 +171,6 @@ export function RegisterForm() {
       setErrorMsg(result.error.issues[0]?.message || "Datos inválidos.");
       return;
     }
-    if (duplicates["email"] === true) {
-      setErrorMsg("El correo ya está registrado. Usá otro o iniciá sesión.");
-      return;
-    }
     setStep(2);
   };
 
@@ -222,20 +217,15 @@ export function RegisterForm() {
     setTimeout(() => setLoading(false), 10000);
   };
 
-  const isEmailRegistered = duplicates["email"] === true;
   const isNombreRegistered = duplicates["nombre"] === true;
   const isSlugTaken = duplicates["slug"] === true;
   const isWhatsappTaken = duplicates["whatsapp"] === true;
 
   const emailSchemaCheck = z.string().email().safeParse(email).success;
-  const emailReady =
-    emailSchemaCheck &&
-    !checkingFields["email"] &&
-    duplicates["email"] === false;
   const passwordsMatch =
     password === confirmPassword && confirmPassword.length > 0;
   const passwordReady = strength.score >= 2 && passwordsMatch;
-  const canProceedToStep2 = emailReady && passwordReady;
+  const canProceedToStep2 = emailSchemaCheck && passwordReady;
 
   return (
     <div className="w-full">
@@ -258,37 +248,20 @@ export function RegisterForm() {
                   value={email}
                   onChange={(e) => {
                     setEmail(e.target.value);
-                    debouncedCheck("email", e.target.value);
                   }}
                   placeholder="socio@tu-negocio.com"
                   className={`auth-input pr-10 ${
-                    isEmailRegistered
-                      ? "border-red-400 focus-visible:ring-red-400"
-                      : duplicates["email"] === false && email.length > 5
-                        ? "border-green-400 focus-visible:ring-green-400"
+                    emailSchemaCheck && email.length > 5
+                      ? "border-green-400 focus-visible:ring-green-400"
+                      : email.length > 0
+                        ? ""
                         : ""
                   }`}
                 />
-                {checkingFields["email"] && (
-                  <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-[var(--auth-text-muted)]" />
+                {emailSchemaCheck && email.length > 5 && (
+                  <CheckCircle2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-green-500" />
                 )}
-                {!checkingFields["email"] && isEmailRegistered && (
-                  <AlertCircle className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-red-500" />
-                )}
-                {!checkingFields["email"] &&
-                  duplicates["email"] === false &&
-                  email.length > 5 && (
-                    <CheckCircle2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-green-500" />
-                  )}
               </div>
-              {isEmailRegistered && (
-                <p className="text-[11px] text-red-500 font-medium mt-1">
-                  Este correo ya está registrado.{" "}
-                  <a href="/login" className="underline hover:text-red-600">
-                    Iniciá sesión
-                  </a>
-                </p>
-              )}
             </div>
 
             <div className="space-y-2">
@@ -377,12 +350,6 @@ export function RegisterForm() {
                   <span className="flex items-center gap-1.5">
                     <span className="w-1.5 h-1.5 rounded-full bg-red-400" />
                     Correo electrónico válido
-                  </span>
-                )}
-                {emailSchemaCheck && !emailReady && (
-                  <span className="flex items-center gap-1.5 text-amber-500">
-                    <Loader2 className="h-3 w-3 animate-spin" />
-                    Verificando correo...
                   </span>
                 )}
                 {strength.score < 2 && (

@@ -64,30 +64,21 @@ export async function loginAction(payload: {
 }
 
 export async function checkDuplicateAction(field: string, value: string) {
+  // Solo chequea nombre/slug/whatsapp para evitar email enumeration
+  if (field === "email") return { exists: false };
+
   const ip = (await headers()).get("x-forwarded-for") ?? "unknown";
   if (!checkRateLimit(`check:${ip}`, 30)) {
     return { error: "Demasiadas solicitudes. Intentalo de nuevo." };
   }
 
   try {
-    if (field === "email") {
-      const { data } = await supabaseAdmin.auth.admin.listUsers();
-      const exists = data?.users.some(
-        (u) => u.email?.toLowerCase() === value.toLowerCase(),
-      );
-      return { exists: !!exists };
-    }
-
-    if (field === "slug" || field === "nombre" || field === "whatsapp") {
-      const { data: resultados } = await supabaseAdmin
-        .from("negocios")
-        .select("id")
-        .eq(field === "nombre" ? "nombre" : field, value)
-        .limit(1);
-      return { exists: !!resultados?.[0] };
-    }
-
-    return { exists: false };
+    const { data: resultados } = await supabaseAdmin
+      .from("negocios")
+      .select("id")
+      .eq(field === "nombre" ? "nombre" : field, value)
+      .limit(1);
+    return { exists: !!resultados?.[0] };
   } catch {
     return { exists: false };
   }
@@ -124,14 +115,7 @@ export async function registerAction(payload: {
     return { error: "Demasiados intentos. Intentalo de nuevo en un minuto." };
   }
 
-  // Verificar duplicados (server-side, doble validación)
-  const { data: existingEmail } = await supabaseAdmin.auth.admin.listUsers();
-  if (existingEmail?.users.some((u) => u.email?.toLowerCase() === email)) {
-    return {
-      error: "El correo ya está registrado. Inicia sesión o usa otro correo.",
-    };
-  }
-
+  // Verificar duplicados (server-side)
   const { data: nombresEncontrados } = await supabaseAdmin
     .from("negocios")
     .select("id")
@@ -189,7 +173,7 @@ export async function registerAction(payload: {
     return { error: signInError.message };
   }
 
-  const { error: negocioError } = await supabaseAdmin.from("negocios").insert({
+  const { error: negocioError } = await supabase.from("negocios").insert({
     user_id: authData.user.id,
     nombre: nombreNegocio,
     slug,

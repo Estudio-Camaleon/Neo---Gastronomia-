@@ -3,7 +3,6 @@ import { Sidebar } from "@/features/admin/shared/Sidebar";
 import { MobileSidebar } from "@/features/admin/shared/MobileSidebar";
 import { ThemeProvider } from "@/core/providers/ThemeProvider";
 import { createClient } from "@/core/lib/supabase/server";
-import { supabaseAdmin } from "@/core/lib/supabase/admin";
 import { redirect } from "next/navigation";
 import "@/features/admin/shared/admin-panel.css";
 
@@ -24,8 +23,8 @@ export default async function AdminPanelLayout({
     redirect("/login");
   }
 
-  // 2. Obtención de Contexto Multi-tenant (usa admin para evitar RLS)
-  const { data: negocios, error: businessError } = await supabaseAdmin
+  // 2. Obtención de Contexto Multi-tenant (usa server client + RLS)
+  const { data: negocios, error: businessError } = await supabase
     .from("negocios")
     .select("slug, nombre")
     .eq("user_id", user.id)

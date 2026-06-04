@@ -1,13 +1,11 @@
 import React from "react";
 import { createClient } from "@/core/lib/supabase/server";
-import { supabaseAdmin } from "@/core/lib/supabase/admin";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { CatalogClient } from "@/features/public-menu/components/CatalogClient";
 import type { Categoria, NegocioPublico } from "@/features/public-menu/types";
 
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
+export const revalidate = 60;
 
 interface PublicPageProps {
   params: Promise<{ slug: string }>;
@@ -71,7 +69,7 @@ export default async function PublicMenuPage({ params }: PublicPageProps) {
   const negocio = negocios?.[0] ?? null;
   if (!negocio) return notFound();
 
-  const { data: categorias } = await supabaseAdmin
+  const { data: categorias } = await supabase
     .from("categorias")
     .select(
       "id, nombre, slug, productos (id, nombre, descripcion, precio, imagen_url, disponible, configuracion)",

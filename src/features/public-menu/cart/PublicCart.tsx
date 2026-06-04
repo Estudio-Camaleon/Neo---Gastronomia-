@@ -65,9 +65,10 @@ export function PublicCart({
   onCloseDrawer,
   config = { moneda_simbolo: "$", pedido_minimo: 0, costo_envio: 0 },
 }: PublicCartProps) {
-  const { cart, addItem, removeItem, clearCart } = useCartStore(
-    (state) => state,
-  );
+  const cart = useCartStore((state) => state.cart);
+  const addItem = useCartStore((state) => state.addItem);
+  const removeItem = useCartStore((state) => state.removeItem);
+  const clearCart = useCartStore((state) => state.clearCart);
 
   const [showOrderForm, setShowOrderForm] = useState(false);
 

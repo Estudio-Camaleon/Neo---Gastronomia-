@@ -2,8 +2,7 @@ import { createClient } from "@/core/lib/supabase/server";
 import { buildBrandPalette, getContrastYIQ } from "@/core/lib/utils/color";
 import React from "react";
 
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
+export const revalidate = 60;
 
 interface PublicLayoutProps {
   children: React.ReactNode;

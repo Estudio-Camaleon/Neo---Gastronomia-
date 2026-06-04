@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { getAuthenticatedTenant } from "@/core/lib/tenant";
 import { updateOrderStatusSchema, submitOrderSchema } from "@/core/lib/schemas";
+import { logAuditEvent } from "@/core/lib/audit";
 
 /**
  * Cambia el estado de un pedido validando aislamiento mutli-tenant.
@@ -21,7 +22,15 @@ export async function updateOrderStatusAction(
   if (!parsed.success) throw new Error("Estado de pedido inválido");
 
   const supabase = await createClient();
+  const { user } = (await supabase.auth.getUser()).data;
   const tenantId = await getAuthenticatedTenant(supabase);
+
+  const { data: old } = await supabase
+    .from("pedidos")
+    .select("estado")
+    .eq("id", parsed.data.pedidoId)
+    .limit(1)
+    .single();
 
   const { error } = await supabase
     .from("pedidos")
@@ -30,6 +39,16 @@ export async function updateOrderStatusAction(
     .eq("negocio_id", tenantId);
 
   if (error) throw new Error(`Fallo de sincronización RLS: ${error.message}`);
+
+  logAuditEvent({
+    negocio_id: tenantId,
+    user_id: user?.id ?? "",
+    accion: "update",
+    entidad: "pedido",
+    entidad_id: parsed.data.pedidoId,
+    cambios_previos: old ?? undefined,
+    cambios_nuevos: { estado: parsed.data.nuevoEstado },
+  });
 
   revalidatePath("/pedidos");
   return { success: true };
