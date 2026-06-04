@@ -48,11 +48,13 @@ export async function GET(request: Request) {
     return NextResponse.redirect(`${origin}/login`);
   }
 
-  const { data: negocio } = await supabase
+  const { data: negocios } = await supabase
     .from("negocios")
     .select("id")
     .eq("user_id", user.id)
-    .maybeSingle();
+    .limit(1);
+
+  const negocio = negocios?.[0] ?? null;
 
   if (negocio) {
     return NextResponse.redirect(`${origin}/pedidos`);

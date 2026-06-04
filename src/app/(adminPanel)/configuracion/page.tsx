@@ -4,7 +4,7 @@ import {
   ConfigForm,
   type NegocioInitialData,
 } from "@/features/admin/branding/components/ConfigForm";
-import { FirstTimeTutorial } from "@/features/admin/shared/FirstTimeTutorial";
+import { WelcomeToast } from "@/features/admin/shared/WelcomeToast";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -31,7 +31,7 @@ export default async function ConfiguracionPage(props: {
 
   return (
     <div className="space-y-8 max-w-5xl mx-auto pb-16 relative z-10">
-      {firstLogin && <FirstTimeTutorial />}
+      {firstLogin && <WelcomeToast />}
 
       {/* HEADER DE AUDITORÍA */}
       <header className="space-y-3 border-b border-[var(--admin-border)]/50 pb-6">
