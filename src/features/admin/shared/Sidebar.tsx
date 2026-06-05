@@ -19,7 +19,6 @@ import {
   Moon,
   ExternalLink,
   LogOut,
-  Activity,
 } from "lucide-react";
 
 const supabase = createClient();
@@ -30,7 +29,7 @@ const NAVIGATION_LINKS = [
   { name: "Productos", href: "/productos", icon: Package },
   { name: "Clientes", href: "/clientes", icon: Users },
   { name: "Estadísticas", href: "/estadisticas", icon: BarChart3 },
-   { name: "Promos", href: "/promos", icon: Percent },
+  { name: "Promos", href: "/promos", icon: Percent },
   { name: "Ajustes", href: "/configuracion", icon: Settings },
 ];
 
@@ -189,36 +188,6 @@ export function Sidebar({
           </div>
 
           <div className="my-4 border-t border-[var(--admin-border)] shrink-0" />
-
-          {/* Radar */}
-          <div className="admin-card p-3 lg:p-4 relative overflow-hidden shrink-0">
-            <div className="flex items-center gap-2.5 relative z-10">
-              <div className="relative flex items-center justify-center p-1.5 bg-[var(--admin-bg)] border border-[var(--admin-border)] rounded-xl">
-                <Activity size={14} className="text-[var(--admin-accent)]" />
-                <div className="absolute inset-0 bg-[var(--admin-accent)] opacity-15 blur-md animate-pulse rounded-lg" />
-              </div>
-              <div className="flex flex-col min-w-0">
-                <span className="text-[11px] lg:text-xs font-bold tracking-wide text-[var(--admin-text)] truncate">
-                  Radar de Enlace
-                </span>
-                <span className="text-[9px] lg:text-[10px] font-semibold text-[var(--admin-accent)] animate-pulse">
-                  Sincronizando...
-                </span>
-              </div>
-            </div>
-            <div
-              className="mt-2 flex gap-0.5 opacity-25 dark:opacity-45"
-              aria-hidden="true"
-            >
-              {[8, 14, 10, 16, 6, 12, 18, 11, 7, 13, 9, 15].map((height) => (
-                <div
-                  key={height}
-                  className="w-0.5 bg-[var(--admin-accent)] rounded-full"
-                  style={{ height: `${height}px` }}
-                />
-              ))}
-            </div>
-          </div>
 
           {/* Navegación */}
           <nav className="flex-1 mt-4 space-y-0.5 overflow-y-auto custom-scrollbar min-h-0">

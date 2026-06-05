@@ -1,10 +1,17 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { TransitionLink } from "@/components/ui/transition-link";
 import { useTheme } from "@/core/providers/ThemeProvider";
+import { useOrderNotifications } from "@/features/admin/orders/OrderNotificationProvider";
 import {
+  LayoutDashboard,
+  ClipboardList,
+  Package,
+  Users,
+  BarChart3,
+  Percent,
   Settings,
   LogOut,
   Sun,
@@ -20,12 +27,23 @@ interface MobileSidebarProps {
   negocioNombre: string;
 }
 
+const NAVIGATION_LINKS = [
+  { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+  { name: "Pedidos", href: "/pedidos", icon: ClipboardList },
+  { name: "Productos", href: "/productos", icon: Package },
+  { name: "Clientes", href: "/clientes", icon: Users },
+  { name: "Estadísticas", href: "/estadisticas", icon: BarChart3 },
+  { name: "Promos", href: "/promos", icon: Percent },
+];
+
 export function MobileSidebar({ slug, negocioNombre }: MobileSidebarProps) {
   const [open, setOpen] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [mounted, setMounted] = useState(false);
   const { theme, setTheme } = useTheme();
+  const { unreadCount } = useOrderNotifications();
   const router = useRouter();
+  const pathname = usePathname();
 
   useEffect(() => {
     setMounted(true);
@@ -111,15 +129,54 @@ export function MobileSidebar({ slug, negocioNombre }: MobileSidebarProps) {
               </button>
             </div>
 
-            {/* Acciones secundarias */}
+            {/* Navegación */}
             <div className="flex-1 overflow-y-auto px-3 py-4 space-y-1">
+              <span className="text-[10px] font-black uppercase tracking-widest text-[var(--admin-text-muted)] px-3.5 mb-2 block opacity-70">
+                Menú Principal
+              </span>
+
+              {NAVIGATION_LINKS.map((link) => {
+                const isActive =
+                  pathname === link.href ||
+                  (link.href !== "/dashboard" && pathname.startsWith(link.href));
+                const Icon = link.icon;
+                return (
+                  <TransitionLink
+                    key={link.name}
+                    href={link.href}
+                    onClick={close}
+                    className={`flex items-center gap-3.5 px-3.5 py-3 rounded-xl transition-all duration-200 font-semibold text-sm active:scale-[0.97] touch-target ${
+                      isActive
+                        ? "bg-[var(--admin-accent)] text-white shadow-sm"
+                        : "text-[var(--admin-text-muted)] hover:bg-[var(--admin-accent)]/5 hover:text-[var(--admin-text)]"
+                    }`}
+                  >
+                    <div className="relative">
+                      <Icon size={20} strokeWidth={isActive ? 2.5 : 2} className="shrink-0" />
+                      {link.name === "Pedidos" && unreadCount > 0 && (
+                        <span className="absolute -top-1.5 -right-2 bg-red-500 text-white text-[8px] font-bold px-1 rounded-full min-w-[14px] text-center leading-tight">
+                          {unreadCount > 9 ? "9+" : unreadCount}
+                        </span>
+                      )}
+                    </div>
+                    <span>{link.name}</span>
+                  </TransitionLink>
+                );
+              })}
+
+              <div className="my-3 border-t border-[var(--admin-border)]" />
+
               {/* Ajustes */}
               <TransitionLink
                 href="/configuracion"
                 onClick={close}
-                className="flex items-center gap-3.5 px-3.5 py-3 rounded-xl transition-all duration-200 font-semibold text-sm active:scale-[0.97] touch-target text-[var(--admin-text-muted)] hover:bg-[var(--admin-accent)]/5 hover:text-[var(--admin-text)]"
+                className={`flex items-center gap-3.5 px-3.5 py-3 rounded-xl transition-all duration-200 font-semibold text-sm active:scale-[0.97] touch-target ${
+                  pathname === "/configuracion" || pathname.startsWith("/configuracion")
+                    ? "bg-[var(--admin-accent)] text-white shadow-sm"
+                    : "text-[var(--admin-text-muted)] hover:bg-[var(--admin-accent)]/5 hover:text-[var(--admin-text)]"
+                }`}
               >
-                <Settings size={20} strokeWidth={2} className="shrink-0" />
+                <Settings size={20} strokeWidth={pathname === "/configuracion" ? 2.5 : 2} className="shrink-0" />
                 <span>Ajustes</span>
               </TransitionLink>
 
