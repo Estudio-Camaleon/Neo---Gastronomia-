@@ -12,7 +12,7 @@ export const metadata: Metadata = {
     "Plataforma de alta velocidad para la gestión de catálogos y negocios digitales.",
   robots: "noindex, nofollow",
   icons: {
-    icon: "/icons/neo_logo_negro.webp",
+    icon: "/icons/icon.webp",
   },
 };
 

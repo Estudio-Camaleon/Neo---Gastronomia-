@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { createClient } from "@/core/lib/supabase/client";
 import { useTheme } from "@/core/providers/ThemeProvider";
+import { useOrderNotifications } from "@/features/admin/orders/OrderNotificationProvider";
 import { TransitionLink } from "@/components/ui/transition-link";
 import {
   AlertCircle,
@@ -48,6 +49,7 @@ export function Sidebar({
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const { unreadCount } = useOrderNotifications();
   const router = useRouter();
   const pathname = usePathname();
 
@@ -98,11 +100,18 @@ export function Sidebar({
                       : "text-[var(--admin-text-muted)] hover:bg-[var(--admin-accent)]/5 hover:text-[var(--admin-text)]"
                   }`}
                 >
-                  <Icon
-                    size={20}
-                    strokeWidth={isActive ? 2.5 : 2}
-                    className={isActive ? "text-white" : ""}
-                  />
+                  <div className="relative">
+                    <Icon
+                      size={20}
+                      strokeWidth={isActive ? 2.5 : 2}
+                      className={isActive ? "text-white" : ""}
+                    />
+                    {link.name === "Pedidos" && unreadCount > 0 && (
+                      <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[8px] font-bold px-1 rounded-full min-w-[14px] text-center leading-tight">
+                        {unreadCount > 9 ? "9+" : unreadCount}
+                      </span>
+                    )}
+                  </div>
                 </TransitionLink>
               );
             })}
@@ -247,6 +256,11 @@ export function Sidebar({
                     }
                   />
                   <span className="tracking-wide truncate">{link.name}</span>
+                  {link.name === "Pedidos" && unreadCount > 0 && (
+                    <span className="ml-auto bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center leading-tight">
+                      {unreadCount > 99 ? "99+" : unreadCount}
+                    </span>
+                  )}
                 </TransitionLink>
               );
             })}

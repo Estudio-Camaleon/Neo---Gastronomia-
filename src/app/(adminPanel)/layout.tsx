@@ -3,6 +3,7 @@ import { Sidebar } from "@/features/admin/shared/Sidebar";
 import { MobileSidebar } from "@/features/admin/shared/MobileSidebar";
 import { BottomTabBar } from "@/features/admin/shared/BottomTabBar";
 import { ThemeProvider } from "@/core/providers/ThemeProvider";
+import { OrderNotificationProvider } from "@/features/admin/orders/OrderNotificationProvider";
 import { createClient } from "@/core/lib/supabase/server";
 import { redirect } from "next/navigation";
 import "@/features/admin/shared/admin-panel.css";
@@ -25,11 +26,11 @@ export default async function AdminPanelLayout({
   }
 
   // 2. Obtención de Contexto Multi-tenant: owner o team member
-  let negocio: { slug: string; nombre: string } | null = null;
+  let negocio: { id: string; slug: string; nombre: string } | null = null;
 
   const { data: negocios } = await supabase
     .from("negocios")
-    .select("slug, nombre")
+    .select("id, slug, nombre")
     .eq("user_id", user.id)
     .order("created_at", { ascending: true })
     .limit(1);
@@ -47,7 +48,7 @@ export default async function AdminPanelLayout({
     if (memberships?.[0]?.negocio_id) {
       const { data: teamNegocio } = await supabase
         .from("negocios")
-        .select("slug, nombre")
+        .select("id, slug, nombre")
         .eq("id", memberships[0].negocio_id)
         .limit(1)
         .single();
@@ -59,9 +60,12 @@ export default async function AdminPanelLayout({
     redirect("/login");
   }
 
+  const negocioIds = [negocio.id];
+
   // 4. Ecosistema Operativo Conectado con el Estado del Cliente
   return (
     <ThemeProvider>
+      <OrderNotificationProvider negocioIds={negocioIds}>
       <div className="flex min-h-screen bg-[var(--admin-bg)] text-[var(--admin-text)] font-sans antialiased w-full transition-colors duration-200">
         {/* Blobs orgánicos animados */}
         <div className="fixed top-[-10%] left-[-5%] w-96 h-96 bg-[var(--admin-accent)] rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-3xl opacity-40 pointer-events-none animate-blob" />
@@ -131,6 +135,7 @@ export default async function AdminPanelLayout({
 
         <BottomTabBar />
       </div>
+      </OrderNotificationProvider>
     </ThemeProvider>
   );
 }

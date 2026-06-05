@@ -2,6 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import { TransitionLink } from "@/components/ui/transition-link";
+import { useOrderNotifications } from "@/features/admin/orders/OrderNotificationProvider";
 import {
   LayoutDashboard,
   ClipboardList,
@@ -20,6 +21,7 @@ const TAB_ITEMS = [
 
 export function BottomTabBar() {
   const pathname = usePathname();
+  const { unreadCount } = useOrderNotifications();
 
   const isActive = (href: string) =>
     pathname === href || (href !== "/dashboard" && pathname.startsWith(href));
@@ -34,13 +36,20 @@ export function BottomTabBar() {
             <TransitionLink
               key={item.name}
               href={item.href}
-              className={`flex flex-col items-center gap-0.5 py-1.5 px-3 rounded-xl transition-all duration-200 active:scale-95 touch-target min-w-0 ${
+              className={`relative flex flex-col items-center gap-0.5 py-1.5 px-3 rounded-xl transition-all duration-200 active:scale-95 touch-target min-w-0 ${
                 active
                   ? "text-[var(--admin-accent)]"
                   : "text-[var(--admin-text-muted)] hover:text-[var(--admin-text)]"
               }`}
             >
-              <Icon size={22} strokeWidth={active ? 2.5 : 2} />
+              <div className="relative">
+                <Icon size={22} strokeWidth={active ? 2.5 : 2} />
+                {item.name === "Pedidos" && unreadCount > 0 && (
+                  <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[8px] font-bold px-1 rounded-full min-w-[14px] text-center leading-tight">
+                    {unreadCount > 9 ? "9+" : unreadCount}
+                  </span>
+                )}
+              </div>
               <span
                 className={`text-[10px] font-bold leading-tight ${
                   active

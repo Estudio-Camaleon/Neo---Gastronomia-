@@ -7,7 +7,6 @@ import {
   XCircle,
   Search,
   ShoppingBag,
-  BellDot,
   ChefHat,
   ChevronLeft,
   ChevronRight,
@@ -21,40 +20,11 @@ import { toast } from "sonner";
 import { PedidoCard } from "./PedidoCard";
 import { updateOrderStatusAction } from "./actions";
 import { enviarNotificacionWhatsApp } from "@/core/lib/utils/whatsappActions";
+import { useOrderNotifications } from "./OrderNotificationProvider";
 import type { RealtimePostgresChangesPayload } from "@supabase/supabase-js";
 import type { PedidoData } from "@/core/types/domain";
 
 const supabase = createClient();
-
-let audioBufferCache: AudioBuffer | null = null;
-let audioCtx: AudioContext | null = null;
-
-async function playSound() {
-  try {
-    if (!audioCtx) {
-      const AudioCtor =
-        window.AudioContext ??
-        (window as { webkitAudioContext?: typeof AudioContext })
-          .webkitAudioContext;
-      if (!AudioCtor) return;
-      audioCtx = new AudioCtor();
-    }
-    if (audioCtx.state === "suspended") await audioCtx.resume();
-
-    if (!audioBufferCache) {
-      const res = await fetch("/sounds/new-order.mp3");
-      const buf = await res.arrayBuffer();
-      audioBufferCache = await audioCtx.decodeAudioData(buf);
-    }
-
-    const source = audioCtx.createBufferSource();
-    source.buffer = audioBufferCache;
-    source.connect(audioCtx.destination);
-    source.start();
-  } catch {
-    // audio no crítico
-  }
-}
 
 interface PedidosRadarProps {
   initialPedidos: PedidoData[];
@@ -78,7 +48,8 @@ export function PedidosRadar({
   >("connecting");
   const [page, setPage] = useState(0);
   const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const audioInitRef = useRef(false);
+  const knownIdsRef = useRef<Set<string>>(new Set(initialPedidos.map((p) => p.id)));
+  const { latestNewPedido, acknowledgeNewOrders } = useOrderNotifications();
 
   useEffect(() => {
     if (debounceTimer.current) clearTimeout(debounceTimer.current);
@@ -132,31 +103,21 @@ export function PedidosRadar({
         (currentPage + 1) * ORDERS_PER_PAGE,
       );
 
+  // ── Acknowledge pending notifications on mount ──
   useEffect(() => {
-    const controller = new AbortController();
-    const initAudioOnClick = () => {
-      if (audioInitRef.current) return;
-      audioInitRef.current = true;
-      const AudioCtor =
-        window.AudioContext ??
-        (window as { webkitAudioContext?: typeof AudioContext })
-          .webkitAudioContext;
-      if (AudioCtor) {
-        try {
-          audioCtx = new AudioCtor();
-          audioCtx.resume();
-        } catch {
-          // no crítico
-        }
-      }
-    };
-    document.addEventListener("click", initAudioOnClick, {
-      signal: controller.signal,
-      once: true,
-    });
-    return () => controller.abort();
-  }, []);
+    acknowledgeNewOrders();
+  }, [acknowledgeNewOrders]);
 
+  // ── Watch for new pedidos from the global provider ──
+  useEffect(() => {
+    if (!latestNewPedido) return;
+    const id = latestNewPedido.id;
+    if (knownIdsRef.current.has(id)) return;
+    knownIdsRef.current.add(id);
+    setPedidos((prev) => [latestNewPedido, ...prev]);
+  }, [latestNewPedido]);
+
+  // ── Realtime subscription (UPDATE only — INSERT handled by provider) ──
   useEffect(() => {
     if (negocioIds.length === 0) return;
 
@@ -168,42 +129,21 @@ export function PedidosRadar({
       .on(
         "postgres_changes",
         {
-          event: "*",
+          event: "UPDATE",
           schema: "public",
           table: "pedidos",
           filter: negFilter,
         },
-        async (
-          payload: RealtimePostgresChangesPayload<{
-            id: string;
-            estado: PedidoData["estado"];
-            cliente_nombre?: string | null;
-          }>,
+        (
+          payload: RealtimePostgresChangesPayload<Record<string, unknown>>,
         ) => {
-          if (payload.eventType === "INSERT" && payload.new) {
-            const { data: pedidos } = await supabase
-              .from("pedidos")
-              .select("*, pedido_items(*)")
-              .eq("id", payload.new.id)
-              .limit(1)
-              .returns<PedidoData[]>();
-
-            const fullPedido = pedidos?.[0] ?? null;
-            if (fullPedido) {
-              setPedidos((prev) => [fullPedido, ...prev]);
-
-              playSound();
-
-              toast.info("Nuevo pedido entrante", {
-                icon: <BellDot className="text-blue-500 animate-pulse" />,
-                description: `Cliente: ${fullPedido.cliente_nombre || "Anónimo"}`,
-              });
-            }
-          } else if (payload.eventType === "UPDATE" && payload.new) {
+          const newId = payload.new.id as string | undefined;
+          const newEstado = payload.new.estado as PedidoData["estado"] | undefined;
+          if (newId && newEstado) {
             setPedidos((prev) =>
               prev.map((p) =>
-                p.id === payload.new.id
-                  ? { ...p, estado: payload.new.estado }
+                p.id === newId
+                  ? { ...p, estado: newEstado }
                   : p,
               ),
             );
