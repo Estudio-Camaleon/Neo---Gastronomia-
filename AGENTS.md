@@ -26,7 +26,7 @@ npm run impecable        # lint → typecheck → format (run before committing)
 | `npm run free-port` | `npx kill-port 3000` |
 | `npm run db:link` | `supabase link --project-ref hokibyfaompjhdhnhtru` |
 | `npm run db:pull` | `supabase db pull --project-id hokibyfaompjhdhnhtru` |
-| `npm run db:push` | `npx supabase db push --linked` (requiere `db:link` primero) |
+| `npm run db:push` | `supabase db push --linked` (requiere `db:link` primero) |
 | `npm run db:types` | `supabase gen types typescript --project-id hokibyfaompjhdhnhtru > src/core/types/database.types.ts` |
 | `npm run db:start` | `supabase start` |
 | `npm run db:stop` | `supabase stop` |

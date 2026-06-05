@@ -14,7 +14,7 @@
     "free-port": "npx kill-port 3000",
     "db:link": "supabase link --project-ref hokibyfaompjhdhnhtru",
     "db:pull": "supabase db pull --project-id hokibyfaompjhdhnhtru",
-    "db:push": "supabase db push --project-id hokibyfaompjhdhnhtru",
+    "db:push": "supabase db push --linked",
     "db:types": "supabase gen types typescript --project-id hokibyfaompjhdhnhtru > src/core/types/database.types.ts",
     "db:start": "supabase start",
     "db:stop": "supabase stop",
