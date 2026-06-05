@@ -12,19 +12,13 @@ import {
   ChevronRight,
   List,
   Filter,
-  Wifi,
-  WifiOff,
 } from "lucide-react";
-import { createClient } from "@/core/lib/supabase/client";
 import { toast } from "sonner";
 import { PedidoCard } from "./PedidoCard";
 import { updateOrderStatusAction } from "./actions";
 import { enviarNotificacionWhatsApp } from "@/core/lib/utils/whatsappActions";
 import { useOrderNotifications } from "./OrderNotificationProvider";
-import type { RealtimePostgresChangesPayload } from "@supabase/supabase-js";
 import type { PedidoData } from "@/core/types/domain";
-
-const supabase = createClient();
 
 interface PedidosRadarProps {
   initialPedidos: PedidoData[];
@@ -43,13 +37,10 @@ export function PedidosRadar({
   const [showAll, setShowAll] = useState(false);
   const [pedidos, setPedidos] = useState<PedidoData[]>(initialPedidos);
   const [loadingId, setLoadingId] = useState<string | null>(null);
-  const [subStatus, setSubStatus] = useState<
-    "connecting" | "connected" | "error"
-  >("connecting");
   const [page, setPage] = useState(0);
   const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const knownIdsRef = useRef<Set<string>>(new Set(initialPedidos.map((p) => p.id)));
-  const { latestNewPedido, acknowledgeNewOrders } = useOrderNotifications();
+  const { latestNewPedido, latestUpdateEvent, acknowledgeNewOrders, acknowledgeUpdateEvent } = useOrderNotifications();
 
   useEffect(() => {
     if (debounceTimer.current) clearTimeout(debounceTimer.current);
@@ -117,53 +108,15 @@ export function PedidosRadar({
     setPedidos((prev) => [latestNewPedido, ...prev]);
   }, [latestNewPedido]);
 
-  // ── Realtime subscription (UPDATE only — INSERT handled by provider) ──
+  // ── Watch for UPDATE events from the global provider ──
   useEffect(() => {
-    if (negocioIds.length === 0) return;
-
-    const negFilter = negocioIds.length === 1
-      ? `negocio_id=eq.${negocioIds[0]}`
-      : `negocio_id=in.(${negocioIds.join(",")})`;
-    const channel = supabase
-      .channel(`live-radar-${negocioIds.join("-")}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "UPDATE",
-          schema: "public",
-          table: "pedidos",
-          filter: negFilter,
-        },
-        (
-          payload: RealtimePostgresChangesPayload<Record<string, unknown>>,
-        ) => {
-          const newId = (payload.new as { id?: string }).id;
-          const newEstado = (payload.new as { estado?: PedidoData["estado"] }).estado;
-          if (newId && newEstado) {
-            setPedidos((prev) =>
-              prev.map((p) =>
-                p.id === newId
-                  ? { ...p, estado: newEstado }
-                  : p,
-              ),
-            );
-          }
-        },
-      )
-      .subscribe((status) => {
-        if (status === "SUBSCRIBED") setSubStatus("connected");
-        else if (
-          status === "CHANNEL_ERROR" ||
-          status === "TIMED_OUT" ||
-          status === "CLOSED"
-        )
-          setSubStatus("error");
-      });
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [negocioIds.join(","), supabase]);
+    if (!latestUpdateEvent) return;
+    const { id, estado } = latestUpdateEvent;
+    setPedidos((prev) =>
+      prev.map((p) => (p.id === id ? { ...p, estado: estado as PedidoData["estado"] } : p)),
+    );
+    acknowledgeUpdateEvent();
+  }, [latestUpdateEvent, acknowledgeUpdateEvent]);
 
   const handleUpdateStatus = async (
     id: string,
@@ -250,30 +203,6 @@ export function PedidosRadar({
 
   return (
     <div className="space-y-6 pb-12">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2 text-xs font-medium">
-          <span
-            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border transition-colors ${
-              subStatus === "connected"
-                ? "text-green-600 border-green-200 bg-green-50"
-                : subStatus === "error"
-                  ? "text-red-600 border-red-200 bg-red-50"
-                  : "text-amber-600 border-amber-200 bg-amber-50"
-            }`}
-          >
-            {subStatus === "connected" ? (
-              <Wifi size={12} />
-            ) : (
-              <WifiOff size={12} />
-            )}
-            {subStatus === "connected"
-              ? "Conectado"
-              : subStatus === "error"
-                ? "Error de conexión"
-                : "Conectando..."}
-          </span>
-        </div>
-      </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {radarItems.map((item, idx) => (

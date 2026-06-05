@@ -82,14 +82,18 @@ async function playSound() {
 interface NotificationContextValue {
   unreadCount: number;
   latestNewPedido: PedidoData | null;
+  latestUpdateEvent: { id: string; estado: string } | null;
   acknowledgeNewOrders: () => void;
+  acknowledgeUpdateEvent: () => void;
   audioUnlocked: boolean;
 }
 
 const NotificationContext = createContext<NotificationContextValue>({
   unreadCount: 0,
   latestNewPedido: null,
+  latestUpdateEvent: null,
   acknowledgeNewOrders: () => {},
+  acknowledgeUpdateEvent: () => {},
   audioUnlocked: false,
 });
 
@@ -109,6 +113,7 @@ export function OrderNotificationProvider({
 }: OrderNotificationProviderProps) {
   const [unreadCount, setUnreadCount] = useState(0);
   const [latestNewPedido, setLatestNewPedido] = useState<PedidoData | null>(null);
+  const [latestUpdateEvent, setLatestUpdateEvent] = useState<{ id: string; estado: string } | null>(null);
   const [audioUnlocked, setAudioUnlocked] = useState(false);
   const lastPlayedRef = useRef<Set<string>>(new Set());
   const supabaseRef = useRef(createClient());
@@ -151,7 +156,11 @@ export function OrderNotificationProvider({
     setLatestNewPedido(null);
   }, []);
 
-  // ── Realtime subscription (INSERT only) ──
+  const acknowledgeUpdateEvent = useCallback(() => {
+    setLatestUpdateEvent(null);
+  }, []);
+
+  // ── Single Realtime channel for all pedidos events ──
   useEffect(() => {
     if (negocioIds.length === 0) return;
 
@@ -162,48 +171,56 @@ export function OrderNotificationProvider({
         : `negocio_id=in.(${negocioIds.join(",")})`;
 
     const channel = supabase
-      .channel(`order-notifications-${negocioIds.join("-")}`)
+      .channel(`pedidos-events-${negocioIds.join("-")}`)
       .on(
         "postgres_changes",
         {
-          event: "INSERT",
+          event: "*",
           schema: "public",
           table: "pedidos",
           filter: negFilter,
         },
         async (payload: RealtimePostgresChangesPayload<Record<string, unknown>>) => {
-          const pedidoId = (payload.new as { id?: string }).id;
-          if (!pedidoId) return;
+          if (payload.eventType === "INSERT") {
+            const pedidoId = (payload.new as { id?: string }).id;
+            if (!pedidoId) return;
 
-          log("NEW ORDER EVENT");
+            log("NEW ORDER EVENT");
 
-          // Deduplication
-          if (lastPlayedRef.current.has(pedidoId)) return;
-          lastPlayedRef.current.add(pedidoId);
+            // Deduplication
+            if (lastPlayedRef.current.has(pedidoId)) return;
+            lastPlayedRef.current.add(pedidoId);
 
-          // Fetch full data
-          const { data: pedidos } = await supabase
-            .from("pedidos")
-            .select("*, pedido_items(*)")
-            .eq("id", pedidoId)
-            .limit(1)
-            .returns<PedidoData[]>();
+            // Fetch full data
+            const { data: pedidos } = await supabase
+              .from("pedidos")
+              .select("*, pedido_items(*)")
+              .eq("id", pedidoId)
+              .limit(1)
+              .returns<PedidoData[]>();
 
-          const fullPedido = pedidos?.[0] ?? null;
-          if (!fullPedido) return;
+            const fullPedido = pedidos?.[0] ?? null;
+            if (!fullPedido) return;
 
-          // Update context
-          setLatestNewPedido(fullPedido);
-          setUnreadCount((prev) => prev + 1);
+            // Update context
+            setLatestNewPedido(fullPedido);
+            setUnreadCount((prev) => prev + 1);
 
-          // Play sound
-          await playSound();
+            // Play sound
+            await playSound();
 
-          // Visual fallback: toast
-          toast.info("Nuevo pedido entrante", {
-            icon: <BellDot className="text-blue-500 animate-pulse" />,
-            description: `Cliente: ${fullPedido.cliente_nombre || "Anónimo"}`,
-          });
+            // Visual fallback: toast
+            toast.info("Nuevo pedido entrante", {
+              icon: <BellDot className="text-blue-500 animate-pulse" />,
+              description: `Cliente: ${fullPedido.cliente_nombre || "Anónimo"}`,
+            });
+          } else if (payload.eventType === "UPDATE") {
+            const updateId = (payload.new as { id?: string }).id;
+            const updateEstado = (payload.new as { estado?: string }).estado;
+            if (updateId && updateEstado) {
+              setLatestUpdateEvent({ id: updateId, estado: updateEstado });
+            }
+          }
         },
       )
       .subscribe();
@@ -218,7 +235,9 @@ export function OrderNotificationProvider({
       value={{
         unreadCount,
         latestNewPedido,
+        latestUpdateEvent,
         acknowledgeNewOrders,
+        acknowledgeUpdateEvent,
         audioUnlocked,
       }}
     >
