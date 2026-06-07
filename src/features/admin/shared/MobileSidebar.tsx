@@ -20,8 +20,8 @@ import {
   AlertCircle,
   ExternalLink,
   X,
-  Menu,
 } from "lucide-react";
+import { AdminHamburgerButton } from "@/features/admin/shared/AdminHamburgerButton";
 
 interface MobileSidebarProps {
   slug: string;
@@ -81,15 +81,11 @@ export function MobileSidebar({ slug, negocioNombre }: MobileSidebarProps) {
 
   return (
     <>
-      <button
+      <AdminHamburgerButton
         onClick={() => setOpen(true)}
-        aria-label="Abrir menú"
-        aria-expanded={open}
-        aria-controls="mobile-sidebar-panel"
-        className="touch-target flex items-center justify-center p-2.5 bg-[var(--admin-accent)]/10 text-[var(--admin-accent)] rounded-xl hover:bg-[var(--admin-accent)]/20 transition-all duration-200 cursor-pointer outline-none active:scale-90 border border-[var(--admin-accent)]/20"
-      >
-        <Menu size={22} />
-      </button>
+        isOpen={open}
+        controls="mobile-sidebar-panel"
+      />
 
       <AnimatePresence>
         {open && (
