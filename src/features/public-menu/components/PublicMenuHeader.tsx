@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
-import { Clock, MapPin, MessageCircle } from "lucide-react";
+import { Clock, MapPin, MessageCircle, ChevronDown } from "lucide-react";
 import { formatTurnos } from "@/features/public-menu/utils";
 
 import type { NegocioPublico } from "@/features/public-menu/types";
@@ -54,11 +54,14 @@ export function PublicMenuHeader({
             src={negocio.banner_url}
             alt=""
             fill
-            className="object-cover scale-105"
+            className="object-cover"
             sizes="100vw"
             priority
             loading="eager"
-            style={{ objectPosition: negocio.banner_posicion ?? "center" }}
+            style={{
+              objectPosition: negocio.banner_posicion ?? "center",
+              transform: `scale(${negocio.banner_scale ?? 1})`,
+            }}
           />
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_60%,var(--color-custom-surface)_95%)]" />
         </div>
@@ -255,9 +258,20 @@ export function PublicMenuHeader({
 
           <motion.div initial={{ opacity: 0, x: 24 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.45, delay: 0.3 }} className="flex flex-col items-center gap-3 sm:items-end">
             <div className="flex flex-wrap justify-center gap-2">
-              <motion.div whileHover={{ y: -3 }} className="flex items-center gap-2 rounded-2xl bg-[var(--color-custom-900)]/70 p-2 text-sm text-white">
-                <MapPin className="h-4 w-4" />
-                <span className="hidden sm:inline">{negocio.localidad || "Sucursal Centro"}</span>
+              <motion.div
+                whileHover={{ y: -3 }}
+                className="relative flex items-center gap-2 rounded-2xl bg-[var(--color-custom-900)]/70 p-2 text-sm text-white cursor-pointer"
+                onClick={() => setShowSchedule(!showSchedule)}
+              >
+                <MapPin className="h-4 w-4 shrink-0" />
+                <span className="hidden sm:inline max-w-[160px] truncate">
+                  {negocio.direcciones && negocio.direcciones.length > 0
+                    ? negocio.direcciones[0]?.nombre || negocio.direcciones[0]?.direccion
+                    : negocio.localidad || "Sucursal Centro"}
+                </span>
+                {negocio.direcciones && negocio.direcciones.length > 1 && (
+                  <ChevronDown size={12} className="shrink-0 opacity-60" />
+                )}
               </motion.div>
 
               <motion.button onClick={() => setShowSchedule(!showSchedule)} whileHover={{ scale: 1.03 }} className="flex items-center gap-2 rounded-2xl bg-[var(--color-custom-800)]/80 p-2 text-sm text-white" aria-expanded={showSchedule}>

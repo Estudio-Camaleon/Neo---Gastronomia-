@@ -31,7 +31,9 @@ import {
 } from "../actions";
 import { buildBrandPalette, meetsWcagAA } from "@/core/lib/utils/color";
 import { generateSlug } from "@/core/lib/slug";
-import type { UpdateTenantBrandingPayload } from "@/core/types/domain";
+import type { UpdateTenantBrandingPayload, DireccionFisica } from "@/core/types/domain";
+import { useUnsavedChanges } from "@/core/hooks/useUnsavedChanges";
+import { UnsavedChangesModal } from "@/components/ui/unsaved-changes-modal";
 
 export interface FranjaHoraria {
   inicio: string;
@@ -63,11 +65,13 @@ export interface NegocioInitialData {
   banner_url: string;
   banner_posicion?: string;
   banner_height?: string;
+  banner_scale?: number;
   mostrar_nombre?: boolean;
   instagram_url?: string;
   facebook_url?: string;
   tiktok_url?: string;
   horarios: ScheduleData;
+  direcciones?: DireccionFisica[];
 }
 
 export interface ConfigFormState {
@@ -86,11 +90,13 @@ export interface ConfigFormState {
   banner_url: string;
   banner_posicion: string;
   banner_height: string;
+  banner_scale: number;
   mostrar_nombre: boolean;
   instagram_url: string;
   facebook_url: string;
   tiktok_url: string;
   horarios: ScheduleData;
+  direcciones: DireccionFisica[];
 }
 
 const DIAS = [
@@ -182,21 +188,23 @@ export function ConfigForm({
     banner_url: initialData?.banner_url || "",
     banner_posicion: initialData?.banner_posicion || "center",
     banner_height: initialData?.banner_height || "normal",
+    banner_scale: initialData?.banner_scale ?? 1,
     mostrar_nombre: initialData?.mostrar_nombre ?? true,
     instagram_url: initialData?.instagram_url || "",
     facebook_url: initialData?.facebook_url || "",
     tiktok_url: initialData?.tiktok_url || "",
     horarios: initialData?.horarios || {},
+    direcciones: initialData?.direcciones || [],
   });
 
   const initialIdRef = useRef(initialData?.id);
-  const isDirtyRef = useRef(false);
+  const [isDirty, setIsDirty] = useState(false);
 
   useEffect(() => {
     const idCambio = initialData?.id && initialData.id !== initialIdRef.current;
     if (!idCambio && initialIdRef.current) return;
     if (initialData?.id) initialIdRef.current = initialData.id;
-    isDirtyRef.current = false;
+    setIsDirty(false);
 
     setImagePreviews({
       logo_url: initialData?.logo_url || "",
@@ -219,11 +227,13 @@ export function ConfigForm({
       banner_url: initialData?.banner_url || "",
       banner_posicion: initialData?.banner_posicion || "center",
       banner_height: initialData?.banner_height || "normal",
+      banner_scale: initialData?.banner_scale ?? 1,
       mostrar_nombre: initialData?.mostrar_nombre ?? true,
       instagram_url: initialData?.instagram_url || "",
       facebook_url: initialData?.facebook_url || "",
       tiktok_url: initialData?.tiktok_url || "",
       horarios: initialData?.horarios || {},
+      direcciones: initialData?.direcciones || [],
     });
   }, [initialData?.id]);
 
@@ -234,7 +244,7 @@ export function ConfigForm({
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     const { name, value } = e.target;
-    isDirtyRef.current = true;
+    setIsDirty(true);
 
     if (name === "slug") {
       setFormData((prev) => ({ ...prev, [name]: generateSlug(value) }));
@@ -250,7 +260,7 @@ export function ConfigForm({
   ) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    isDirtyRef.current = true;
+    setIsDirty(true);
     setFieldErrors((prev) => ({ ...prev, image: undefined }));
     if (file.size > MAX_IMAGE_SIZE_BYTES) {
       const msg = `La imagen supera el límite permitido de ${MAX_IMAGE_SIZE_MB}MB`;
@@ -322,14 +332,54 @@ export function ConfigForm({
 
   useEffect(() => {
     const handler = (e: BeforeUnloadEvent) => {
-      if (isDirtyRef.current) {
+      if (isDirty) {
         e.preventDefault();
         e.returnValue = "";
       }
     };
     window.addEventListener("beforeunload", handler);
     return () => window.removeEventListener("beforeunload", handler);
-  }, []);
+  }, [isDirty]);
+
+  const handleReset = useCallback(() => {
+    if (!initialData) return;
+    setFormData({
+      nombre: initialData?.nombre || "",
+      slug: initialData?.slug || "",
+      whatsapp: initialData?.whatsapp || "",
+      direccion: initialData?.direccion || "",
+      localidad: initialData?.localidad || "",
+      direccion_notas: initialData?.direccion_notas || "",
+      color_primary: initialData?.color_primary || "#34a35f",
+      logo_url: initialData?.logo_url || "",
+      logo_scale: initialData?.logo_scale ?? 1,
+      logo_posicion: initialData?.logo_posicion || "center",
+      logo_fit: initialData?.logo_fit || "contain",
+      logo_shape: initialData?.logo_shape || "circle",
+      banner_url: initialData?.banner_url || "",
+      banner_posicion: initialData?.banner_posicion || "center",
+      banner_height: initialData?.banner_height || "normal",
+      banner_scale: initialData?.banner_scale ?? 1,
+      mostrar_nombre: initialData?.mostrar_nombre ?? true,
+      instagram_url: initialData?.instagram_url || "",
+      facebook_url: initialData?.facebook_url || "",
+      tiktok_url: initialData?.tiktok_url || "",
+      horarios: initialData?.horarios || {},
+      direcciones: initialData?.direcciones || [],
+    });
+    setImagePreviews({
+      logo_url: initialData?.logo_url || "",
+      banner_url: initialData?.banner_url || "",
+    });
+    setIsDirty(false);
+  }, [initialData]);
+
+  const {
+    showModal: showUnsavedModal,
+    confirmLeave: saveAndLeave,
+    cancelLeave: stayOnPage,
+    discardAndReset: discardChanges,
+  } = useUnsavedChanges(isDirty, handleReset);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -370,11 +420,13 @@ export function ConfigForm({
         banner_url: formData.banner_url,
         banner_posicion: formData.banner_posicion,
         banner_height: formData.banner_height,
+        banner_scale: formData.banner_scale,
         mostrar_nombre: formData.mostrar_nombre,
         instagram_url: formData.instagram_url,
         facebook_url: formData.facebook_url,
         tiktok_url: formData.tiktok_url,
         horarios: formData.horarios as Record<string, unknown>,
+        direcciones: formData.direcciones,
       };
 
       const res = await updateTenantBrandingAction(payload);
@@ -473,6 +525,7 @@ export function ConfigForm({
           bannerUrl={imagePreviews.banner_url || formData.banner_url}
           bannerPosicion={formData.banner_posicion}
           bannerHeight={formData.banner_height}
+          bannerScale={formData.banner_scale}
           logoScale={formData.logo_scale}
           logoPosicion={formData.logo_posicion}
           logoFit={formData.logo_fit}
@@ -481,28 +534,32 @@ export function ConfigForm({
           imageError={fieldErrors.image}
           onImageUpload={handleImageUpload}
           onLogoScaleChange={(val) => {
-            isDirtyRef.current = true;
+            setIsDirty(true);
             setFormData((p) => ({ ...p, logo_scale: val }));
           }}
           onLogoPosicionChange={(val) => {
-            isDirtyRef.current = true;
+            setIsDirty(true);
             setFormData((p) => ({ ...p, logo_posicion: val }));
           }}
           onLogoFitChange={(val) => {
-            isDirtyRef.current = true;
+            setIsDirty(true);
             setFormData((p) => ({ ...p, logo_fit: val }));
           }}
           onLogoShapeChange={(val) => {
-            isDirtyRef.current = true;
+            setIsDirty(true);
             setFormData((p) => ({ ...p, logo_shape: val }));
           }}
           onBannerPosicionChange={(val) => {
-            isDirtyRef.current = true;
+            setIsDirty(true);
             setFormData((p) => ({ ...p, banner_posicion: val }));
           }}
           onBannerHeightChange={(val) => {
-            isDirtyRef.current = true;
+            setIsDirty(true);
             setFormData((p) => ({ ...p, banner_height: val }));
+          }}
+          onBannerScaleChange={(val) => {
+            setIsDirty(true);
+            setFormData((p) => ({ ...p, banner_scale: val }));
           }}
         />
 
@@ -513,8 +570,17 @@ export function ConfigForm({
           onChange={handleChange}
           onClearError={clearFieldError}
           onToggleMostrarNombre={(val) => {
-            isDirtyRef.current = true;
+            setIsDirty(true);
             setFormData((p) => ({ ...p, mostrar_nombre: val }));
+          }}
+        />
+
+        {/* BLOQUE SUCURSALES */}
+        <DireccionesBlock
+          direcciones={formData.direcciones}
+          onChange={(direcciones) => {
+            setIsDirty(true);
+            setFormData((p) => ({ ...p, direcciones }));
           }}
         />
 
@@ -528,11 +594,12 @@ export function ConfigForm({
               colorPrimary={formData.color_primary}
               error={fieldErrors.color_primary}
               onChange={(val) => {
-                isDirtyRef.current = true;
+                setIsDirty(true);
                 clearFieldError("color_primary");
                 setFormData((p) => ({ ...p, color_primary: val }));
               }}
               bannerUrl={imagePreviews.banner_url || formData.banner_url}
+              bannerScale={formData.banner_scale}
               logoUrl={imagePreviews.logo_url || formData.logo_url}
               mostrarNombre={formData.mostrar_nombre}
               nombreForm={formData.nombre}
@@ -564,7 +631,7 @@ export function ConfigForm({
           <ScheduleBlock
             schedule={formData.horarios}
             onChange={(newSchedule) => {
-              isDirtyRef.current = true;
+              setIsDirty(true);
               setFormData((p) => ({ ...p, horarios: newSchedule }));
             }}
           />
@@ -610,6 +677,13 @@ export function ConfigForm({
           </button>
         </div>
       </form>
+
+      <UnsavedChangesModal
+        open={showUnsavedModal}
+        onConfirm={saveAndLeave}
+        onCancel={stayOnPage}
+        onDiscard={discardChanges}
+      />
 
       {/* ZONA DE PELIGRO (DANGER ZONE) */}
       {initialData && (
@@ -685,6 +759,7 @@ function BrandingBlock({
   bannerUrl,
   bannerPosicion,
   bannerHeight,
+  bannerScale,
   logoScale,
   logoPosicion,
   logoFit,
@@ -698,11 +773,13 @@ function BrandingBlock({
   onLogoShapeChange,
   onBannerPosicionChange,
   onBannerHeightChange,
+  onBannerScaleChange,
 }: {
   logoUrl: string;
   bannerUrl: string;
   bannerPosicion: string;
   bannerHeight: string;
+  bannerScale: number;
   logoScale: number;
   logoPosicion: string;
   logoFit: string;
@@ -719,6 +796,7 @@ function BrandingBlock({
   onLogoShapeChange: (val: string) => void;
   onBannerPosicionChange: (val: string) => void;
   onBannerHeightChange: (val: string) => void;
+  onBannerScaleChange: (val: number) => void;
 }) {
   const shapeClass = (s: string) =>
     s === "circle"
@@ -1011,6 +1089,27 @@ function BrandingBlock({
             </div>
           </div>
 
+          {/* Banner zoom slider */}
+          <div className="space-y-1 pt-1">
+            <div className="flex items-center justify-between">
+              <span className="text-[9px] font-semibold text-[var(--admin-text-muted)] uppercase tracking-wider">
+                Escala del banner
+              </span>
+              <span className="text-[10px] font-mono text-[var(--admin-text-muted)]">
+                {bannerScale.toFixed(1)}x
+              </span>
+            </div>
+            <input
+              type="range"
+              min="0.5"
+              max="2"
+              step="0.1"
+              value={bannerScale}
+              onChange={(e) => onBannerScaleChange(parseFloat(e.target.value))}
+              className="w-full h-1.5 bg-[var(--admin-bg)] rounded-full appearance-none cursor-pointer accent-[var(--admin-accent)] [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3.5 [&::-webkit-slider-thumb]:h-3.5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[var(--admin-accent)] [&::-webkit-slider-thumb]:shadow-sm"
+            />
+          </div>
+
           {imageError && (
             <p className="text-[11px] text-red-500 flex items-center gap-1">
               <XCircle size={12} />
@@ -1279,6 +1378,7 @@ function PalettePreview({
   bannerUrl,
   bannerPosicion,
   bannerHeight,
+  bannerScale,
   logoUrl,
   logoPosicion,
   logoFit,
@@ -1291,6 +1391,7 @@ function PalettePreview({
   bannerUrl?: string | null;
   bannerPosicion?: string;
   bannerHeight?: string;
+  bannerScale?: number;
   logoUrl?: string | null;
   logoPosicion?: string;
   logoFit?: string;
@@ -1327,8 +1428,11 @@ function PalettePreview({
             <img
               src={bannerUrl}
               alt=""
-              className="h-full w-full object-cover scale-105"
-              style={{ objectPosition: bannerPosicion ?? "center" }}
+              className="h-full w-full object-cover"
+              style={{
+                objectPosition: bannerPosicion ?? "center",
+                transform: `scale(${bannerScale ?? 1})`,
+              }}
             />
             <div
               className="absolute inset-0"
@@ -1416,6 +1520,7 @@ function CatalogDesignBlock({
   bannerUrl,
   bannerPosicion,
   bannerHeight,
+  bannerScale,
   logoUrl,
   logoPosicion,
   logoFit,
@@ -1430,6 +1535,7 @@ function CatalogDesignBlock({
   bannerUrl?: string | null;
   bannerPosicion?: string;
   bannerHeight?: string;
+  bannerScale?: number;
   logoUrl?: string | null;
   logoPosicion?: string;
   logoFit?: string;
@@ -1514,6 +1620,7 @@ function CatalogDesignBlock({
               bannerUrl={bannerUrl}
               bannerPosicion={bannerPosicion}
               bannerHeight={bannerHeight}
+              bannerScale={bannerScale}
               logoUrl={logoUrl}
               logoPosicion={logoPosicion}
               logoFit={logoFit}
@@ -1713,6 +1820,109 @@ function ScheduleBlock({
           );
         })}
       </div>
+    </div>
+  );
+}
+
+function DireccionesBlock({
+  direcciones,
+  onChange,
+}: {
+  direcciones: DireccionFisica[];
+  onChange: (d: DireccionFisica[]) => void;
+}) {
+  const agregar = () => {
+    const nueva: DireccionFisica = {
+      id: crypto.randomUUID(),
+      nombre: "",
+      direccion: "",
+      localidad: "",
+      es_principal: direcciones.length === 0,
+    };
+    onChange([...direcciones, nueva]);
+  };
+
+  const eliminar = (id: string) => {
+    onChange(direcciones.filter((d) => d.id !== id));
+  };
+
+  const actualizar = (id: string, field: Partial<DireccionFisica>) => {
+    onChange(
+      direcciones.map((d) => (d.id === id ? { ...d, ...field } : d)),
+    );
+  };
+
+  return (
+    <div className="bg-[var(--admin-surface)] border border-[var(--admin-border)] rounded-xl p-5 shadow-sm space-y-4">
+      <div className="flex items-center justify-between gap-2 border-b border-[var(--admin-border)] pb-2.5">
+        <div className="flex items-center gap-2">
+          <MapPin size={14} className="text-[var(--admin-text-muted)]" />
+          <h2 className="text-xs font-semibold text-[var(--admin-text)]">
+            Sucursales / Direcciones
+          </h2>
+        </div>
+        <button
+          type="button"
+          onClick={agregar}
+          className="text-xs font-semibold flex items-center gap-1 text-[var(--admin-accent)] hover:bg-[var(--admin-accent)]/10 px-2.5 py-1.5 rounded-md transition-colors"
+        >
+          <Plus size={13} /> Agregar sucursal
+        </button>
+      </div>
+
+      {direcciones.length === 0 ? (
+        <p className="text-xs text-[var(--admin-text-muted)] italic py-2">
+          No hay sucursales registradas. Agregá al menos una dirección para tu negocio.
+        </p>
+      ) : (
+        <div className="space-y-3">
+          {direcciones.map((dir) => (
+            <div
+              key={dir.id}
+              className="flex flex-col sm:flex-row gap-3 items-start sm:items-center bg-[var(--admin-bg)] border border-[var(--admin-border)] rounded-lg p-3"
+            >
+              <div className="flex-1 grid grid-cols-1 sm:grid-cols-3 gap-2 w-full">
+                <input
+                  type="text"
+                  value={dir.nombre}
+                  onChange={(e) => actualizar(dir.id, { nombre: e.target.value })}
+                  placeholder="Nombre (Ej: Local Centro)"
+                  className="w-full p-2 bg-[var(--admin-surface)] border border-[var(--admin-border)] rounded-md text-xs font-medium text-[var(--admin-text)] focus:outline-none focus:border-[var(--admin-accent)] focus:ring-1 focus:ring-[var(--admin-accent)] transition-all"
+                />
+                <input
+                  type="text"
+                  value={dir.direccion}
+                  onChange={(e) => actualizar(dir.id, { direccion: e.target.value })}
+                  placeholder="Dirección"
+                  className="w-full p-2 bg-[var(--admin-surface)] border border-[var(--admin-border)] rounded-md text-xs text-[var(--admin-text)] focus:outline-none focus:border-[var(--admin-accent)] focus:ring-1 focus:ring-[var(--admin-accent)] transition-all"
+                />
+                <input
+                  type="text"
+                  value={dir.localidad}
+                  onChange={(e) => actualizar(dir.id, { localidad: e.target.value })}
+                  placeholder="Localidad"
+                  className="w-full p-2 bg-[var(--admin-surface)] border border-[var(--admin-border)] rounded-md text-xs text-[var(--admin-text)] focus:outline-none focus:border-[var(--admin-accent)] focus:ring-1 focus:ring-[var(--admin-accent)] transition-all"
+                />
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                {dir.es_principal && (
+                  <span className="text-[10px] font-bold text-amber-600 bg-amber-100 px-2 py-0.5 rounded-full">
+                    Principal
+                  </span>
+                )}
+                <button
+                  type="button"
+                  onClick={() => eliminar(dir.id)}
+                  className="p-1.5 text-[var(--admin-text-muted)] hover:text-red-500 hover:bg-red-500/10 rounded-md transition-colors"
+                  title="Eliminar sucursal"
+                >
+                  <Trash2 size={13} />
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

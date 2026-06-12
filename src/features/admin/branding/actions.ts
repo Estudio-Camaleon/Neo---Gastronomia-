@@ -56,11 +56,13 @@ export async function updateTenantBrandingAction(
       banner_url: payload.banner_url,
       banner_posicion: payload.banner_posicion,
       banner_height: payload.banner_height,
+      banner_scale: payload.banner_scale,
       mostrar_nombre: payload.mostrar_nombre,
       instagram_url: payload.instagram_url.trim(),
       facebook_url: payload.facebook_url.trim(),
       tiktok_url: payload.tiktok_url.trim(),
       horarios: payload.horarios as Json,
+      direcciones: payload.direcciones as unknown as Json,
       updated_at: new Date().toISOString(),
     })
     .eq("id", payload.id)
