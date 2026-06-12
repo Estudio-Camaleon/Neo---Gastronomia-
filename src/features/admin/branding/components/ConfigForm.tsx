@@ -673,17 +673,10 @@ export function ConfigForm({
           }}
         />
 
-        {/* BLOQUE MIXTO COMPACTO RESPONSIVE: REDES + FORMAS + CROMÁTICA */}
+        {/* BLOQUE MIXTO COMPACTO RESPONSIVE: REDES + CROMÁTICA */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-6">
-          <div className="lg:col-span-7 space-y-6">
+          <div className="lg:col-span-7">
             <SocialLinksBlock formData={formData} onChange={handleChange} />
-            <FloatingShapesBlock
-              selected={formData.floating_shapes}
-              onChange={(shapes) => {
-                setIsDirty(true);
-                setFormData((p) => ({ ...p, floating_shapes: shapes }));
-              }}
-            />
           </div>
           <div className="lg:col-span-5">
             <CatalogDesignBlock
@@ -708,6 +701,15 @@ export function ConfigForm({
             />
           </div>
         </div>
+
+        {/* BLOQUE FORMAS FLOTANTES */}
+        <FloatingShapesBlock
+          selected={formData.floating_shapes}
+          onChange={(shapes) => {
+            setIsDirty(true);
+            setFormData((p) => ({ ...p, floating_shapes: shapes }));
+          }}
+        />
 
         {/* BLOQUE CORE: CONTROL HORARIO */}
         <div className="bg-[var(--admin-surface)] border border-[var(--admin-border)] rounded-xl p-5 shadow-sm space-y-5">
