@@ -113,6 +113,7 @@ export function CategoriaManager({
         await cargarCategorias();
         toast.success("Categoría eliminada");
       } catch {
+        setDeleteConfirm(null);
         toast.error("Error al eliminar la categoría");
       }
     });

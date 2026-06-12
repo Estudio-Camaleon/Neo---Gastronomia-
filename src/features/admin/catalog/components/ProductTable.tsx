@@ -99,6 +99,12 @@ export function ProductTable({ negocioId, onEdit }: ProductTableProps) {
     [negocioId],
   );
 
+  // Use refs to avoid stale closures in Realtime callback
+  const pageRef = useRef(page);
+  const searchRef = useRef(searchQuery);
+  useEffect(() => { pageRef.current = page; }, [page]);
+  useEffect(() => { searchRef.current = searchQuery; }, [searchQuery]);
+
   // Separate channel subscription — stable, doesn't depend on page/search
   useEffect(() => {
     const canal: RealtimeChannel = supabase
@@ -112,7 +118,7 @@ export function ProductTable({ negocioId, onEdit }: ProductTableProps) {
           filter: `negocio_id=eq.${negocioId}`,
         },
         () => {
-          cargarProductos(page, searchQuery);
+          cargarProductos(pageRef.current, searchRef.current);
         },
       )
       .subscribe();
@@ -120,7 +126,7 @@ export function ProductTable({ negocioId, onEdit }: ProductTableProps) {
     return () => {
       supabase.removeChannel(canal);
     };
-  }, [negocioId]); // only re-subscribe if negocioId changes
+  }, [negocioId, cargarProductos]); // only re-subscribe if negocioId changes
 
   useEffect(() => {
     cargarProductos(page, searchQuery);
