@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState, useCallback } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
-import { Minus, Plus, Clock, Search, ImageIcon, MapPin } from "lucide-react";
+import { Minus, Plus, Clock, Search, ImageIcon, MapPin, ChevronDown } from "lucide-react";
 import { useCartStore } from "@/features/public-menu/cart/useCartStore";
 import { CartFloatingButton } from "@/features/public-menu/cart/CartFloatingButton";
 import { PublicCart } from "@/features/public-menu/cart/PublicCart";
@@ -298,7 +298,7 @@ export function CatalogClient({
 
   return (
     <>
-      <FloatingFood />
+      <FloatingFood shapes={negocio.floating_shapes} />
       <div className="min-h-screen flex flex-col text-[var(--color-custom-text)] selection:bg-[var(--color-custom-deep)] selection:text-white relative z-10">
         {/* HEADER UNIFICADO */}
         <PublicMenuHeader
@@ -310,8 +310,8 @@ export function CatalogClient({
         />
 
         {/* CATALOGO */}
-        <div className="w-full flex-1">
-          <main className="flex flex-col gap-6 lg:flex-row">
+        <div className="w-full flex-1 pb-12">
+          <main className="flex flex-col lg:flex-row">
             <section
               className={`min-w-0 flex-1 bg-[var(--color-custom-surface)] p-4 lg:p-6 transition-all duration-300 ${
                 isCartOpen ? "lg:basis-auto" : "lg:basis-full"
@@ -626,7 +626,7 @@ export function CatalogClient({
             </section>
 
             <aside
-              className={`bg-[var(--color-custom-surface)] pt-7 w-[380px] shrink-0 transition-all duration-300 max-lg:hidden lg:sticky lg:top-4 lg:self-start ${
+              className={`bg-[var(--color-custom-surface)] p-7 w-[380px] shrink-0 transition-all duration-300 max-lg:hidden lg:sticky lg:top-4 lg:self-start ${
                 isCartOpen
                   ? "lg:opacity-100 lg:translate-x-0 lg:pointer-events-auto"
                   : "lg:opacity-0 lg:translate-x-6 lg:pointer-events-none lg:invisible"
@@ -645,35 +645,43 @@ export function CatalogClient({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5 }}
-          className="bg-[var(--color-custom-950)]"
+          className="bg-[var(--color-custom-950)] "
         >
           <div className="p-6 rounded-3xl border border-white/10 bg-white/5 backdrop-blur-sm space-y-6">
             <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between sm:gap-4">
               <div className="space-y-2">
-                <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-[10px] font-black uppercase tracking-[0.14em] text-white/95 sm:text-[11px] sm:tracking-[0.18em]">
-                  <Clock className="h-3.5 w-3.5" />
-                  Horarios
-                </div>
                 <button
                   type="button"
-                  onClick={() => setShowSchedule(!showSchedule)}
-                  className="lg:hidden text-xs text-white/60 hover:text-white transition-colors underline underline-offset-2"
+                  onClick={() => isMobile && setShowSchedule(!showSchedule)}
+                  className={`inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-[10px] font-black uppercase tracking-[0.14em] text-white/95 sm:text-[11px] sm:tracking-[0.18em] ${
+                    isMobile ? "cursor-pointer" : "cursor-default"
+                  }`}
+                  aria-expanded={isMobile ? showSchedule : undefined}
                 >
-                  {showSchedule ? "Ocultar horarios" : "Ver horarios completos"}
+                  <Clock className="h-3.5 w-3.5" />
+                  Horarios
+                  {isMobile && (
+                    <ChevronDown
+                      size={14}
+                      className={`transition-transform duration-200 ${
+                        showSchedule ? "rotate-180" : ""
+                      }`}
+                    />
+                  )}
                 </button>
               </div>
             </div>
 
             {isMobile ? (
-              <AnimatePresence>
+              <AnimatePresence initial={false}>
                 {showSchedule && (
                   <motion.div
                     id="schedule-grid"
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: "auto" }}
                     exit={{ opacity: 0, height: 0 }}
-                    transition={{ duration: 0.3 }}
-                    className="grid gap-2 grid-cols-2 md:grid-cols-3 lg:grid-cols-4 overflow-hidden"
+                    transition={{ duration: 0.3, ease: "easeInOut" }}
+                    className="grid gap-2 grid-cols-2 md:grid-cols-3 overflow-hidden"
                   >
                     {renderScheduleGrid()}
                   </motion.div>

@@ -23,6 +23,13 @@ import {
   Plus,
   Trash2,
   Copy,
+  Pizza,
+  Beef,
+  Coffee,
+  CupSoda,
+  Sandwich,
+  IceCream,
+  UtensilsCrossed,
 } from "lucide-react";
 import { FoodMini } from "@/components/ui/food-loading";
 import {
@@ -69,8 +76,12 @@ export interface NegocioInitialData {
   instagram_url?: string;
   facebook_url?: string;
   tiktok_url?: string;
+  twitter_url?: string;
+  youtube_url?: string;
+  tripadvisor_url?: string;
   horarios: ScheduleData;
   direcciones?: DireccionFisica[];
+  floating_shapes?: string[];
 }
 
 export interface ConfigFormState {
@@ -94,8 +105,12 @@ export interface ConfigFormState {
   instagram_url: string;
   facebook_url: string;
   tiktok_url: string;
+  twitter_url: string;
+  youtube_url: string;
+  tripadvisor_url: string;
   horarios: ScheduleData;
   direcciones: DireccionFisica[];
+  floating_shapes: string[];
 }
 
 const DIAS = [
@@ -194,9 +209,20 @@ const LOGO_FIT_OPTIONS = [
 ] as const;
 
 const LOGO_SHAPE_OPTIONS = [
+  { value: "none", label: "Ninguna" },
   { value: "circle", label: "Círculo" },
   { value: "rounded", label: "Redondeado" },
   { value: "square", label: "Cuadrado" },
+] as const;
+
+const FOOD_SHAPES = [
+  { value: "Pizza", label: "Pizza", Icon: Pizza },
+  { value: "Beef", label: "Hamburguesa", Icon: Beef },
+  { value: "Coffee", label: "Café", Icon: Coffee },
+  { value: "CupSoda", label: "Bebidas", Icon: CupSoda },
+  { value: "Sandwich", label: "Sándwich", Icon: Sandwich },
+  { value: "IceCream", label: "Helado", Icon: IceCream },
+  { value: "UtensilsCrossed", label: "Pastas", Icon: UtensilsCrossed },
 ] as const;
 
 const MAX_IMAGE_SIZE_MB = 5;
@@ -244,8 +270,12 @@ export function ConfigForm({
     instagram_url: initialData?.instagram_url || "",
     facebook_url: initialData?.facebook_url || "",
     tiktok_url: initialData?.tiktok_url || "",
+    twitter_url: initialData?.twitter_url || "",
+    youtube_url: initialData?.youtube_url || "",
+    tripadvisor_url: initialData?.tripadvisor_url || "",
     horarios: initialData?.horarios || {},
     direcciones: initialData?.direcciones || [],
+    floating_shapes: initialData?.floating_shapes || [],
   });
 
   const initialIdRef = useRef(initialData?.id);
@@ -283,8 +313,12 @@ export function ConfigForm({
       instagram_url: initialData?.instagram_url || "",
       facebook_url: initialData?.facebook_url || "",
       tiktok_url: initialData?.tiktok_url || "",
+      twitter_url: initialData?.twitter_url || "",
+      youtube_url: initialData?.youtube_url || "",
+      tripadvisor_url: initialData?.tripadvisor_url || "",
       horarios: initialData?.horarios || {},
       direcciones: initialData?.direcciones || [],
+      floating_shapes: initialData?.floating_shapes || [],
     });
   }, [initialData?.id]);
 
@@ -415,8 +449,12 @@ export function ConfigForm({
       instagram_url: initialData?.instagram_url || "",
       facebook_url: initialData?.facebook_url || "",
       tiktok_url: initialData?.tiktok_url || "",
+      twitter_url: initialData?.twitter_url || "",
+      youtube_url: initialData?.youtube_url || "",
+      tripadvisor_url: initialData?.tripadvisor_url || "",
       horarios: initialData?.horarios || {},
       direcciones: initialData?.direcciones || [],
+      floating_shapes: initialData?.floating_shapes || [],
     });
     setImagePreviews({
       logo_url: initialData?.logo_url || "",
@@ -476,8 +514,12 @@ export function ConfigForm({
         instagram_url: formData.instagram_url,
         facebook_url: formData.facebook_url,
         tiktok_url: formData.tiktok_url,
+        twitter_url: formData.twitter_url,
+        youtube_url: formData.youtube_url,
+        tripadvisor_url: formData.tripadvisor_url,
         horarios: formData.horarios as Record<string, unknown>,
         direcciones: formData.direcciones,
+        floating_shapes: formData.floating_shapes,
       };
 
       const res = await updateTenantBrandingAction(payload);
@@ -631,10 +673,17 @@ export function ConfigForm({
           }}
         />
 
-        {/* BLOQUE MIXTO COMPACTO RESPONSIVE: REDES + CROMÁTICA */}
+        {/* BLOQUE MIXTO COMPACTO RESPONSIVE: REDES + FORMAS + CROMÁTICA */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-6">
-          <div className="lg:col-span-7">
+          <div className="lg:col-span-7 space-y-6">
             <SocialLinksBlock formData={formData} onChange={handleChange} />
+            <FloatingShapesBlock
+              selected={formData.floating_shapes}
+              onChange={(shapes) => {
+                setIsDirty(true);
+                setFormData((p) => ({ ...p, floating_shapes: shapes }));
+              }}
+            />
           </div>
           <div className="lg:col-span-5">
             <CatalogDesignBlock
@@ -1300,7 +1349,7 @@ function SocialLinksBlock({
   formData,
   onChange,
 }: {
-  formData: { instagram_url: string; facebook_url: string; tiktok_url: string };
+  formData: { instagram_url: string; facebook_url: string; tiktok_url: string; twitter_url: string; youtube_url: string; tripadvisor_url: string };
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }) {
   return (
@@ -1355,6 +1404,48 @@ function SocialLinksBlock({
               className="w-full p-2 bg-[var(--admin-bg)] border border-[var(--admin-border)] rounded-lg text-[var(--admin-text)] text-xs focus:outline-none focus:ring-1 focus:ring-[var(--admin-accent)] focus:border-[var(--admin-accent)] transition-all"
             />
           </div>
+
+          <div className="space-y-1">
+            <label className="font-medium text-[var(--admin-text-muted)] block">
+              X (Twitter)
+            </label>
+            <input
+              name="twitter_url"
+              type="url"
+              value={formData.twitter_url}
+              onChange={onChange}
+              placeholder="https://x.com/tu_marca"
+              className="w-full p-2 bg-[var(--admin-bg)] border border-[var(--admin-border)] rounded-lg text-[var(--admin-text)] text-xs focus:outline-none focus:ring-1 focus:ring-[var(--admin-accent)] focus:border-[var(--admin-accent)] transition-all"
+            />
+          </div>
+
+          <div className="space-y-1">
+            <label className="font-medium text-[var(--admin-text-muted)] block">
+              YouTube Canal
+            </label>
+            <input
+              name="youtube_url"
+              type="url"
+              value={formData.youtube_url}
+              onChange={onChange}
+              placeholder="https://youtube.com/@tu_marca"
+              className="w-full p-2 bg-[var(--admin-bg)] border border-[var(--admin-border)] rounded-lg text-[var(--admin-text)] text-xs focus:outline-none focus:ring-1 focus:ring-[var(--admin-accent)] focus:border-[var(--admin-accent)] transition-all"
+            />
+          </div>
+
+          <div className="space-y-1">
+            <label className="font-medium text-[var(--admin-text-muted)] block">
+              TripAdvisor
+            </label>
+            <input
+              name="tripadvisor_url"
+              type="url"
+              value={formData.tripadvisor_url}
+              onChange={onChange}
+              placeholder="https://tripadvisor.com/..."
+              className="w-full p-2 bg-[var(--admin-bg)] border border-[var(--admin-border)] rounded-lg text-[var(--admin-text)] text-xs focus:outline-none focus:ring-1 focus:ring-[var(--admin-accent)] focus:border-[var(--admin-accent)] transition-all"
+            />
+          </div>
         </div>
       </div>
 
@@ -1367,6 +1458,61 @@ function SocialLinksBlock({
           Es obligatorio el uso de <code>https://</code> para asegurar el
           redireccionamiento nativo correcto.
         </p>
+      </div>
+    </div>
+  );
+}
+
+function FloatingShapesBlock({
+  selected,
+  onChange,
+}: {
+  selected: string[];
+  onChange: (shapes: string[]) => void;
+}) {
+  const toggle = (value: string) => {
+    if (selected.includes(value)) {
+      onChange(selected.filter((s) => s !== value));
+    } else {
+      onChange([...selected, value]);
+    }
+  };
+
+  return (
+    <div className="bg-[var(--admin-surface)] border border-[var(--admin-border)] rounded-xl p-5 shadow-sm">
+      <div className="space-y-3.5">
+        <div className="flex items-center gap-2 border-b border-[var(--admin-border)] pb-2.5">
+          <ImageIcon size={14} className="text-[var(--admin-text-muted)]" />
+          <h2 className="text-xs font-semibold text-[var(--admin-text)]">
+            Formas Flotantes del Menú Público
+          </h2>
+        </div>
+
+        <p className="text-[10px] text-[var(--admin-text-muted)] leading-relaxed">
+          Elegí las siluetas decorativas que flotan en el menú público. Van
+          desde íconos de comida hasta objetos cotidianos.
+        </p>
+
+        <div className="flex flex-wrap gap-2">
+          {FOOD_SHAPES.map(({ value, label, Icon }) => {
+            const isActive = selected.includes(value);
+            return (
+              <button
+                key={value}
+                type="button"
+                onClick={() => toggle(value)}
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-medium transition-all border ${
+                  isActive
+                    ? "bg-[var(--admin-accent)] text-white border-[var(--admin-accent)] shadow-sm"
+                    : "bg-[var(--admin-bg)] text-[var(--admin-text-muted)] border-[var(--admin-border)] hover:border-[var(--admin-accent)]/30"
+                }`}
+              >
+                <Icon size={14} />
+                {label}
+              </button>
+            );
+          })}
+        </div>
       </div>
     </div>
   );

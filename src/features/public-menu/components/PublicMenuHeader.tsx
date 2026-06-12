@@ -192,7 +192,9 @@ export function PublicMenuHeader({
                   ? "rounded-full"
                   : (negocio.logo_shape ?? "circle") === "rounded"
                     ? "rounded-2xl"
-                    : ""
+                    : (negocio.logo_shape ?? "circle") === "none"
+                      ? ""
+                      : ""
               }`}
             >
               {negocio.logo_url ? (
@@ -238,12 +240,18 @@ export function PublicMenuHeader({
                 >
                   <span className="relative inline-block rounded-2xl px-4 py-2 -mx-2">
                     <span
-                      className="absolute inset-0 rounded-2xl backdrop-blur-md"
-                      style={{ backgroundColor: "color-mix(in srgb, var(--color-custom-surface) 35%, transparent)" }}
+                      className="absolute inset-0 rounded-2xl backdrop-blur-lg"
+                      style={{
+                        backgroundColor: "color-mix(in srgb, var(--color-custom-950) 70%, transparent)",
+                        boxShadow: "inset 0 1px 0 rgba(255,255,255,0.08)",
+                      }}
                     />
                     <span
                       className="relative bg-clip-text text-transparent"
-                      style={{ backgroundImage: 'linear-gradient(90deg,var(--color-custom-700),var(--color-custom-500))' }}
+                      style={{
+                        backgroundImage: 'linear-gradient(135deg,var(--color-custom-200),var(--color-custom-50))',
+                        textShadow: "0 2px 8px rgba(0,0,0,0.25)",
+                      }}
                     >
                       {negocio.nombre}
                     </span>
@@ -274,6 +282,7 @@ export function PublicMenuHeader({
               <motion.button onClick={() => setShowSchedule(!showSchedule)} whileHover={{ scale: 1.03 }} className="flex items-center gap-2 rounded-2xl bg-[var(--color-custom-800)]/80 p-2 text-sm text-white" aria-expanded={showSchedule}>
                 <Clock className="h-4 w-4" />
                 <span className="hidden sm:inline">{showSchedule ? "Ocultar horarios" : "Ver horarios"}</span>
+                <ChevronDown size={12} className={`shrink-0 opacity-60 transition-transform ${showSchedule ? "rotate-180" : ""}`} />
               </motion.button>
             </div>
 
@@ -354,8 +363,8 @@ export function PublicMenuHeader({
               )}
             </AnimatePresence>
 
-            {(negocio.whatsapp || negocio.instagram_url || negocio.facebook_url) && (
-              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.45 }} className="flex gap-2">
+            {(negocio.whatsapp || negocio.instagram_url || negocio.facebook_url || negocio.tiktok_url || negocio.twitter_url || negocio.youtube_url || negocio.tripadvisor_url) && (
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.45 }} className="flex gap-2 flex-wrap justify-center">
                 {negocio.whatsapp && (
                   <a href={`https://wa.me/${negocio.whatsapp.replace(/\D/g, "")}`} target="_blank" rel="noreferrer" aria-label="WhatsApp" className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--color-custom-900)]/50 text-white/90 transition-all hover:bg-[var(--color-custom-500)] hover:text-white">
                     <MessageCircle size={18} />
@@ -369,6 +378,26 @@ export function PublicMenuHeader({
                 {negocio.facebook_url && (
                   <a href={negocio.facebook_url} target="_blank" rel="noreferrer" aria-label="Facebook" className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--color-custom-900)]/50 text-white/90 transition-all hover:bg-[var(--color-custom-500)] hover:text-white">
                     <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                  </a>
+                )}
+                {negocio.tiktok_url && (
+                  <a href={negocio.tiktok_url} target="_blank" rel="noreferrer" aria-label="TikTok" className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--color-custom-900)]/50 text-white/90 transition-all hover:bg-[var(--color-custom-500)] hover:text-white">
+                    <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4"><path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/></svg>
+                  </a>
+                )}
+                {negocio.twitter_url && (
+                  <a href={negocio.twitter_url} target="_blank" rel="noreferrer" aria-label="X Twitter" className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--color-custom-900)]/50 text-white/90 transition-all hover:bg-[var(--color-custom-500)] hover:text-white">
+                    <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                  </a>
+                )}
+                {negocio.youtube_url && (
+                  <a href={negocio.youtube_url} target="_blank" rel="noreferrer" aria-label="YouTube" className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--color-custom-900)]/50 text-white/90 transition-all hover:bg-[var(--color-custom-500)] hover:text-white">
+                    <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+                  </a>
+                )}
+                {negocio.tripadvisor_url && (
+                  <a href={negocio.tripadvisor_url} target="_blank" rel="noreferrer" aria-label="TripAdvisor" className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--color-custom-900)]/50 text-white/90 transition-all hover:bg-[var(--color-custom-500)] hover:text-white">
+                    <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5"><path d="M17.18 9.48a4.27 4.27 0 100 8.54 4.27 4.27 0 000-8.54zm-10.36 0a4.27 4.27 0 100 8.54 4.27 4.27 0 000-8.54zM12 6.84c-1.2 0-2.62.36-4.09 1.07a4.24 4.24 0 00-.1 2.14c.8 1.6 2.26 2.7 4.19 2.7s3.39-1.1 4.19-2.7a4.24 4.24 0 00-.1-2.14C14.62 7.2 13.2 6.84 12 6.84zm0 2.98c-2.19 0-3.96 1.77-3.96 3.96S9.81 17.74 12 17.74s3.96-1.77 3.96-3.96S14.19 9.82 12 9.82zm0 1.98c1.09 0 1.98.89 1.98 1.98s-.89 1.98-1.98 1.98-1.98-.89-1.98-1.98.89-1.98 1.98-1.98zM12 0C5.37 0 0 5.37 0 12s5.37 12 12 12 12-5.37 12-12S18.63 0 12 0zm0 2.5c5.25 0 9.5 4.25 9.5 9.5s-4.25 9.5-9.5 9.5S2.5 17.25 2.5 12 6.75 2.5 12 2.5z"/></svg>
                   </a>
                 )}
               </motion.div>

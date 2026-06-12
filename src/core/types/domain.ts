@@ -35,10 +35,14 @@ export interface NegocioPublico {
   instagram_url: string | null;
   facebook_url: string | null;
   tiktok_url: string | null;
+  twitter_url: string | null;
+  youtube_url: string | null;
+  tripadvisor_url: string | null;
   horarios: Record<string, HorarioDia> | null;
   moneda_simbolo?: string;
   pedido_minimo?: number;
   costo_envio?: number;
+  floating_shapes?: string[];
 }
 
 // ── Categoría ────────────────────────────────────────
@@ -155,8 +159,12 @@ export interface UpdateTenantBrandingPayload {
   instagram_url: string;
   facebook_url: string;
   tiktok_url: string;
+  twitter_url: string;
+  youtube_url: string;
+  tripadvisor_url: string;
   horarios: Record<string, unknown>;
   direcciones: DireccionFisica[];
+  floating_shapes: string[];
 }
 
 // ── Promo ────────────────────────────────────────────

@@ -10,9 +10,31 @@ import {
   ShoppingBag,
   UtensilsCrossed,
   Ticket,
+  type LucideIcon,
 } from "lucide-react";
 
-const foodIcons = [
+const ICON_MAP: Record<string, LucideIcon> = {
+  Pizza,
+  Beef,
+  Coffee,
+  CupSoda,
+  Sandwich,
+  IceCream,
+  ShoppingBag,
+  UtensilsCrossed,
+  Ticket,
+};
+
+interface FoodIconDef {
+  Icon: LucideIcon;
+  size: number;
+  top: string;
+  left?: string;
+  right?: string;
+  delay: string;
+}
+
+const allFoodIcons: FoodIconDef[] = [
   { Icon: Pizza, size: 64, top: "8%", left: "5%", delay: "0s" },
   { Icon: Beef, size: 72, top: "18%", right: "6%", delay: "1.2s" },
   { Icon: Coffee, size: 56, top: "40%", left: "3%", delay: "0.6s" },
@@ -24,7 +46,17 @@ const foodIcons = [
   { Icon: Ticket, size: 50, top: "12%", right: "20%", delay: "2.4s" },
 ];
 
-export function FloatingFood() {
+const DEFAULT_SHAPES = ["Pizza", "Beef", "Coffee", "CupSoda", "Sandwich", "IceCream", "ShoppingBag", "UtensilsCrossed", "Ticket"];
+
+export function FloatingFood({ shapes }: { shapes?: string[] }) {
+  const activeShapes = shapes && shapes.length > 0 ? shapes : DEFAULT_SHAPES;
+
+  const foodIcons = allFoodIcons.filter((icon) => {
+    // Match by icon name using ICON_MAP lookup
+    const name = Object.entries(ICON_MAP).find(([, I]) => I === icon.Icon)?.[0];
+    return name ? activeShapes.includes(name) : true;
+  });
+
   return (
     <>
       <style>{`
