@@ -13,19 +13,8 @@ import {
   type LucideIcon,
 } from "lucide-react";
 
-const ICON_MAP: Record<string, LucideIcon> = {
-  Pizza,
-  Beef,
-  Coffee,
-  CupSoda,
-  Sandwich,
-  IceCream,
-  ShoppingBag,
-  UtensilsCrossed,
-  Ticket,
-};
-
 interface FoodIconDef {
+  key: string;
   Icon: LucideIcon;
   size: number;
   top: string;
@@ -35,27 +24,23 @@ interface FoodIconDef {
 }
 
 const allFoodIcons: FoodIconDef[] = [
-  { Icon: Pizza, size: 64, top: "8%", left: "5%", delay: "0s" },
-  { Icon: Beef, size: 72, top: "18%", right: "6%", delay: "1.2s" },
-  { Icon: Coffee, size: 56, top: "40%", left: "3%", delay: "0.6s" },
-  { Icon: CupSoda, size: 68, top: "52%", right: "4%", delay: "2s" },
-  { Icon: Sandwich, size: 60, top: "68%", left: "6%", delay: "0.9s" },
-  { Icon: IceCream, size: 52, top: "78%", right: "8%", delay: "1.5s" },
-  { Icon: ShoppingBag, size: 58, top: "28%", left: "40%", delay: "0.3s" },
-  { Icon: UtensilsCrossed, size: 70, top: "62%", left: "38%", delay: "1.8s" },
-  { Icon: Ticket, size: 50, top: "12%", right: "20%", delay: "2.4s" },
+  { key: "Pizza", Icon: Pizza, size: 64, top: "8%", left: "5%", delay: "0s" },
+  { key: "Beef", Icon: Beef, size: 72, top: "18%", right: "6%", delay: "1.2s" },
+  { key: "Coffee", Icon: Coffee, size: 56, top: "40%", left: "3%", delay: "0.6s" },
+  { key: "CupSoda", Icon: CupSoda, size: 68, top: "52%", right: "4%", delay: "2s" },
+  { key: "Sandwich", Icon: Sandwich, size: 60, top: "68%", left: "6%", delay: "0.9s" },
+  { key: "IceCream", Icon: IceCream, size: 52, top: "78%", right: "8%", delay: "1.5s" },
+  { key: "ShoppingBag", Icon: ShoppingBag, size: 58, top: "28%", left: "40%", delay: "0.3s" },
+  { key: "UtensilsCrossed", Icon: UtensilsCrossed, size: 70, top: "62%", left: "38%", delay: "1.8s" },
+  { key: "Ticket", Icon: Ticket, size: 50, top: "12%", right: "20%", delay: "2.4s" },
 ];
 
-const DEFAULT_SHAPES = ["Pizza", "Beef", "Coffee", "CupSoda", "Sandwich", "IceCream", "ShoppingBag", "UtensilsCrossed", "Ticket"];
+const DEFAULT_SHAPES = ["Pizza", "Beef", "Coffee", "CupSoda", "Sandwich", "IceCream", "UtensilsCrossed"];
 
 export function FloatingFood({ shapes }: { shapes?: string[] }) {
   const activeShapes = shapes && shapes.length > 0 ? shapes : DEFAULT_SHAPES;
 
-  const foodIcons = allFoodIcons.filter((icon) => {
-    // Match by icon name using ICON_MAP lookup
-    const name = Object.entries(ICON_MAP).find(([, I]) => I === icon.Icon)?.[0];
-    return name ? activeShapes.includes(name) : true;
-  });
+  const foodIcons = allFoodIcons.filter((icon) => activeShapes.includes(icon.key));
 
   return (
     <>
