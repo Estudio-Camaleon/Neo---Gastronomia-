@@ -12,6 +12,8 @@ import {
   Hash,
   MapPin,
   Palette,
+  Mail,
+  Sparkles,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { StepIndicator } from "./StepIndicator";
@@ -29,6 +31,12 @@ const step1Schema = z
     password: z
       .string()
       .min(8, "La contraseña debe tener al menos 8 caracteres.")
+      .regex(/[A-Z]/, "Debe incluir al menos una mayúscula")
+      .regex(/[0-9]/, "Debe incluir al menos un número")
+      .regex(
+        /[^A-Za-z0-9]/,
+        "Debe incluir al menos un símbolo especial",
+      )
       .transform((val) => val.trim()),
     confirmPassword: z.string().min(1, "Confirmá la contraseña."),
   })
@@ -52,6 +60,7 @@ export function RegisterForm() {
 
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+  const [registered, setRegistered] = useState(false);
 
   const [duplicates, setDuplicates] = useState<Record<string, boolean | null>>({
     nombre: null,
@@ -66,37 +75,35 @@ export function RegisterForm() {
   const debounceRef = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
 
   const getPasswordStrength = (pass: string) => {
-    if (pass.length === 0) {
-      return { score: 0, label: "", color: "bg-transparent", width: "w-0" };
-    }
-    let points = 0;
-    if (pass.length >= 8) points++;
-    if (/[A-Z]/.test(pass)) points++;
-    if (/[0-9]/.test(pass)) points++;
-    if (/[^A-Za-z0-9]/.test(pass)) points++;
-
-    if (points <= 1) {
-      return {
-        score: 1,
-        label: "Insegura",
-        color: "bg-red-400",
-        width: "w-1/3",
-      };
-    }
-    if (points === 2 || points === 3) {
-      return {
-        score: 2,
-        label: "Moderada",
-        color: "bg-amber-400",
-        width: "w-2/3",
-      };
-    }
-    return {
-      score: 3,
-      label: "Fuerte",
-      color: "bg-[var(--auth-primary)]",
-      width: "w-full",
+    const checks = {
+      length: pass.length >= 8,
+      uppercase: /[A-Z]/.test(pass),
+      number: /[0-9]/.test(pass),
+      symbol: /[^A-Za-z0-9]/.test(pass),
     };
+    const points = Object.values(checks).filter(Boolean).length;
+    const allMet = points === 4;
+
+    let label: string, color: string, width: string;
+    if (pass.length === 0) {
+      label = "";
+      color = "bg-transparent";
+      width = "w-0";
+    } else if (points <= 1) {
+      label = "Insegura";
+      color = "bg-red-400";
+      width = "w-1/4";
+    } else if (points <= 3) {
+      label = "Moderada";
+      color = "bg-amber-400";
+      width = `${(points / 4) * 100}%`;
+    } else {
+      label = "Fuerte";
+      color = "bg-[var(--auth-primary)]";
+      width = "w-full";
+    }
+
+    return { score: points, label, color, width, checks, allMet };
   };
 
   const strength = getPasswordStrength(password);
@@ -206,6 +213,11 @@ export function RegisterForm() {
     if (response?.error) {
       setErrorMsg(response.error);
       setLoading(false);
+      return;
+    }
+    if (response?.success) {
+      setRegistered(true);
+      setLoading(false);
     }
   };
 
@@ -216,8 +228,67 @@ export function RegisterForm() {
   const emailSchemaCheck = z.string().email().safeParse(email).success;
   const passwordsMatch =
     password === confirmPassword && confirmPassword.length > 0;
-  const passwordReady = strength.score >= 2 && passwordsMatch;
+  const passwordReady = strength.allMet && passwordsMatch;
   const canProceedToStep2 = emailSchemaCheck && passwordReady && duplicates["email"] !== true;
+
+  // Pantalla de éxito post-registro
+  if (registered) {
+    return (
+      <div className="w-full animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div className="flex flex-col items-center text-center space-y-6 py-8">
+          {/* Ícono animado */}
+          <div className="relative">
+            <div className="w-20 h-20 rounded-full bg-[var(--auth-primary)]/10 flex items-center justify-center">
+              <Mail className="w-10 h-10 text-[var(--auth-primary)]" />
+            </div>
+            <div className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-[var(--auth-primary)] flex items-center justify-center">
+              <CheckCircle2 className="w-4 h-4 text-white" />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <h3 className="text-xl font-black tracking-tight text-[var(--auth-accent)] uppercase">
+              Revisá tu{" "}
+              <span className="font-light normal-case text-[var(--auth-accent-muted)]">
+                correo
+              </span>
+            </h3>
+            <p className="text-sm text-[var(--auth-text-muted)] max-w-sm leading-relaxed">
+              Te enviamos un enlace de confirmación a{" "}
+              <span className="font-semibold text-[var(--auth-text)]">{email}</span>.
+            </p>
+          </div>
+
+          {/* Tips */}
+          <div className="space-y-3 w-full max-w-sm text-left">
+            {[
+              "Hacé clic en el enlace que te enviamos para activar tu cuenta.",
+              "No encontrás el correo? Revisá la carpeta de Spam / Promociones.",
+              "El enlace expira en 1 hora por seguridad.",
+            ].map((tip, i) => (
+              <div
+                key={i}
+                className="flex items-start gap-3 text-sm text-[var(--auth-text-muted)]"
+              >
+                <Sparkles size={14} className="shrink-0 mt-0.5 text-[var(--auth-primary)]" />
+                <span>{tip}</span>
+              </div>
+            ))}
+          </div>
+
+          <div className="pt-4">
+            <a
+              href="/login"
+              className="auth-btn-primary inline-flex items-center gap-2"
+            >
+              <ArrowRight size={16} />
+              Ir a iniciar sesión
+            </a>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full">
@@ -293,7 +364,7 @@ export function RegisterForm() {
                 disabled={loading}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="Mínimo 8 caracteres"
+                placeholder="Ej: MiLocal2024!"
                 className="auth-input mb-1.5"
               />
               <div className="h-1.5 w-full bg-[#f3efe6] rounded-full overflow-hidden transition-all duration-300">
@@ -301,6 +372,37 @@ export function RegisterForm() {
                   className={`h-full ${strength.color} ${strength.width} transition-all duration-500 ease-out`}
                 />
               </div>
+
+              {/* Lista de requisitos visibles */}
+              {password.length > 0 && (
+                <div className="space-y-1 pt-1 animate-in fade-in slide-in-from-top-1 duration-200">
+                  {[
+                    { key: "length" as const, label: "Mínimo 8 caracteres" },
+                    { key: "uppercase" as const, label: "Una mayúscula (A-Z)" },
+                    { key: "number" as const, label: "Un número (0-9)" },
+                    { key: "symbol" as const, label: "Un símbolo especial (!@#$% etc.)" },
+                  ].map((req) => {
+                    const ok = strength.checks[req.key as keyof typeof strength.checks];
+                    return (
+                      <div
+                        key={req.key}
+                        className={`flex items-center gap-2 text-[11px] font-medium transition-all duration-200 ${
+                          ok
+                            ? "text-green-600 opacity-100"
+                            : "text-[var(--auth-text-muted)] opacity-70"
+                        }`}
+                      >
+                        {ok ? (
+                          <CheckCircle2 size={12} className="shrink-0" />
+                        ) : (
+                          <span className="w-[12px] h-[12px] rounded-full border border-current shrink-0 opacity-40" />
+                        )}
+                        <span>{req.label}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -335,17 +437,6 @@ export function RegisterForm() {
               </div>
             )}
 
-            {/* Indicador de requisitos */}
-            {password.length > 0 && strength.score < 2 && (
-              <div className="auth-warning-box">
-                <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
-                <span className="text-xs">
-                  La contraseña debe incluir al menos 2 de estos: mayúscula,
-                  número, símbolo especial.
-                </span>
-              </div>
-            )}
-
             <button
               type="button"
               onClick={handleNextStep}
@@ -365,13 +456,13 @@ export function RegisterForm() {
                     Correo electrónico válido
                   </span>
                 )}
-                {strength.score < 2 && (
+                {!strength.allMet && (
                   <span className="flex items-center gap-1.5">
                     <span className="w-1.5 h-1.5 rounded-full bg-red-400" />
-                    Contraseña segura (mín. moderada)
+                    Todos los requisitos de contraseña
                   </span>
                 )}
-                {!passwordsMatch && strength.score >= 2 && (
+                {!passwordsMatch && strength.allMet && (
                   <span className="flex items-center gap-1.5">
                     <span className="w-1.5 h-1.5 rounded-full bg-red-400" />
                     Confirmar contraseña
