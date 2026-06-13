@@ -242,16 +242,22 @@ pass = "env(RESEND_API_KEY)"
 admin_email = "noreply@neo.app"
 sender_name = "NEO"
 
-# Uncomment to customize email template
-# [auth.email.template.invite]
-# subject = "You have been invited"
-# content_path = "./supabase/templates/invite.html"
+# ──────────────────────────────────────────────────────────────────────────────
+# TEMPLATES PERSONALIZADOS — Estilo NEO
+# ──────────────────────────────────────────────────────────────────────────────
 
-# Uncomment to customize notification email template
-# [auth.email.notification.password_changed]
-# enabled = true
-# subject = "Your password has been changed"
-# content_path = "./templates/password_changed_notification.html"
+[auth.email.template.confirmation]
+subject = "Confirmá tu cuenta en NEO"
+content_path = "./supabase/templates/confirmation.html"
+
+[auth.email.template.recovery]
+subject = "Restablecé tu contraseña de NEO"
+content_path = "./supabase/templates/recovery.html"
+
+# Opcional: template para cambio de email
+# [auth.email.template.email_change]
+# subject = "Confirmá tu nuevo correo en NEO"
+# content_path = "./supabase/templates/email_change.html"
 
 [auth.sms]
 # Allow/disallow new user signups via SMS to your project.
