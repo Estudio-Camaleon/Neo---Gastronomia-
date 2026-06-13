@@ -142,6 +142,7 @@ export interface UpdateTenantBrandingPayload {
   nombre: string;
   slug: string;
   whatsapp: string;
+  descripcion: string;
   direccion: string;
   localidad: string;
   direccion_notas: string;

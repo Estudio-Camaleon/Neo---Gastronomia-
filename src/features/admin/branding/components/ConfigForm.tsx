@@ -59,6 +59,7 @@ export interface NegocioInitialData {
   nombre: string;
   slug: string;
   whatsapp: string;
+  descripcion?: string;
   direccion: string;
   localidad?: string;
   direccion_notas?: string;
@@ -88,7 +89,7 @@ export interface ConfigFormState {
   nombre: string;
   slug: string;
   whatsapp: string;
-  direccion: string;
+  descripcion: string;
   localidad: string;
   direccion_notas: string;
   color_primary: string;
@@ -197,6 +198,12 @@ const BANNER_VERTICAL_OPTIONS = [
   { value: "bottom", label: "Abajo" },
 ] as const;
 
+const BANNER_HEIGHT_OPTIONS = [
+  { value: "compact", label: "Compacto" },
+  { value: "normal", label: "Normal" },
+  { value: "large", label: "Grande" },
+] as const;
+
 const LOGO_POSITION_OPTIONS = [
   { value: "top", label: "Arriba" },
   { value: "center", label: "Centro" },
@@ -253,7 +260,7 @@ export function ConfigForm({
     nombre: initialData?.nombre || "",
     slug: initialData?.slug || "",
     whatsapp: initialData?.whatsapp || "",
-    direccion: initialData?.direccion || "",
+    descripcion: initialData?.descripcion || "",
     localidad: initialData?.localidad || "",
     direccion_notas: initialData?.direccion_notas || "",
     color_primary: initialData?.color_primary || "#34a35f",
@@ -296,7 +303,7 @@ export function ConfigForm({
       nombre: initialData?.nombre || "",
       slug: initialData?.slug || "",
       whatsapp: initialData?.whatsapp || "",
-      direccion: initialData?.direccion || "",
+      descripcion: initialData?.descripcion || "",
       localidad: initialData?.localidad || "",
       direccion_notas: initialData?.direccion_notas || "",
       color_primary: initialData?.color_primary || "#34a35f",
@@ -432,7 +439,7 @@ export function ConfigForm({
       nombre: initialData?.nombre || "",
       slug: initialData?.slug || "",
       whatsapp: initialData?.whatsapp || "",
-      direccion: initialData?.direccion || "",
+      descripcion: initialData?.descripcion || "",
       localidad: initialData?.localidad || "",
       direccion_notas: initialData?.direccion_notas || "",
       color_primary: initialData?.color_primary || "#34a35f",
@@ -492,12 +499,15 @@ export function ConfigForm({
 
     setSaveStatus("saving");
     try {
+      const direccionDerivada =
+        formData.direcciones[0]?.direccion || "";
       const payload: UpdateTenantBrandingPayload = {
         id: initialData.id,
         nombre: formData.nombre,
         slug: formData.slug,
         whatsapp: formData.whatsapp,
-        direccion: formData.direccion,
+        descripcion: formData.descripcion,
+        direccion: direccionDerivada,
         localidad: formData.localidad,
         direccion_notas: formData.direccion_notas,
         color_primary: formData.color_primary,
@@ -577,7 +587,9 @@ export function ConfigForm({
     if (!formData.slug.trim()) errors.slug = "La URL del menú (slug) es obligatoria.";
     else if (formData.slug.length < 3) errors.slug = "El slug debe tener al menos 3 caracteres.";
     if (!formData.whatsapp.trim()) errors.whatsapp = "El WhatsApp es obligatorio para recibir pedidos.";
-    if (!formData.direccion.trim()) errors.direccion = "La dirección es obligatoria.";
+    if (formData.direcciones.length === 0) {
+      errors.direcciones = "Agregá al menos una sucursal con dirección.";
+    }
 
     const hex = /^#[0-9a-fA-F]{6}$/;
     if (!hex.test(formData.color_primary)) {
@@ -652,6 +664,10 @@ export function ConfigForm({
           onBannerScaleChange={(val) => {
             setIsDirty(true);
             setFormData((p) => ({ ...p, banner_scale: val }));
+          }}
+          onBannerHeightChange={(val) => {
+            setIsDirty(true);
+            setFormData((p) => ({ ...p, banner_height: val }));
           }}
         />
 
@@ -877,6 +893,7 @@ function BrandingBlock({
   onLogoShapeChange,
   onBannerPosicionChange,
   onBannerScaleChange,
+  onBannerHeightChange,
 }: {
   logoUrl: string;
   bannerUrl: string;
@@ -902,10 +919,32 @@ function BrandingBlock({
   onLogoShapeChange: (val: string) => void;
   onBannerPosicionChange: (val: string) => void;
   onBannerScaleChange: (val: number) => void;
+  onBannerHeightChange: (val: string) => void;
 }) {
   const isSticker = logoShape === "none";
   const isRoundedShape = logoShape === "rounded";
   const isCircularShape = logoShape === "circle";
+  const STICKER_OFFSET: Record<string, string> = {
+    top: "-16px",
+    center: "0px",
+    bottom: "16px",
+  };
+  const stickerMarginTop =
+    isSticker
+      ? (STICKER_OFFSET[logoPosicion] ?? "0px")
+      : undefined;
+  const logoStyle: React.CSSProperties = {
+    objectPosition: logoPosicion,
+    transform: "scale(" + logoScale + ")",
+    marginTop: stickerMarginTop,
+    objectFit: isSticker ? "contain" : (logoFit as "contain" | "cover"),
+  };
+  const fallbackStyle: React.CSSProperties = {
+    background: colorPrimary || "var(--color-custom-500)",
+  };
+  if (isSticker && stickerMarginTop) {
+    fallbackStyle.marginTop = stickerMarginTop;
+  }
 
   // Dynamic card background: darken primary color, fallback to green
   const cardBgStyle = colorPrimary
@@ -983,16 +1022,15 @@ function BrandingBlock({
                   className={
                     isSticker
                       ? "relative flex items-center justify-center"
-                      : `w-[88px] h-[88px] sm:w-[104px] sm:h-[104px] overflow-hidden bg-white ${
-                          isRoundedShape ? "rounded-2xl" : "rounded-full"
-                        }`
+                      : "w-[88px] h-[88px] sm:w-[104px] sm:h-[104px] overflow-hidden bg-white " +
+                        (isRoundedShape ? "rounded-2xl" : "rounded-full")
                   }
                   style={
                     isSticker
                       ? undefined
-                      : {
-                          boxShadow: `0 0 0 5px ${cardBgStyle}, 0 20px 40px -12px rgba(0,0,0,0.5)`,
-                        }
+                      : ({
+                          boxShadow: "0 0 0 5px " + cardBgStyle + ", 0 20px 40px -12px rgba(0,0,0,0.5)",
+                        } as React.CSSProperties)
                   }
                 >
                   {logoUrl ? (
@@ -1002,19 +1040,18 @@ function BrandingBlock({
                       className={
                         isSticker
                           ? "max-h-28 max-w-28 sm:max-h-32 sm:max-w-32 drop-shadow-xl"
-                          : "h-full w-full object-cover"
+                          : "h-full w-full"
                       }
+                      style={logoStyle}
                     />
                   ) : (
                     <div
-                      className={`flex items-center justify-center text-white font-black text-xl sm:text-2xl ${
-                        isSticker
-                          ? "w-[88px] h-[88px]"
-                          : "h-full w-full"
-                      } ${isCircularShape ? "rounded-full" : ""}`}
-                      style={{
-                        background: colorPrimary || "var(--color-custom-500)",
-                      }}
+                      className={
+                        "flex items-center justify-center text-white font-black text-xl sm:text-2xl " +
+                        (isSticker ? "w-[88px] h-[88px]" : "h-full w-full") +
+                        (isCircularShape ? " rounded-full" : "")
+                      }
+                      style={fallbackStyle}
                     >
                       {nombre
                         ? nombre
@@ -1032,7 +1069,7 @@ function BrandingBlock({
               <div
                 className="backdrop-blur-xl rounded-[24px] shadow-2xl pt-[56px] pb-5 px-5"
                 style={{
-                  backgroundColor: `color-mix(in srgb, ${cardBgStyle}, transparent 15%)`,
+                  backgroundColor: "color-mix(in srgb, " + cardBgStyle + ", transparent 15%)",
                 }}
               >
                 {/* Business name */}
@@ -1068,67 +1105,14 @@ function BrandingBlock({
 
       {/* ── Controls ── */}
       <div className="p-5 grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
-        {/* LOGO CONTROLS */}
-        <div className="md:col-span-5 flex flex-col items-center border-b md:border-b-0 md:border-r border-[var(--admin-border)] pb-5 md:pb-0 md:pr-6">
-          <span className="text-[9px] font-semibold text-[var(--admin-text-muted)] uppercase tracking-wider mb-3">
-            Isotipo Comercial
-          </span>
-
-          <div className="relative group">
-            <div
-              className={
-                isSticker
-                  ? "relative flex items-center justify-center w-24 h-24"
-                  : `w-24 h-24 ${isCircularShape ? "rounded-full" : isRoundedShape ? "rounded-2xl" : ""} bg-[var(--admin-bg)] overflow-hidden relative flex items-center justify-center shadow-md ring-1 ring-transparent hover:ring-[var(--admin-accent)]`
-              }
-            >
-              {logoUrl ? (
-                isSticker ? (
-                  <img
-                    src={logoUrl}
-                    alt="Logo"
-                    className="max-h-24 max-w-24 drop-shadow-lg"
-                    style={{ objectFit: "contain" as const }}
-                  />
-                ) : logoUrl.startsWith("blob:") ? (
-                  <img
-                    src={logoUrl}
-                    alt="Logo"
-                    className="h-full w-full"
-                    style={{
-                      objectFit: logoFit as "contain" | "cover",
-                      objectPosition: logoPosicion,
-                      transform: `scale(${logoScale})`,
-                    }}
-                  />
-                ) : (
-                  <Image
-                    src={logoUrl}
-                    fill
-                    className=""
-                    style={{
-                      objectFit: logoFit as "contain" | "cover",
-                      objectPosition: logoPosicion,
-                      transform: `scale(${logoScale})`,
-                    }}
-                    alt="Logo"
-                    sizes="96px"
-                    priority
-                  />
-                )
-              ) : (
-                <div className={`flex items-center justify-center text-[var(--admin-text-muted)] ${isSticker ? "w-24 h-24" : "w-full h-full"}`}>
-                  <ImageIcon size={24} />
-                </div>
-              )}
-              {uploading === "logo_url" && (
-                <div className="absolute inset-0 bg-[var(--admin-surface)]/80 backdrop-blur-sm flex items-center justify-center">
-                  <FoodMini size={18} />
-                </div>
-              )}
-            </div>
-            <label className="absolute -bottom-1 -right-1 bg-[var(--admin-surface)] text-[var(--admin-text)] p-2 rounded-full border border-[var(--admin-border)] shadow-sm cursor-pointer hover:border-[var(--admin-accent)] transition-all z-10">
-              <Upload size={12} />
+        {/* LOGO CONTROLS (sin thumbnail, solo ajustes) */}
+        <div className="md:col-span-5 border-b md:border-b-0 md:border-r border-[var(--admin-border)] pb-5 md:pb-0 md:pr-6">
+          <div className="flex items-center justify-between mb-4">
+            <span className="text-[9px] font-semibold text-[var(--admin-text-muted)] uppercase tracking-wider">
+              Logo
+            </span>
+            <label className="text-[10px] font-medium text-[var(--admin-text-muted)] hover:text-[var(--admin-text)] bg-[var(--admin-bg)] border border-[var(--admin-border)] px-2 py-1 rounded-lg cursor-pointer transition-all flex items-center gap-1 shadow-sm hover:bg-[var(--admin-accent)]/10">
+              <Upload size={10} /> Subir
               <input
                 type="file"
                 hidden
@@ -1139,7 +1123,7 @@ function BrandingBlock({
             </label>
           </div>
 
-          <div className="mt-4 w-full max-w-[220px] space-y-3">
+          <div className="space-y-3">
             {/* Shape selector */}
             <div className="space-y-1">
               <span className="text-[9px] font-semibold text-[var(--admin-text-muted)] uppercase tracking-wider block">
@@ -1163,7 +1147,7 @@ function BrandingBlock({
               </div>
             </div>
 
-            {/* Fit selector */}
+            {/* Fit selector — solo si NO es sticker */}
             {!isSticker && (
               <div className="space-y-1">
                 <span className="text-[9px] font-semibold text-[var(--admin-text-muted)] uppercase tracking-wider block">
@@ -1188,77 +1172,70 @@ function BrandingBlock({
               </div>
             )}
 
-            {/* Position selector */}
-            {!isSticker && (
-              <div className="space-y-1">
-                <span className="text-[9px] font-semibold text-[var(--admin-text-muted)] uppercase tracking-wider block">
-                  Posición vertical
+            {/* Position selector — siempre visible */}
+            <div className="space-y-1">
+              <span className="text-[9px] font-semibold text-[var(--admin-text-muted)] uppercase tracking-wider block">
+                Posición vertical
+              </span>
+              <div className="flex gap-1">
+                {LOGO_POSITION_OPTIONS.map((opt) => (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => onLogoPosicionChange(opt.value)}
+                    className={`flex-1 px-2 py-1 text-[10px] font-medium rounded-md transition-all ${
+                      logoPosicion === opt.value
+                        ? "bg-[var(--admin-accent)] text-white shadow-sm"
+                        : "bg-[var(--admin-bg)] text-[var(--admin-text-muted)] hover:bg-[var(--admin-accent)]/10 border border-[var(--admin-border)]"
+                    }`}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Zoom slider — siempre visible */}
+            <div className="space-y-1 pt-1">
+              <div className="flex items-center justify-between">
+                <span className="text-[9px] font-semibold text-[var(--admin-text-muted)] uppercase tracking-wider">
+                  Escala
                 </span>
-                <div className="flex gap-1">
-                  {LOGO_POSITION_OPTIONS.map((opt) => (
-                    <button
-                      key={opt.value}
-                      type="button"
-                      onClick={() => onLogoPosicionChange(opt.value)}
-                      className={`flex-1 px-2 py-1 text-[10px] font-medium rounded-md transition-all ${
-                        logoPosicion === opt.value
-                          ? "bg-[var(--admin-accent)] text-white shadow-sm"
-                          : "bg-[var(--admin-bg)] text-[var(--admin-text-muted)] hover:bg-[var(--admin-accent)]/10 border border-[var(--admin-border)]"
-                      }`}
-                    >
-                      {opt.label}
-                    </button>
-                  ))}
-                </div>
+                <span className="text-[10px] font-mono text-[var(--admin-text-muted)]">
+                  {logoScale.toFixed(1)}x
+                </span>
               </div>
-            )}
+              <input
+                type="range"
+                min="0.5"
+                max="2"
+                step="0.1"
+                value={logoScale}
+                onChange={(e) => onLogoScaleChange(parseFloat(e.target.value))}
+                className="w-full h-1.5 bg-[var(--admin-bg)] rounded-full appearance-none cursor-pointer accent-[var(--admin-accent)] [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3.5 [&::-webkit-slider-thumb]:h-3.5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[var(--admin-accent)] [&::-webkit-slider-thumb]:shadow-sm"
+              />
+            </div>
 
-            {/* Zoom slider */}
-            {!isSticker && (
-              <div className="space-y-1 pt-1">
-                <div className="flex items-center justify-between">
-                  <span className="text-[9px] font-semibold text-[var(--admin-text-muted)] uppercase tracking-wider">
-                    Escala
-                  </span>
-                  <span className="text-[10px] font-mono text-[var(--admin-text-muted)]">
-                    {logoScale.toFixed(1)}x
-                  </span>
-                </div>
-                <input
-                  type="range"
-                  min="0.5"
-                  max="2"
-                  step="0.1"
-                  value={logoScale}
-                  onChange={(e) => onLogoScaleChange(parseFloat(e.target.value))}
-                  className="w-full h-1.5 bg-[var(--admin-bg)] rounded-full appearance-none cursor-pointer accent-[var(--admin-accent)] [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3.5 [&::-webkit-slider-thumb]:h-3.5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[var(--admin-accent)] [&::-webkit-slider-thumb]:shadow-sm"
-                />
-              </div>
-            )}
+            <p className="text-[9px] text-[var(--admin-text-muted)] leading-normal pt-1">
+              {isSticker
+                ? "Sin contenedor. El logo flota libremente."
+                : `Espacio ${logoShape === "circle" ? "1:1" : "flexible"}.`}
+              {!isSticker &&
+                (logoFit === "contain"
+                  ? " Muestra el logo completo sin recortes."
+                  : " Llena el contenedor. Puede recortar bordes.")}
+            </p>
           </div>
-
-          <p className="text-[9px] text-[var(--admin-text-muted)] mt-3 text-center leading-normal">
-            {isSticker
-              ? "Sin contenedor. El logo flota libremente."
-              : `Espacio ${logoShape === "circle" ? "1:1" : "flexible"}.`}
-            <br />
-            {!isSticker &&
-              (logoFit === "contain"
-                ? "Muestra el logo completo sin recortes."
-                : "Llena el contenedor. Puede recortar bordes.")}
-            <br />
-            Máx {MAX_IMAGE_SIZE_MB}MB (JPG, PNG, WEBP).
-          </p>
         </div>
 
         {/* BANNER CONTROLS */}
-        <div className="md:col-span-7 flex flex-col justify-between h-full space-y-3">
+        <div className="md:col-span-7 flex flex-col space-y-3">
           <div className="flex justify-between items-center">
             <span className="text-[9px] font-semibold text-[var(--admin-text-muted)] uppercase tracking-wider">
               Banner de Cabecera
             </span>
-            <label className="text-[11px] font-medium text-[var(--admin-text)] hover:bg-[var(--admin-bg)] border border-[var(--admin-border)] px-2 py-1 rounded-lg cursor-pointer transition-all flex items-center gap-1.5 shadow-sm">
-              <Upload size={11} /> Cargar
+            <label className="text-[10px] font-medium text-[var(--admin-text)] bg-[var(--admin-surface)] border border-[var(--admin-border)] px-2 py-1 rounded-lg cursor-pointer transition-all flex items-center gap-1 shadow-sm hover:bg-[var(--admin-bg)]">
+              <Upload size={10} /> Subir
               <input
                 type="file"
                 hidden
@@ -1271,6 +1248,27 @@ function BrandingBlock({
 
           {/* Banner controls */}
           <div className="flex flex-wrap items-end justify-between gap-3">
+            <div className="space-y-1.5">
+              <span className="text-[9px] font-semibold text-[var(--admin-text-muted)] uppercase tracking-wider block">
+                Altura del banner
+              </span>
+              <div className="flex gap-1">
+                {BANNER_HEIGHT_OPTIONS.map((opt) => (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => onBannerHeightChange(opt.value)}
+                    className={`px-2.5 py-1 text-[10px] font-medium rounded-md transition-all ${
+                      bannerHeight === opt.value
+                        ? "bg-[var(--admin-accent)] text-white shadow-sm"
+                        : "bg-[var(--admin-bg)] text-[var(--admin-text-muted)] hover:bg-[var(--admin-accent)]/10 border border-[var(--admin-border)]"
+                    }`}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            </div>
             <div className="space-y-1.5">
               <span className="text-[9px] font-semibold text-[var(--admin-text-muted)] uppercase tracking-wider block">
                 Posición vertical
@@ -1464,6 +1462,23 @@ function GeneralInfoBlock({
               Desactivá si tu logo ya incluye el nombre.
             </p>
           </div>
+        </div>
+
+        <div className="sm:col-span-2 space-y-1">
+          <label className="font-medium text-[var(--admin-text-muted)]">
+            Descripción del negocio
+          </label>
+          <textarea
+            name="descripcion"
+            value={formData.descripcion}
+            onChange={onChange}
+            rows={3}
+            className="w-full p-2 bg-[var(--admin-bg)] border border-[var(--admin-border)] rounded-lg text-[var(--admin-text)] text-xs focus:outline-none focus:ring-1 focus:ring-[var(--admin-accent)] focus:border-[var(--admin-accent)] transition-all resize-y min-h-[60px]"
+            placeholder="Contale a tus clientes de qué se trata tu negocio..."
+          />
+          <p className="text-[9px] text-[var(--admin-text-muted)] leading-tight">
+            Texto corto que aparece en la cabecera del menú público.
+          </p>
         </div>
       </div>
     </div>

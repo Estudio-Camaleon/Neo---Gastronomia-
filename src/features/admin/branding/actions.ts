@@ -44,6 +44,7 @@ export async function updateTenantBrandingAction(
       nombre: payload.nombre.trim(),
       slug: slugSaneado,
       whatsapp: payload.whatsapp.trim(),
+      descripcion: payload.descripcion.trim(),
       direccion: payload.direccion.trim(),
       localidad: payload.localidad.trim(),
       direccion_notas: payload.direccion_notas.trim(),
