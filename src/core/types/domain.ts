@@ -15,6 +15,7 @@ export interface DireccionFisica {
 export interface NegocioPublico {
   id: string;
   nombre: string;
+  descripcion: string | null;
   slug: string;
   color_primary: string | null;
   banner_url: string | null;
@@ -42,7 +43,7 @@ export interface NegocioPublico {
   moneda_simbolo?: string;
   pedido_minimo?: number;
   costo_envio?: number;
-  floating_shapes?: string[];
+  floating_shapes?: string[] | { shapes: string[]; density: string };
 }
 
 // ── Categoría ────────────────────────────────────────
@@ -165,7 +166,7 @@ export interface UpdateTenantBrandingPayload {
   tripadvisor_url: string;
   horarios: Record<string, unknown>;
   direcciones: DireccionFisica[];
-  floating_shapes: string[];
+  floating_shapes: { shapes: string[]; density: string };
 }
 
 // ── Promo ────────────────────────────────────────────

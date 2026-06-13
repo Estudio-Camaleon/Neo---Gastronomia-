@@ -292,7 +292,6 @@ export function CatalogClient({
 
   return (
     <>
-      <FloatingFood shapes={negocio.floating_shapes} />
       <div className="min-h-screen flex flex-col text-[var(--color-custom-text)] selection:bg-[var(--color-custom-deep)] selection:text-white relative z-10">
         {/* HEADER UNIFICADO */}
         <PublicMenuHeader
@@ -304,7 +303,25 @@ export function CatalogClient({
         />
 
         {/* CATALOGO */}
-        <div className="w-full flex-1 pb-12">
+        <div className="relative overflow-hidden">
+          {/* FORMAS FLOTANTES — solo en el menú, detrás de los productos */}
+          <FloatingFood
+            shapes={
+              Array.isArray(negocio.floating_shapes)
+                ? (negocio.floating_shapes as string[])
+                : typeof negocio.floating_shapes === "object" && negocio.floating_shapes !== null
+                  ? ((negocio.floating_shapes as { shapes: string[] }).shapes ?? undefined)
+                  : undefined
+            }
+            density={
+              !Array.isArray(negocio.floating_shapes) &&
+              typeof negocio.floating_shapes === "object" &&
+              negocio.floating_shapes !== null
+                ? ((negocio.floating_shapes as { density: string }).density as "low" | "medium" | "high")
+                : undefined
+            }
+          />
+          <div className="w-full flex-1 pb-12">
           <main className="flex flex-col lg:flex-row">
             <section
               className={`min-w-0 flex-1 bg-[var(--color-custom-surface)] p-4 lg:p-6 transition-all duration-300 ${
@@ -635,6 +652,7 @@ export function CatalogClient({
             </aside>
           </main>
         </div>
+        </div>{/* end menu-wrapper */}
         <motion.footer
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}

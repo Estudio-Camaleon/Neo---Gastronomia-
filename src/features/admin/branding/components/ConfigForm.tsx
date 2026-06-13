@@ -18,6 +18,7 @@ import {
   Phone,
   Hash,
   MapPin,
+  MessageCircle,
   Share2,
   Clock,
   Plus,
@@ -30,6 +31,19 @@ import {
   Sandwich,
   IceCream,
   UtensilsCrossed,
+  Apple,
+  Cookie,
+  Croissant,
+  Star,
+  Heart,
+  Sparkles,
+  Moon,
+  Diamond,
+  Ghost,
+  Wine,
+  Salad,
+  MoveHorizontal,
+  Eye,
 } from "lucide-react";
 import { FoodMini } from "@/components/ui/food-loading";
 import {
@@ -82,7 +96,11 @@ export interface NegocioInitialData {
   tripadvisor_url?: string;
   horarios: ScheduleData;
   direcciones?: DireccionFisica[];
-  floating_shapes?: string[];
+  /**
+   * Puede venir como string[] (legacy) o como
+   * { shapes: string[]; density: 'low' | 'medium' | 'high' } (nuevo formato).
+   */
+  floating_shapes?: string[] | { shapes: string[]; density: string };
 }
 
 export interface ConfigFormState {
@@ -112,6 +130,7 @@ export interface ConfigFormState {
   horarios: ScheduleData;
   direcciones: DireccionFisica[];
   floating_shapes: string[];
+  floating_density: "low" | "medium" | "high";
 }
 
 const DIAS = [
@@ -222,15 +241,36 @@ const LOGO_SHAPE_OPTIONS = [
   { value: "square", label: "Cuadrado" },
 ] as const;
 
-const FOOD_SHAPES = [
-  { value: "Pizza", label: "Pizza", Icon: Pizza },
-  { value: "Beef", label: "Hamburguesa", Icon: Beef },
-  { value: "Coffee", label: "Café", Icon: Coffee },
-  { value: "CupSoda", label: "Bebidas", Icon: CupSoda },
-  { value: "Sandwich", label: "Sándwich", Icon: Sandwich },
-  { value: "IceCream", label: "Helado", Icon: IceCream },
-  { value: "UtensilsCrossed", label: "Pastas", Icon: UtensilsCrossed },
-] as const;
+interface ShapeOption {
+  value: string;
+  label: string;
+  Icon: React.ComponentType<{ size?: number; strokeWidth?: number }>;
+  category: "comida" | "bebida" | "abstracto";
+}
+
+const FOOD_SHAPES: ShapeOption[] = [
+  // ── Comida ─────────────────────────────
+  { value: "Pizza", label: "Pizza", Icon: Pizza, category: "comida" },
+  { value: "Beef", label: "Hamburguesa", Icon: Beef, category: "comida" },
+  { value: "Sandwich", label: "Sándwich", Icon: Sandwich, category: "comida" },
+  { value: "IceCream", label: "Helado", Icon: IceCream, category: "comida" },
+  { value: "UtensilsCrossed", label: "Pastas", Icon: UtensilsCrossed, category: "comida" },
+  { value: "Cookie", label: "Galleta", Icon: Cookie, category: "comida" },
+  { value: "Croissant", label: "Croissant", Icon: Croissant, category: "comida" },
+  { value: "Apple", label: "Manzana", Icon: Apple, category: "comida" },
+  { value: "Salad", label: "Ensalada", Icon: Salad, category: "comida" },
+  // ── Bebida ─────────────────────────────
+  { value: "Coffee", label: "Café", Icon: Coffee, category: "bebida" },
+  { value: "CupSoda", label: "Gaseosa", Icon: CupSoda, category: "bebida" },
+  { value: "Wine", label: "Vino", Icon: Wine, category: "bebida" },
+  // ── Abstracto ──────────────────────────
+  { value: "Star", label: "Estrella", Icon: Star, category: "abstracto" },
+  { value: "Heart", label: "Corazón", Icon: Heart, category: "abstracto" },
+  { value: "Sparkles", label: "Destellos", Icon: Sparkles, category: "abstracto" },
+  { value: "Moon", label: "Luna", Icon: Moon, category: "abstracto" },
+  { value: "Diamond", label: "Diamante", Icon: Diamond, category: "abstracto" },
+  { value: "Ghost", label: "Fantasma", Icon: Ghost, category: "abstracto" },
+];
 
 const MAX_IMAGE_SIZE_MB = 5;
 const MAX_IMAGE_SIZE_BYTES = MAX_IMAGE_SIZE_MB * 1024 * 1024;
@@ -282,7 +322,17 @@ export function ConfigForm({
     tripadvisor_url: initialData?.tripadvisor_url || "",
     horarios: initialData?.horarios || {},
     direcciones: initialData?.direcciones || [],
-    floating_shapes: initialData?.floating_shapes || [],
+    floating_shapes: Array.isArray(initialData?.floating_shapes)
+      ? (initialData.floating_shapes as string[])
+      : typeof initialData?.floating_shapes === "object" && initialData?.floating_shapes !== null
+        ? ((initialData.floating_shapes as { shapes: string[] }).shapes ?? [])
+        : [],
+    floating_density:
+      !Array.isArray(initialData?.floating_shapes) &&
+      typeof initialData?.floating_shapes === "object" &&
+      initialData?.floating_shapes !== null
+        ? ((initialData.floating_shapes as { density: string }).density as "low" | "medium" | "high") || "medium"
+        : "medium",
   });
 
   const initialIdRef = useRef(initialData?.id);
@@ -325,7 +375,17 @@ export function ConfigForm({
       tripadvisor_url: initialData?.tripadvisor_url || "",
       horarios: initialData?.horarios || {},
       direcciones: initialData?.direcciones || [],
-      floating_shapes: initialData?.floating_shapes || [],
+      floating_shapes: Array.isArray(initialData?.floating_shapes)
+        ? (initialData.floating_shapes as string[])
+        : typeof initialData?.floating_shapes === "object" && initialData?.floating_shapes !== null
+          ? ((initialData.floating_shapes as { shapes: string[] }).shapes ?? [])
+          : [],
+      floating_density:
+        !Array.isArray(initialData?.floating_shapes) &&
+        typeof initialData?.floating_shapes === "object" &&
+        initialData?.floating_shapes !== null
+          ? ((initialData.floating_shapes as { density: string }).density as "low" | "medium" | "high") || "medium"
+          : "medium",
     });
   }, [initialData?.id]);
 
@@ -461,7 +521,17 @@ export function ConfigForm({
       tripadvisor_url: initialData?.tripadvisor_url || "",
       horarios: initialData?.horarios || {},
       direcciones: initialData?.direcciones || [],
-      floating_shapes: initialData?.floating_shapes || [],
+      floating_shapes: Array.isArray(initialData?.floating_shapes)
+        ? (initialData.floating_shapes as string[])
+        : typeof initialData?.floating_shapes === "object" && initialData?.floating_shapes !== null
+          ? ((initialData.floating_shapes as { shapes: string[] }).shapes ?? [])
+          : [],
+      floating_density:
+        !Array.isArray(initialData?.floating_shapes) &&
+        typeof initialData?.floating_shapes === "object" &&
+        initialData?.floating_shapes !== null
+          ? ((initialData.floating_shapes as { density: string }).density as "low" | "medium" | "high") || "medium"
+          : "medium",
     });
     setImagePreviews({
       logo_url: initialData?.logo_url || "",
@@ -529,7 +599,10 @@ export function ConfigForm({
         tripadvisor_url: formData.tripadvisor_url,
         horarios: formData.horarios as Record<string, unknown>,
         direcciones: formData.direcciones,
-        floating_shapes: formData.floating_shapes,
+        floating_shapes: {
+          shapes: formData.floating_shapes,
+          density: formData.floating_density,
+        },
       };
 
       const res = await updateTenantBrandingAction(payload);
@@ -636,8 +709,18 @@ export function ConfigForm({
           logoFit={formData.logo_fit}
           logoShape={formData.logo_shape}
           nombre={formData.nombre}
+          descripcion={formData.descripcion}
           mostrarNombre={formData.mostrar_nombre}
           colorPrimary={formData.color_primary}
+          whatsapp={formData.whatsapp}
+          instagram_url={formData.instagram_url}
+          facebook_url={formData.facebook_url}
+          tiktok_url={formData.tiktok_url}
+          twitter_url={formData.twitter_url}
+          youtube_url={formData.youtube_url}
+          tripadvisor_url={formData.tripadvisor_url}
+          direcciones={formData.direcciones}
+          localidad={formData.localidad}
           uploading={uploading}
           imageError={fieldErrors.image}
           onImageUpload={handleImageUpload}
@@ -728,6 +811,12 @@ export function ConfigForm({
             setIsDirty(true);
             setFormData((p) => ({ ...p, floating_shapes: shapes }));
           }}
+          density={formData.floating_density}
+          onDensityChange={(density) => {
+            setIsDirty(true);
+            setFormData((p) => ({ ...p, floating_density: density }));
+          }}
+          colorPrimary={formData.color_primary}
         />
 
         {/* BLOQUE CORE: CONTROL HORARIO */}
@@ -737,11 +826,12 @@ export function ConfigForm({
               <Clock size={16} />
             </div>
             <div>
-              <h3 className="text-sm font-semibold text-[var(--admin-text)]">
+              <h3 className="text-sm font-semibold text-[var(--admin-text)] flex items-center gap-1">
                 Cronograma Operativo Semanal
+                <span className="text-[9px] font-medium text-[var(--admin-text-muted)]/60 px-1.5 py-0.5 rounded border border-[var(--admin-border)]">Opcional</span>
               </h3>
               <p className="text-[11px] text-[var(--admin-text-muted)] mt-0.5">
-                Campamento e itinerario granular de persianas digitales.
+                Horarios de atención. Si no configurás horarios, el negocio aparecerá como "Sin horarios".
               </p>
             </div>
           </div>
@@ -882,8 +972,18 @@ function BrandingBlock({
   logoFit,
   logoShape,
   nombre,
+  descripcion,
   mostrarNombre,
   colorPrimary,
+  whatsapp,
+  instagram_url,
+  facebook_url,
+  tiktok_url,
+  twitter_url,
+  youtube_url,
+  tripadvisor_url,
+  direcciones,
+  localidad,
   uploading,
   imageError,
   onImageUpload,
@@ -905,8 +1005,18 @@ function BrandingBlock({
   logoFit: string;
   logoShape: string;
   nombre: string;
+  descripcion?: string;
   mostrarNombre: boolean;
   colorPrimary: string;
+  whatsapp?: string;
+  instagram_url?: string;
+  facebook_url?: string;
+  tiktok_url?: string;
+  twitter_url?: string;
+  youtube_url?: string;
+  tripadvisor_url?: string;
+  direcciones?: DireccionFisica[];
+  localidad?: string;
   uploading: string | null;
   imageError?: string;
   onImageUpload: (
@@ -933,9 +1043,16 @@ function BrandingBlock({
     isSticker
       ? (STICKER_OFFSET[logoPosicion] ?? "0px")
       : undefined;
+  const TRANSFORM_ORIGIN_MAP: Record<string, string> = {
+    top: "center top",
+    center: "center",
+    bottom: "center bottom",
+  };
+  const logoTransformOrigin = TRANSFORM_ORIGIN_MAP[logoPosicion] ?? "center";
   const logoStyle: React.CSSProperties = {
     objectPosition: logoPosicion,
     transform: "scale(" + logoScale + ")",
+    transformOrigin: logoTransformOrigin,
     marginTop: stickerMarginTop,
     objectFit: isSticker ? "contain" : (logoFit as "contain" | "cover"),
   };
@@ -950,6 +1067,15 @@ function BrandingBlock({
   const cardBgStyle = colorPrimary
     ? `color-mix(in srgb, ${colorPrimary}, black 75%)`
     : "#163B2D";
+
+  const hasSocials =
+    whatsapp ||
+    instagram_url ||
+    facebook_url ||
+    tiktok_url ||
+    twitter_url ||
+    youtube_url ||
+    tripadvisor_url;
 
   return (
     <div className="bg-[var(--admin-surface)] border border-[var(--admin-border)] rounded-xl overflow-hidden shadow-sm">
@@ -1017,38 +1143,38 @@ function BrandingBlock({
           <div className="absolute inset-0 flex items-center justify-center px-6">
             <div className="relative w-[280px] sm:w-[380px]">
               {/* Logo — protrudes from top of card */}
-              <div className="absolute left-1/2 -translate-x-1/2 -top-[44px] z-20">
-                <div
-                  className={
-                    isSticker
-                      ? "relative flex items-center justify-center"
-                      : "w-[88px] h-[88px] sm:w-[104px] sm:h-[104px] overflow-hidden bg-white " +
-                        (isRoundedShape ? "rounded-2xl" : "rounded-full")
-                  }
-                  style={
-                    isSticker
-                      ? undefined
-                      : ({
-                          boxShadow: "0 0 0 5px " + cardBgStyle + ", 0 20px 40px -12px rgba(0,0,0,0.5)",
-                        } as React.CSSProperties)
-                  }
-                >
+                <div className="absolute left-1/2 -translate-x-1/2 -top-[52px] z-20">
+                  <div
+                    className={
+                      isSticker
+                        ? "relative flex items-center justify-center"
+                        : "w-[104px] h-[104px] sm:w-[120px] sm:h-[120px] overflow-hidden bg-white " +
+                          (isRoundedShape ? "rounded-2xl" : "rounded-full")
+                    }
+                    style={
+                      isSticker
+                        ? undefined
+                        : ({
+                            boxShadow: "0 0 0 6px " + cardBgStyle + ", 0 25px 50px -12px rgba(0,0,0,0.5)",
+                          } as React.CSSProperties)
+                    }
+                  >
                   {logoUrl ? (
                     <img
                       src={logoUrl}
                       alt={nombre}
                       className={
                         isSticker
-                          ? "max-h-28 max-w-28 sm:max-h-32 sm:max-w-32 drop-shadow-xl"
-                          : "h-full w-full"
+                          ? "max-h-32 max-w-32 sm:max-h-36 sm:max-w-36 drop-shadow-2xl"
+                          : "h-full w-full object-cover"
                       }
                       style={logoStyle}
                     />
                   ) : (
                     <div
                       className={
-                        "flex items-center justify-center text-white font-black text-xl sm:text-2xl " +
-                        (isSticker ? "w-[88px] h-[88px]" : "h-full w-full") +
+                        "flex items-center justify-center text-white font-black text-2xl sm:text-3xl " +
+                        (isSticker ? "w-[104px] h-[104px]" : "h-full w-full") +
                         (isCircularShape ? " rounded-full" : "")
                       }
                       style={fallbackStyle}
@@ -1065,27 +1191,91 @@ function BrandingBlock({
                 </div>
               </div>
 
-              {/* Card body */}
+              {/* Card body — replica exacta del menú público */}
               <div
-                className="backdrop-blur-xl rounded-[24px] shadow-2xl pt-[56px] pb-5 px-5"
+                className="backdrop-blur-xl rounded-[28px] shadow-2xl pt-[68px] pb-6 px-5 sm:px-8"
                 style={{
                   backgroundColor: "color-mix(in srgb, " + cardBgStyle + ", transparent 15%)",
                 }}
               >
                 {/* Business name */}
                 {mostrarNombre && (
-                  <h1 className="text-center text-white text-xl sm:text-2xl font-extrabold leading-tight tracking-tight truncate">
+                  <h1 className="text-center text-white text-xl sm:text-2xl font-extrabold leading-tight tracking-tight">
                     {nombre || "Nombre del negocio"}
                   </h1>
                 )}
 
-                {/* Social & Contact pill buttons */}
-                <div className="flex justify-center gap-2 mt-3">
-                  <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 text-white/70 text-[10px]">
-                    <MapPin size={13} />
-                    <span className="truncate max-w-[80px]">Ubicación</span>
+                {/* Description */}
+                {descripcion && (
+                  <p className="text-center text-white/70 text-xs sm:text-sm mt-1.5 max-w-[500px] mx-auto leading-relaxed">
+                    {descripcion}
+                  </p>
+                )}
+
+                {/* Social media row — idéntico al menú público */}
+                {hasSocials && (
+                  <div className="flex flex-wrap justify-center gap-2 mt-3">
+                    {whatsapp && (
+                      <span className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white/80">
+                        <MessageCircle size={18} />
+                      </span>
+                    )}
+                    {instagram_url && (
+                      <span className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white/80">
+                        <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
+                          <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z" />
+                        </svg>
+                      </span>
+                    )}
+                    {facebook_url && (
+                      <span className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white/80">
+                        <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
+                          <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+                        </svg>
+                      </span>
+                    )}
+                    {tiktok_url && (
+                      <span className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white/80">
+                        <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
+                          <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z" />
+                        </svg>
+                      </span>
+                    )}
+                    {twitter_url && (
+                      <span className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white/80">
+                        <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
+                          <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                        </svg>
+                      </span>
+                    )}
+                    {youtube_url && (
+                      <span className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white/80">
+                        <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
+                          <path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
+                        </svg>
+                      </span>
+                    )}
+                    {tripadvisor_url && (
+                      <span className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white/80">
+                        <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
+                          <path d="M17.18 9.48a4.27 4.27 0 100 8.54 4.27 4.27 0 000-8.54zm-10.36 0a4.27 4.27 0 100 8.54 4.27 4.27 0 000-8.54zM12 6.84c-1.2 0-2.62.36-4.09 1.07a4.24 4.24 0 00-.1 2.14c.8 1.6 2.26 2.7 4.19 2.7s3.39-1.1 4.19-2.7a4.24 4.24 0 00-.1-2.14C14.62 7.2 13.2 6.84 12 6.84zm0 2.98c-2.19 0-3.96 1.77-3.96 3.96S9.81 17.74 12 17.74s3.96-1.77 3.96-3.96S14.19 9.82 12 9.82zm0 1.98c1.09 0 1.98.89 1.98 1.98s-.89 1.98-1.98 1.98-1.98-.89-1.98-1.98.89-1.98 1.98-1.98zM12 0C5.37 0 0 5.37 0 12s5.37 12 12 12 12-5.37 12-12S18.63 0 12 0zm0 2.5c5.25 0 9.5 4.25 9.5 9.5s-4.25 9.5-9.5 9.5S2.5 17.25 2.5 12 6.75 2.5 12 2.5z" />
+                        </svg>
+                      </span>
+                    )}
                   </div>
-                  <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 text-white/70 text-[10px]">
+                )}
+
+                {/* Address & Schedule pill buttons */}
+                <div className="flex justify-center gap-2 mt-3">
+                  <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 text-white/80 text-[10px] sm:text-xs">
+                    <MapPin size={13} />
+                    <span className="truncate max-w-[80px]">
+                      {direcciones && direcciones.length > 0
+                        ? direcciones[0]?.nombre || direcciones[0]?.direccion
+                        : localidad || "Ubicación"}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 text-white/80 text-[10px] sm:text-xs">
                     <Clock size={13} />
                     <span>Horarios</span>
                   </div>
@@ -1108,8 +1298,9 @@ function BrandingBlock({
         {/* LOGO CONTROLS (sin thumbnail, solo ajustes) */}
         <div className="md:col-span-5 border-b md:border-b-0 md:border-r border-[var(--admin-border)] pb-5 md:pb-0 md:pr-6">
           <div className="flex items-center justify-between mb-4">
-            <span className="text-[9px] font-semibold text-[var(--admin-text-muted)] uppercase tracking-wider">
+            <span className="text-[9px] font-semibold text-[var(--admin-text-muted)] uppercase tracking-wider flex items-center gap-1">
               Logo
+              <span className="text-[9px] font-medium text-[var(--admin-text-muted)]/60 px-1.5 py-0.5 rounded border border-[var(--admin-border)] not-uppercase tracking-normal">Valores por defecto</span>
             </span>
             <label className="text-[10px] font-medium text-[var(--admin-text-muted)] hover:text-[var(--admin-text)] bg-[var(--admin-bg)] border border-[var(--admin-border)] px-2 py-1 rounded-lg cursor-pointer transition-all flex items-center gap-1 shadow-sm hover:bg-[var(--admin-accent)]/10">
               <Upload size={10} /> Subir
@@ -1231,8 +1422,9 @@ function BrandingBlock({
         {/* BANNER CONTROLS */}
         <div className="md:col-span-7 flex flex-col space-y-3">
           <div className="flex justify-between items-center">
-            <span className="text-[9px] font-semibold text-[var(--admin-text-muted)] uppercase tracking-wider">
+            <span className="text-[9px] font-semibold text-[var(--admin-text-muted)] uppercase tracking-wider flex items-center gap-1">
               Banner de Cabecera
+              <span className="text-[9px] font-medium text-[var(--admin-text-muted)]/60 px-1.5 py-0.5 rounded border border-[var(--admin-border)] not-uppercase tracking-normal">Valores por defecto</span>
             </span>
             <label className="text-[10px] font-medium text-[var(--admin-text)] bg-[var(--admin-surface)] border border-[var(--admin-border)] px-2 py-1 rounded-lg cursor-pointer transition-all flex items-center gap-1 shadow-sm hover:bg-[var(--admin-bg)]">
               <Upload size={10} /> Subir
@@ -1351,8 +1543,9 @@ function GeneralInfoBlock({
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
         <div className="space-y-1">
-          <label className="font-medium text-[var(--admin-text-muted)]">
+          <label className="font-medium text-[var(--admin-text-muted)] flex items-center gap-1">
             Nombre Comercial
+            <span className="text-[9px] font-bold text-red-500 bg-red-500/10 px-1.5 py-0.5 rounded">Obligatorio</span>
           </label>
           <input
             name="nombre"
@@ -1372,8 +1565,9 @@ function GeneralInfoBlock({
         </div>
 
         <div className="space-y-1">
-          <label className="font-medium text-[var(--admin-text-muted)]">
+          <label className="font-medium text-[var(--admin-text-muted)] flex items-center gap-1">
             Dirección Web Estática (Slug URL)
+            <span className="text-[9px] font-bold text-red-500 bg-red-500/10 px-1.5 py-0.5 rounded">Obligatorio</span>
           </label>
           <div className="relative">
             <Hash className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[var(--admin-text-muted)]" />
@@ -1406,6 +1600,7 @@ function GeneralInfoBlock({
         <div className="space-y-1">
           <label className="font-medium text-[var(--admin-text-muted)] flex items-center gap-1">
             <Phone size={12} /> WhatsApp Receptor de Comandas
+            <span className="text-[9px] font-bold text-red-500 bg-red-500/10 px-1.5 py-0.5 rounded">Obligatorio</span>
           </label>
           <input
             name="whatsapp"
@@ -1430,8 +1625,9 @@ function GeneralInfoBlock({
         </div>
 
         <div className="space-y-1">
-          <label className="font-medium text-[var(--admin-text-muted)]">
+          <label className="font-medium text-[var(--admin-text-muted)] flex items-center gap-1">
             Localidad / Zona Administrativa
+            <span className="text-[9px] font-medium text-[var(--admin-text-muted)]/60 px-1.5 py-0.5 rounded border border-[var(--admin-border)]">Opcional</span>
           </label>
           <input
             name="localidad"
@@ -1465,8 +1661,9 @@ function GeneralInfoBlock({
         </div>
 
         <div className="sm:col-span-2 space-y-1">
-          <label className="font-medium text-[var(--admin-text-muted)]">
+          <label className="font-medium text-[var(--admin-text-muted)] flex items-center gap-1">
             Descripción del negocio
+            <span className="text-[9px] font-medium text-[var(--admin-text-muted)]/60 px-1.5 py-0.5 rounded border border-[var(--admin-border)]">Opcional</span>
           </label>
           <textarea
             name="descripcion"
@@ -1503,9 +1700,13 @@ function SocialLinksBlock({
         </div>
 
         <div className="space-y-3 text-xs">
+          <p className="text-[9px] text-[var(--admin-text-muted)]/60 italic">
+            Todos los enlaces son opcionales. Completá solo los que tengas.
+          </p>
           <div className="space-y-1">
-            <label className="font-medium text-[var(--admin-text-muted)] block">
+            <label className="font-medium text-[var(--admin-text-muted)] flex items-center gap-1">
               Instagram Link
+              <span className="text-[9px] font-medium text-[var(--admin-text-muted)]/60 px-1.5 py-0.5 rounded border border-[var(--admin-border)]">Opcional</span>
             </label>
             <input
               name="instagram_url"
@@ -1518,8 +1719,9 @@ function SocialLinksBlock({
           </div>
 
           <div className="space-y-1">
-            <label className="font-medium text-[var(--admin-text-muted)] block">
+            <label className="font-medium text-[var(--admin-text-muted)] flex items-center gap-1">
               Facebook Perfil
+              <span className="text-[9px] font-medium text-[var(--admin-text-muted)]/60 px-1.5 py-0.5 rounded border border-[var(--admin-border)]">Opcional</span>
             </label>
             <input
               name="facebook_url"
@@ -1532,8 +1734,9 @@ function SocialLinksBlock({
           </div>
 
           <div className="space-y-1">
-            <label className="font-medium text-[var(--admin-text-muted)] block">
+            <label className="font-medium text-[var(--admin-text-muted)] flex items-center gap-1">
               TikTok Canal
+              <span className="text-[9px] font-medium text-[var(--admin-text-muted)]/60 px-1.5 py-0.5 rounded border border-[var(--admin-border)]">Opcional</span>
             </label>
             <input
               name="tiktok_url"
@@ -1546,8 +1749,9 @@ function SocialLinksBlock({
           </div>
 
           <div className="space-y-1">
-            <label className="font-medium text-[var(--admin-text-muted)] block">
+            <label className="font-medium text-[var(--admin-text-muted)] flex items-center gap-1">
               X (Twitter)
+              <span className="text-[9px] font-medium text-[var(--admin-text-muted)]/60 px-1.5 py-0.5 rounded border border-[var(--admin-border)]">Opcional</span>
             </label>
             <input
               name="twitter_url"
@@ -1560,8 +1764,9 @@ function SocialLinksBlock({
           </div>
 
           <div className="space-y-1">
-            <label className="font-medium text-[var(--admin-text-muted)] block">
+            <label className="font-medium text-[var(--admin-text-muted)] flex items-center gap-1">
               YouTube Canal
+              <span className="text-[9px] font-medium text-[var(--admin-text-muted)]/60 px-1.5 py-0.5 rounded border border-[var(--admin-border)]">Opcional</span>
             </label>
             <input
               name="youtube_url"
@@ -1574,8 +1779,9 @@ function SocialLinksBlock({
           </div>
 
           <div className="space-y-1">
-            <label className="font-medium text-[var(--admin-text-muted)] block">
+            <label className="font-medium text-[var(--admin-text-muted)] flex items-center gap-1">
               TripAdvisor
+              <span className="text-[9px] font-medium text-[var(--admin-text-muted)]/60 px-1.5 py-0.5 rounded border border-[var(--admin-border)]">Opcional</span>
             </label>
             <input
               name="tripadvisor_url"
@@ -1606,9 +1812,15 @@ function SocialLinksBlock({
 function FloatingShapesBlock({
   selected,
   onChange,
+  density,
+  onDensityChange,
+  colorPrimary,
 }: {
   selected: string[];
   onChange: (shapes: string[]) => void;
+  density: "low" | "medium" | "high";
+  onDensityChange: (density: "low" | "medium" | "high") => void;
+  colorPrimary: string;
 }) {
   const toggle = (value: string) => {
     if (selected.includes(value)) {
@@ -1618,41 +1830,188 @@ function FloatingShapesBlock({
     }
   };
 
+  const categories = [
+    { key: "comida", label: "🍕 Comida" },
+    { key: "bebida", label: "🥤 Bebidas" },
+    { key: "abstracto", label: "✨ Abstracto" },
+  ] as const;
+
+  const DENSITY_OPTIONS = [
+    { value: "low" as const, label: "Sutil", desc: "Pocas formas, espaciadas" },
+    { value: "medium" as const, label: "Normal", desc: "Dosis equilibrada" },
+    { value: "high" as const, label: "Intenso", desc: "Muchas formas, ambiente denso" },
+  ];
+
+  const previewShapes = selected.length > 0 ? selected : ["Pizza", "Coffee", "Star"];
+
   return (
-    <div className="bg-[var(--admin-surface)] border border-[var(--admin-border)] rounded-xl p-5 shadow-sm">
-      <div className="space-y-3.5">
-        <div className="flex items-center gap-2 border-b border-[var(--admin-border)] pb-2.5">
-          <ImageIcon size={14} className="text-[var(--admin-text-muted)]" />
-          <h2 className="text-xs font-semibold text-[var(--admin-text)]">
-            Formas Flotantes del Menú Público
-          </h2>
+    <div className="bg-[var(--admin-surface)] border border-[var(--admin-border)] rounded-xl p-5 shadow-sm space-y-5">
+      {/* HEADER */}
+      <div className="flex items-center gap-2 border-b border-[var(--admin-border)] pb-2.5">
+        <ImageIcon size={14} className="text-[var(--admin-text-muted)]" />
+        <h2 className="text-xs font-semibold text-[var(--admin-text)] flex items-center gap-1">
+          Formas Flotantes del Menú Público
+          <span className="text-[9px] font-medium text-[var(--admin-text-muted)]/60 px-1.5 py-0.5 rounded border border-[var(--admin-border)]">Opcional</span>
+        </h2>
+      </div>
+
+      {/* EXPLICACIÓN VISUAL */}
+      <div className="flex items-start gap-3 p-3 rounded-lg bg-[var(--admin-bg)] border border-[var(--admin-border)]">
+        <Eye size={16} className="text-[var(--admin-accent)] shrink-0 mt-0.5" />
+        <div className="text-[10px] text-[var(--admin-text-muted)] leading-relaxed space-y-1">
+          <p>
+            <strong className="text-[var(--admin-text)]">¿Cómo funciona?</strong> Las formas seleccionadas aparecen flotando <strong>detrás</strong> del contenido del menú público — como decoración de fondo. Se colocan automáticamente en los bordes y esquinas, sin tapar el logo, los productos ni los tickets.
+          </p>
+          <p>
+            Cada forma seleccionada se repite varias veces con distintos tamaños, rotaciones y velocidades de animación para crear un ambiente visual dinámico.
+          </p>
         </div>
+      </div>
 
-        <p className="text-[10px] text-[var(--admin-text-muted)] leading-relaxed">
-          Elegí las siluetas decorativas que flotan en el menú público. Van
-          desde íconos de comida hasta objetos cotidianos.
-        </p>
-
-        <div className="flex flex-wrap gap-2">
-          {FOOD_SHAPES.map(({ value, label, Icon }) => {
-            const isActive = selected.includes(value);
-            return (
-              <button
-                key={value}
-                type="button"
-                onClick={() => toggle(value)}
-                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-medium transition-all border ${
-                  isActive
-                    ? "bg-[var(--admin-accent)] text-white border-[var(--admin-accent)] shadow-sm"
-                    : "bg-[var(--admin-bg)] text-[var(--admin-text-muted)] border-[var(--admin-border)] hover:border-[var(--admin-accent)]/30"
-                }`}
-              >
-                <Icon size={14} />
-                {label}
-              </button>
-            );
+      {/* PREVIEW EN VIVO */}
+      <div className="space-y-2">
+        <span className="text-[9px] font-semibold text-[var(--admin-text-muted)] uppercase tracking-wider flex items-center gap-1.5">
+          <MoveHorizontal size={12} />
+          Vista previa en vivo
+        </span>
+        <div
+          className="relative w-full h-28 rounded-lg border border-[var(--admin-border)] overflow-hidden bg-[var(--admin-bg)]"
+          style={{ backgroundColor: colorPrimary + "08" }}
+        >
+          {/* Mini shapes preview */}
+          {previewShapes.map((key, i) => {
+            const shape = FOOD_SHAPES.find((s) => s.value === key);
+            if (!shape) return null;
+            const densityCount =
+              density === "low" ? 2 : density === "medium" ? 4 : 6;
+            // Show 1-2 instances per shape in preview
+            const instances = Math.min(densityCount, 4);
+            return Array.from({ length: instances }).map((_, j) => {
+              const angle = ((i * 60 + j * 90) * Math.PI) / 180;
+              const radius = 25 + ((i * 7 + j * 13) % 25);
+              const top = 50 + Math.sin(angle) * radius;
+              const left = 50 + Math.cos(angle) * radius;
+              const size = 12 + ((i * 3 + j * 5) % 16);
+              const opacity = 0.08 + ((i * 2 + j * 3) % 8) * 0.015;
+              return (
+                <div
+                  key={`${key}_${j}`}
+                  className="absolute pointer-events-none transition-all duration-1000"
+                  style={{
+                    top: `${top}%`,
+                    left: `${left}%`,
+                    width: size,
+                    height: size,
+                    opacity,
+                    transform: `translate(-50%, -50%) rotate(${i * 30 + j * 45}deg)`,
+                  }}
+                >
+                  <shape.Icon size={size} strokeWidth={1.2} />
+                </div>
+              );
+            });
           })}
+          {/* Preview center label */}
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <span className="text-[9px] font-medium text-[var(--admin-text-muted)]/40 bg-[var(--admin-surface)]/60 px-2 py-1 rounded-full backdrop-blur-sm">
+              {selected.length > 0
+                ? `${selected.length} forma${selected.length !== 1 ? "s" : ""} activa${selected.length !== 1 ? "s" : ""}`
+                : "Vista con formas por defecto"}
+            </span>
+          </div>
         </div>
+      </div>
+
+      {/* DENSIDAD */}
+      <div className="space-y-2.5">
+        <span className="text-[9px] font-semibold text-[var(--admin-text-muted)] uppercase tracking-wider block">
+          Densidad de aparición
+        </span>
+        <div className="flex gap-2">
+          {DENSITY_OPTIONS.map((opt) => (
+            <button
+              key={opt.value}
+              type="button"
+              onClick={() => onDensityChange(opt.value)}
+              className={`flex-1 px-3 py-2 rounded-lg text-[10px] font-medium transition-all border text-left ${
+                density === opt.value
+                  ? "bg-[var(--admin-accent)] text-white border-[var(--admin-accent)] shadow-sm"
+                  : "bg-[var(--admin-bg)] text-[var(--admin-text-muted)] border-[var(--admin-border)] hover:border-[var(--admin-accent)]/30"
+              }`}
+            >
+              <span className="block text-[11px] font-semibold">{opt.label}</span>
+              <span className="block opacity-70 mt-0.5">{opt.desc}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* SELECCIÓN DE FORMAS */}
+      <div className="space-y-3">
+        <span className="text-[9px] font-semibold text-[var(--admin-text-muted)] uppercase tracking-wider flex items-center gap-1.5">
+          <ImageIcon size={12} />
+          Formas disponibles
+          <span className="text-[10px] font-normal text-[var(--admin-text-muted)]/50 normal-case tracking-normal">
+            (hacé clic para activar)
+          </span>
+        </span>
+
+        {categories.map((cat) => {
+          const catShapes = FOOD_SHAPES.filter((s) => s.category === cat.key);
+          const catActiveCount = catShapes.filter((s) =>
+            selected.includes(s.value),
+          ).length;
+          return (
+            <div key={cat.key} className="space-y-1.5">
+              <span className="text-[9px] font-medium text-[var(--admin-text-muted)]/70 block">
+                {cat.label}
+                {catActiveCount > 0 && (
+                  <span className="ml-1.5 text-[var(--admin-accent)] font-semibold">
+                    ({catActiveCount})
+                  </span>
+                )}
+              </span>
+              <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-1.5">
+                {catShapes.map(({ value, label, Icon }) => {
+                  const isActive = selected.includes(value);
+                  return (
+                    <button
+                      key={value}
+                      type="button"
+                      onClick={() => toggle(value)}
+                      className={`flex flex-col items-center gap-1 p-2 rounded-lg text-[9px] font-medium transition-all border ${
+                        isActive
+                          ? "bg-[var(--admin-accent)]/10 text-[var(--admin-accent)] border-[var(--admin-accent)]/30 shadow-sm"
+                          : "bg-[var(--admin-bg)] text-[var(--admin-text-muted)]/60 border-[var(--admin-border)] hover:border-[var(--admin-accent)]/20 hover:text-[var(--admin-text)]"
+                      }`}
+                    >
+                      <Icon size={18} strokeWidth={isActive ? 2 : 1.2} />
+                      <span className="whitespace-nowrap">{label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* RESUMEN DE ACTIVAS */}
+      <div className="flex items-center justify-between pt-1 border-t border-[var(--admin-border)]">
+        <span className="text-[9px] text-[var(--admin-text-muted)]">
+          {selected.length === 0
+            ? "Ninguna forma seleccionada — se usarán las predeterminadas"
+            : `${selected.length} forma${selected.length !== 1 ? "s" : ""} activa${selected.length !== 1 ? "s" : ""} · densidad ${density === "low" ? "sutil" : density === "medium" ? "normal" : "intensa"}`}
+        </span>
+        {selected.length > 0 && (
+          <button
+            type="button"
+            onClick={() => onChange([])}
+            className="text-[9px] text-[var(--admin-text-muted)]/50 hover:text-red-400 transition-colors underline"
+          >
+            Limpiar selección
+          </button>
+        )}
       </div>
     </div>
   );
@@ -1713,8 +2072,9 @@ function CatalogDesignBlock({
               />
             </div>
             <div className="flex-1 space-y-0.5">
-              <span className="text-[9px] font-semibold text-[var(--admin-text-muted)] uppercase tracking-wider block">
+              <span className="text-[9px] font-semibold text-[var(--admin-text-muted)] uppercase tracking-wider flex items-center gap-1">
                 Hexadecimal
+                <span className="text-[9px] font-bold text-red-500 bg-red-500/10 px-1.5 py-0.5 rounded not-uppercase tracking-normal">Obligatorio</span>
               </span>
               <input
                 type="text"
@@ -1994,6 +2354,7 @@ function DireccionesBlock({
           <h2 className="text-xs font-semibold text-[var(--admin-text)]">
             Sucursales / Direcciones
           </h2>
+          <span className="text-[9px] font-bold text-red-500 bg-red-500/10 px-1.5 py-0.5 rounded">Obligatorio</span>
         </div>
         <button
           type="button"
@@ -2007,6 +2368,9 @@ function DireccionesBlock({
       {direcciones.length === 0 ? (
         <p className="text-xs text-[var(--admin-text-muted)] italic py-2">
           No hay sucursales registradas. Agregá al menos una dirección para tu negocio.
+          <span className="block text-[10px] text-red-500/70 not-italic mt-1 font-medium">
+            * Al menos una sucursal es obligatoria para recibir pedidos.
+          </span>
         </p>
       ) : (
         <div className="space-y-3">

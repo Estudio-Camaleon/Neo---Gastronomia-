@@ -50,6 +50,24 @@ export function PublicMenuHeader({
   const isRoundedShape = logoShape === "rounded";
   const isCircularShape = logoShape === "circle";
   const isSticker = logoShape === "none";
+  const logoScale = negocio.logo_scale ?? 1;
+  const logoPosicion = negocio.logo_posicion ?? "center";
+  const logoFit = negocio.logo_fit ?? "contain";
+  const STICKER_OFFSET: Record<string, string> = {
+    top: "-16px",
+    center: "0px",
+    bottom: "16px",
+  };
+  const stickerMarginTop = isSticker
+    ? (STICKER_OFFSET[logoPosicion] ?? "0px")
+    : undefined;
+  // Sincronizar transform-origin con object-position para que scale+position funcionen juntos
+  const TRANSFORM_ORIGIN_MAP: Record<string, string> = {
+    top: "center top",
+    center: "center",
+    bottom: "center bottom",
+  };
+  const logoTransformOrigin = TRANSFORM_ORIGIN_MAP[logoPosicion] ?? "center";
 
   return (
     <>
@@ -238,7 +256,22 @@ export function PublicMenuHeader({
                       className={
                         isSticker
                           ? "max-h-32 max-w-32 sm:max-h-36 sm:max-w-36 drop-shadow-2xl"
-                          : "h-full w-full object-cover"
+                          : "h-full w-full"
+                      }
+                      style={
+                        isSticker
+                          ? {
+                              objectPosition: logoPosicion,
+                              transform: "scale(" + logoScale + ")",
+                              transformOrigin: logoTransformOrigin,
+                              marginTop: stickerMarginTop,
+                            }
+                          : {
+                              objectPosition: logoPosicion,
+                              transform: "scale(" + logoScale + ")",
+                              transformOrigin: logoTransformOrigin,
+                              objectFit: logoFit as "contain" | "cover",
+                            }
                       }
                       priority
                     />
@@ -280,6 +313,18 @@ export function PublicMenuHeader({
                 >
                   {negocio.nombre}
                 </motion.h1>
+              )}
+
+              {/* Description / tagline */}
+              {negocio.descripcion && (
+                <motion.p
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, delay: 0.25 }}
+                  className="text-center text-white/70 text-sm sm:text-base mt-2 max-w-[500px] mx-auto leading-relaxed"
+                >
+                  {negocio.descripcion}
+                </motion.p>
               )}
 
               {/* Social media row */}
